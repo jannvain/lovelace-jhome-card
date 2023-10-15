@@ -9,7 +9,7 @@ class JhomeCard extends HTMLElement {
     }
 
     set hass(hass) {
-        const entityId = this.config.entity;
+        const entityId = this.panel ? this.panel.config.entity : this.config.entity;
         const state = hass.states[entityId];
         const stateStr = state ? state.state : 'unavailable';
 
@@ -17,7 +17,7 @@ class JhomeCard extends HTMLElement {
         if (!this.content) {
             // user makes sense here as every login gets it's own instance
             this.innerHTML = `
-                <ha-card header="Hello ${hass.user.name}!">
+                <ha-card header="Hello ${hass.user.name}! NEW VERSION 2.0">
                     <div class="card-content"></div>
                 </ha-card>
             `;
