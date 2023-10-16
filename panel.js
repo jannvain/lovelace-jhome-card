@@ -21,6 +21,14 @@ class JhomePanel extends LitElement {
     const temps = this.panel.config.roomTemperatures.reduce((res, cur) => res + '<div style="color:#2222ff">' + cur.roomName + '</div>', '')
 
     const x = 200;
+    const houseWidth = 700;
+    const svgWidth = 1000;
+    const svgHeight = 1000;
+
+    const centerX = svgWidth / 2;
+    const upY = 250;
+    const roofOfset = 100;
+
     return html`
       <wired-card elevation="2">
 
@@ -29,13 +37,16 @@ class JhomePanel extends LitElement {
         <div style="margin-left:200px"> |</div>
         <div style="margin-left:200px"> v</div>
 
-        <svg width="100%" height="100%" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet">
-          <rect x="50" width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
-          <rect x=${50+x + 20} width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
-          <rect x=${50+2*x + 40} width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
-          <text text-anchor="middle" x=${50+x*0.5} y="25" fill="#000000">Boiler</text>
-          <text text-anchor="middle" x=${50+x*1.5+20} y="25" fill="#000000">Pump</text>
-          <text text-anchor="middle" x=${50+x*2.5+40} y="25" fill="#000000">Buffer</text>
+        <svg width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="xMidYMid meet">
+          <rect y="600" x="180" width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
+          <rect y="600" x=${180+x + 20} width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
+          <rect y="600" x=${180+2*x + 40} width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
+          <text text-anchor="middle" y="630" x=${180+x*0.5}  fill="#000000">Boiler</text>
+          <text text-anchor="middle" y="630" x=${180+x*1.5+20}  fill="#000000">Pump</text>
+          <text text-anchor="middle" y="630" x=${180+x*2.5+40}  fill="#000000">Buffer</text>
+
+          <polyline points="${centerX - houseWidth*0.5},900 ${centerX + houseWidth*0.5},900 ${centerX + houseWidth*0.5},${upY} ${centerX + houseWidth*0.5 + roofOfset},${upY} ${centerX},10  ${centerX - houseWidth*0.5 - roofOfset},${upY}   ${centerX - houseWidth*0.5},${upY}, ${centerX - houseWidth*0.5},900"
+           style="fill:none;stroke:black;stroke-width:6" />
 
           </svg>
 
