@@ -1,6 +1,6 @@
 {
     "name": "JHome card",
     "render_readme": true,
-    "filename": "card.js",
+    "filename": "panel.js",
     "content_in_root": true
   }
