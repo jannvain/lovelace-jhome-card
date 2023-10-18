@@ -16,60 +16,77 @@ class JhomePanel extends LitElement {
     };
   }
 
+
   render() {
 
     const temps = this.panel.config.roomTemperatures.reduce((res, cur) => res + '<div style="color:#2222ff">' + cur.roomName + '</div>', '')
 
     const x = 200;
-    const houseWidth = 700;
     const svgWidth = 1000;
     const svgHeight = 1000;
 
     const centerX = svgWidth / 2;
     const upY = 250;
-    const roofOfset = 100;
+    const topMargin = 10;
+    const houseWidth = svgWidth * 0.70;
+    const wallHeight = 650;
+
+    const bottomFloorHeight = 0.33 * wallHeight;
+    const firstFloorHeight = 0.33 * wallHeight;
+    const secondFloorHeight = 0.33 * wallHeight;
+
+
+    const sensorValue = (val) => html`<div class="room"><div class="sensor-name">${val.roomName}</div><div class="sensor-value">${this.hass.states[val.entityId].state}</div></div>`;
+
 
     return html`
       <wired-card elevation="2">
+      ARMED
+      <div class="house">
 
-        <div> OUTSIDE LINE in 6.7C, LINE out -2.3C   outside temp 10C</div>
-        <div style="margin-left:200px"> |</div>
-        <div style="margin-left:200px"> |</div>
-        <div style="margin-left:200px"> v</div>
-
-        <svg width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="xMidYMid meet">
-          <rect y="600" x="180" width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
-          <rect y="600" x=${180+x + 20} width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
-          <rect y="600" x=${180+2*x + 40} width=${x} height=${x} style="fill:rgb(200,200,200);stroke-width:3;stroke:rgb(0,0,0)" />
-          <text text-anchor="middle" y="630" x=${180+x*0.5}  fill="#000000">Boiler</text>
-          <text text-anchor="middle" y="630" x=${180+x*1.5+20}  fill="#000000">Pump</text>
-          <text text-anchor="middle" y="630" x=${180+x*2.5+40}  fill="#000000">Buffer</text>
-
-          <polyline points="${centerX - houseWidth*0.5},900 ${centerX + houseWidth*0.5},900 ${centerX + houseWidth*0.5},${upY} ${centerX + houseWidth*0.5 + roofOfset},${upY} ${centerX},10  ${centerX - houseWidth*0.5 - roofOfset},${upY}   ${centerX - houseWidth*0.5},${upY}, ${centerX - houseWidth*0.5},900"
-           style="fill:none;stroke:black;stroke-width:6" />
-
+        <div class="roof">
+          <svg id="svg-roof" width="100%" height="204" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">
+            <polyline points="0,1000 500,8, 1000,1000" style="fill:none;stroke:#339933;stroke-width:8" />
           </svg>
+        </div>
+        <div class="floors">
 
-          <div style="margin-left:200px"> |</div>
-          <div style="margin-left:200px"> |</div>
-          <div style="margin-left:200px"> v</div>
-      <div class="radiator-lines">
-        <div class="radiator-line">
-          <div> Radiator Line 1 </div>
-          <div> ${this.panel.config.roomTemperatures.filter(a => a.line === 1).map((cur) => html`<div>${cur.roomName} ${this.hass.states[cur.entityId].state}</div>`)}
+          <div class="floor second">
+            <div class="radiator-lines">
+              <div class="radiator-line">
+                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 2).map(sensorValue)}
+              </div>
+              <div class="radiator-line">
+                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 2).map(sensorValue)}
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="radiator-line">
-          <div> Radiator Line 2 </div>
-          <div> ${this.panel.config.roomTemperatures.filter(a => a.line === 2).map((cur) => html`<div>${cur.roomName} ${this.hass.states[cur.entityId].state}</div>`)}
+          <div class="floor first">
+            <div class="radiator-lines">
+              <div class="radiator-line">
+                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 1).map(sensorValue)}
+              </div>
+              <div class="radiator-line">
+                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 1).map(sensorValue)}
+              </div>
+            </div>
           </div>
-        </div>
+          <div class="floor basement">
+            <div class="radiator-lines">
+              <div class="radiator-line">
+                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 0).map(sensorValue)}
+              </div>
+              <div class="radiator-line">
+                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 0).map(sensorValue)}
+              </div>
+            </div>
+            <div class="buffer"> </div>
+            <div class="pump"> </div>
+            <div class="boiler"> </div>
+          </div>
 
-        <div class="radiator-line">
-        <div> Hot water </div>
         </div>
-      </div>
       </div>
         <p>The screen is${this.narrow ? "" : " not"} narrow.</p>
       </wired-card>
@@ -83,15 +100,101 @@ class JhomePanel extends LitElement {
         padding: 16px;
         display: block;
       }
-      .radiator-line {
-        background: #aaaaaa;
-        padding: 6px;
+      .house {
+        padding: 0;
+      }
+      .floors {
+        padding: 0;
+        border: 3px solid #339933;
+      }
+      .roof {
+        width: 100%;
+        padding: 0;
+        margin:0;
+        border: 0;
+      }
+      #svg-roof {
+        vertical-align:top;
+      }
+      .floor {
+        padding: 3px;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .floor:nth-child(even) {
+        background-color: #f3f3f3;
+
+      }
+      .floor:nth-child(odd) {
+
+      }
+      .floor.first {
+        border-bottom: 3px solid #339933;
+
+      }
+      .floor.second {
+        border-bottom: 3px solid #339933;
+      }
+      .floor.basement {
+
+      }
+
+      .room {
         flex: 33%;
+        border: 1px solid #333333;
+        padding: 3px;
+        margin: 3px;
+      }
+      .sensor-value {
+        display: inline-block;
+        font-weight: bold;
+        width: 30%
+        text-align: right;
+      }
+      .sensor-name {
+        display: inline-block;
+        width: 30%
+
+      }
+      .pump {
+        height: 60px;
+        width: 60px;
+        background-color: #55aa55;
+        flex: 0 0 25%;
+        padding: 3px;
+        margin: 3px;
+
+      }
+      .buffer {
+        height: 60px;
+        width: 60px;
+        background-color: #6699ff;
+        flex: 0 0 25%;
+        padding: 3px;
+        margin: 3px;
+
+      }
+      .boiler {
+        height: 60px;
+        width: 60px;
+        background-color: #6611aa;
+        flex: 0 0 25%;
+        padding: 3px;
+        margin: 3px;
+
+      }
+
+      .radiator-line {
+        background: #f9f9f9;
+        padding: 6px;
+        flex: 0 0 33%;
         margin: 6px;
       }
       .radiator-lines{
         display: flex;
+        justify-content: space-between;
         width: 100%;
+
       }
 
       wired-card {
