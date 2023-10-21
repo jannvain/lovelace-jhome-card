@@ -2,13 +2,28 @@
 import {
   LitElement,
   html,
-  css,
+  css
 } from "https://unpkg.com/lit-element@2.4.0/lit-element.js?module";
 
+import {unsafeHTML} from 'https://unpkg.com/lit-html@2.4.0/directives/unsafe-html.js?module';
 
+const faultColor = css`#e300ff`;
+const alarmColor = css`#ff0033`;
+const warningColor = css`#FFBF00`;
+const normalColor = css`#cccccc`;
+const houseOutlineColor = "#a0a0a0";
+const hocolor = css`#a0a0a0`;
 
-const houseOutlineColor = "#aaaaaa"
-const hocolor = css`#aaaaaa`;
+const celciusSymbol = "C";
+
+/*  &#8451;  &#x2103;
+*/
+
+const tempLL =19;
+
+const tempL = 20;
+const tempH = 22;
+const tempHH = 23;
 
 class JhomePanel extends LitElement {
   static get properties() {
@@ -26,11 +41,6 @@ class JhomePanel extends LitElement {
     console.log(this.panel);
 
 
-    let box = document.querySelector('ha-panel-custom');
-    //let width = box.offsetWidth;
-    //let height = box.offsetHeight;
-    console.log(box);
-
     const temps = this.panel.config.roomTemperatures.reduce((res, cur) => res + '<div style="color:#2222ff">' + cur.name + '</div>', '')
 
     const x = 200;
@@ -47,75 +57,111 @@ class JhomePanel extends LitElement {
     const firstFloorHeight = 0.33 * wallHeight;
     const secondFloorHeight = 0.33 * wallHeight;
 
-    const sensorValue = (val, side) => html`<div class="room ${side}"><div class="sensor-name">${val.name}</div><div class="sensor-value">${this.hass.states[val.entityId].state}</div></div>`;
+    const faultColorClass = "fault";
+    const alarmColorClass = "alarm";
+    const warningColorClass = "warning";
+    const normalColorClass = "normal";
+
+    const getColor = (val) => {
+
+      if (!val) {
+        return faultColorClass;
+
+      }
+      else if (val < tempLL) {
+        return alarmColorClass;
+      }
+      else if (val < tempL) {
+        return warningColorClass;
+      }
+      else if (val > tempHH) {
+        return alarmColorClass;
+      }
+      else if (val > tempH) {
+        return warningColorClass;
+      }
+      else {
+        return normalColorClass;
+      }
+      ;
+
+    }
+
+    const showValue = (val, unit) => html`
+                                <div class="sensor ${getColor(val)}">
+                                  <div class="sensor-value">
+                                    ${val}
+                                  </div>
+                                  <div class="sensor-unit">
+                                    ${unit}
+                                  </div>
+                                </div>`;
+
+    const sensorValue = (val, side, unit) => html`<div class="room ${side}"><div class="sensor-name">${val.name}</div>${showValue(this.hass.states[val.entityId].state, unit)} ${showValue(this.hass.states[val.entityId].state, unit)} ${showValue(this.hass.states[val.entityId].state, unit)}</div>`;
     const sensorValue2 = (val) => html`<div class="sensor-value">${this.hass.states[val.entityId].state}</div>`;
 
     const drawRoofOutline = () => html`
       <div class="roof">
         <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">
-          <polyline points="0,500 500,8, 1000,500" style="fill:#fefefe;stroke:${houseOutlineColor};stroke-width:12" />
+          <polyline points="0,500 500,8, 1000,500" style="fill:#fefefe;stroke:${houseOutlineColor};stroke-width:14" />
         </svg>
       </div>
     `;
 
+    const radiatorLine = (floor, line, pfix) => html`
+      <div class="radiator-line">
+        ${this.panel.config.roomTemperatures.filter(a => a.line === line && a.floor === floor).map(n => sensorValue(n, (line === 1 ? "left" : "right") + pfix, celciusSymbol))}
+      </div>
+  `;
+
     const drawHouse = () => html`
       <div class="house">
         <div class="floors">
+
           <div class="floor second">
-            <div class="radiator-lines">
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 2).map(n => sensorValue(n, "left"))}
-              </div>
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 2).map(n => sensorValue(n, "right"))}
-              </div>
+           <div class="radiator-lines">
+              ${radiatorLine(2, 1, "")}
+              ${radiatorLine(2, 2, "")}
             </div>
           </div>
 
           <div class="floor first">
             <div class="radiator-lines">
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 1).map(n => sensorValue(n, "left"))}
-              </div>
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 1).map(n => sensorValue(n, "right"))}
-              </div>
+              ${radiatorLine(1, 1, "")}
+              ${radiatorLine(1, 2, "")}
             </div>
           </div>
 
           <div class="floor basement">
-
             <div class="radiator-lines">
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 0).map(n => sensorValue(n, "left b"))}
+              ${radiatorLine(0, 1, " b")}
+              ${radiatorLine(0, 2, " b")}
+            </div>
+
+            <div class="boiler-room">
+
+              <div class="buffer-lines">
+                <div class="item-line" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>
+                <div class="arrow red">&larr;</div>
+
+                <div class="item-line" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>
+                <div class="arrow blue">&rarr;</div>
               </div>
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 0).map(n => sensorValue(n, "right b"))}
+              <div class="buffer">
+                <div class="item" >Buffer</div>
               </div>
-            </div>
+              <div class="pump">
+                  <div class="item" >Pump</div>
+                  <div class="item" >${sensorValue2(this.panel.config.entities.pumpPower)} w</div>
+                  <div class="item" >Heating</div>
 
-            <div class="buffer-lines">
+              </div>
+              <div class="boiler">
+                <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)} C</div>
+                <div class="item" >Boiler</div>
+                <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)} C</div>
 
-              <div class="item-line" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>
-              <div class="arrow red">&larr;</div>
-
-              <div class="item-line" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>
-              <div class="arrow blue">&rarr;</div>
-            </div>
-            <div class="buffer">
-              <div class="item" >Buffer</div>
-            </div>
-            <div class="pump">
-                <div class="item" >Pump</div>
-                <div class="item" >${sensorValue2(this.panel.config.entities.pumpPower)} w</div>
-                <div class="item" >Heating</div>
-
-            </div>
-            <div class="boiler">
-              <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)} C</div>
-              <div class="item" >Boiler</div>
-              <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)} C</div>
-
+              </div>
             </div>
           </div>
         </div>
@@ -140,98 +186,6 @@ class JhomePanel extends LitElement {
         ${drawCorner("b")}
       </div> `;
 
-    return html`
-      <div>
-
-      ARMED
-      <div class="house">
-
-        <div class="roof">
-          <svg id="svg-roof" width="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">
-            <polyline points="0,500 500,8, 1000,500" style="fill:none;stroke:${houseOutlineColor};stroke-width:10" />
-          </svg>
-        </div>
-        <div class="floors">
-
-          <div class="floor second">
-            <div class="radiator-lines">
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 2).map(sensorValue)}
-              </div>
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 2).map(sensorValue)}
-              </div>
-            </div>
-          </div>
-
-          <div class="floor first">
-            <div class="radiator-lines">
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 1).map(sensorValue)}
-              </div>
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 1).map(sensorValue)}
-              </div>
-            </div>
-          </div>
-          <div class="floor basement">
-            <div class="radiator-lines">
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 1 && a.floor === 0).map(sensorValue)}
-              </div>
-              <div class="radiator-line">
-                ${this.panel.config.roomTemperatures.filter(a => a.line === 2 && a.floor === 0).map(sensorValue)}
-              </div>
-            </div>
-            <div class="buffer-lines">
-
-              <div class="item-line" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>
-              <div class="arrow red">&larr;</div>
-
-              <div class="item-line" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>
-              <div class="arrow blue">&rarr;</div>
-
-
-            </div>
-            <div class="buffer">
-              <div class="item" >Buffer</div>
-            </div>
-            <div class="pump">
-                <div class="item" >Pump</div>
-                <div class="item" >${sensorValue2(this.panel.config.entities.pumpPower)} w</div>
-                <div class="item" >Heating</div>
-
-            </div>
-            <div class="boiler">
-              <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)} C</div>
-              <div class="item" >Boiler</div>
-              <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)} C</div>
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-      <div class="ground">
-      <div class="ground-lines">
-
-      <div class="arrowv red">&uarr;</div>
-      <div class="arrowv blue">&darr;</div>
-
-      <div class="item-ground left" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>
-
-
-      <div class="item-ground right" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>
-
-
-    </div>
-
-
-      </div>
-
-        <!-- p>The screen is${this.narrow ? "" : " not"} narrow.</p -->
-      <div>
-    `;
   }
 
   static get styles() {
@@ -273,9 +227,31 @@ class JhomePanel extends LitElement {
         margin: 0 auto;
 
       }
+
+      .fault{
+        background-color: ${faultColor};
+        color: #ffffff;
+
+      }
+      .alarm {
+        background-color: ${alarmColor};
+        color: #ffffff;
+      }
+
+      .warning {
+        background-color: ${warningColor};
+        color: #333333;
+
+      }
+
+      .normal {
+        background-color: ${normalColor};
+        color: #333333;
+
+      }
       .floors {
         padding: 0;
-        border: 5px solid ${hocolor};
+        border: 6px solid ${hocolor};
       }
       .roof {
         width: 100%;
@@ -302,14 +278,14 @@ class JhomePanel extends LitElement {
 
       }
       .floor.first {
-        border-bottom: 4px solid ${hocolor};
+        border-bottom: 6px solid ${hocolor};
 
       }
       .floor.second {
-        border-bottom: 4px solid ${hocolor};
+        border-bottom: 6px solid ${hocolor};
       }
       .floor.virtual {
-        border-bottom: 4px solid ${hocolor};
+        border-bottom: 6px solid ${hocolor};
       }
       .floor.basement {
           justify-content: center;
@@ -365,10 +341,12 @@ class JhomePanel extends LitElement {
       }
 
       .room {
-        flex: 33%;
-        height: 40px;
+        height: 5vh;
         padding: 3px;
         margin: 0px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
       }
       .room.left {
         border-bottom: 3px solid ${hocolor};
@@ -404,18 +382,29 @@ class JhomePanel extends LitElement {
         border-left: 3px solid ${hocolor};
       }
 
-      .sensor-value {
-        display: inline-block;
+      .sensor {
+        display: flex;
+        flex-wrap: wrap;
         font-weight: bold;
         width: 50%
         text-align: right;
         border-radius: 6px;
-        background-color: #dddddd;
         padding: 3px;
+        width: 3.5vw;
+        height: 3.5vw;
       }
+      .sensor-unit {
+          flex: 100%;
+          text-align: center;
+      }
+      .sensor-value {
+        flex: 100%;
+        text-align: center;
+      }
+
       .sensor-name {
         display: inline-block;
-        width: 50%
+        width: 20%
 
       }
       .arrow {
@@ -447,6 +436,13 @@ class JhomePanel extends LitElement {
 
       }
 
+      .boiler-room {
+        width: 100%;
+        padding: 6px;
+        padding-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+      }
       .pump {
         height: 80px;
         width: 80px;
@@ -515,7 +511,7 @@ class JhomePanel extends LitElement {
       .radiator-line {
 
         padding: 0px;
-        flex: 0 0 33%;
+        flex: 0 0 40%;
         margin: 0px;
       }
       .radiator-lines{
