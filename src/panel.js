@@ -4,15 +4,32 @@ import {
   LitElement,
   html,
   css
-} from "https://unpkg.com/lit-element@2.4.0/lit-element.js?module";
+} from 'lit';
 
-import {unsafeHTML} from 'https://unpkg.com/lit-html@2.4.0/directives/unsafe-html.js?module';
+
+
+import {
+  mdiAccount,
+  mdiShieldLock,
+  mdiShieldOff,
+  mdiShieldHome,
+  mdiWaterBoiler,
+  mdiWaterBoilerOff,
+  mdiShieldAlert,
+  mdiWeathersunny,
+  mdiWeatherCloudy,
+  mdiWeatherPartlyCloudy
+} from '@mdi/js';
+
+import '@jamescoyle/svg-icon';
 
 
 const faultColor = css`#e300ff`;
-const alarmColor = css`#ff0033`;
+const alarmColor = css`#d0342c`; // #ff0033
 const warningColor = css`#FFBF00`;
-const normalColor = css`#cccccc`;
+const normalColor = css`#eeeeee`;
+const normalTextColor = css`#bbbbbb`;
+
 const houseOutlineColor = "#909090";
 const hocolor = css`#a0a0a0`;
 const hocolor2 = css`#909090`;
@@ -23,6 +40,18 @@ const celciusSymbol = "C";
 650 lines
 
 521
+
+000000 333333 666666 999999 cccccc ffffff
+
+002878 5064b4 c8ecfa 008c3c
+
+alarm
+fa3232 fff546 ff9600 ff64c8 46ff64
+
+
+cold blue 81acf5 6892db
+warm green
+81c24f background-image: linear-gradient(red, yellow);
 */
 
 const tempLL =19;
@@ -151,13 +180,51 @@ class JhomePanel extends LitElement {
       </div>
     `;
 
-    const boiler = () => html`
-      <div class="boiler">
+    const boiler = () => {
+
+
+      /*
+
+cold blue 81acf5 6892db
+warm green
+81c24f background-image: linear-gradient(red, yellow);
+*/
+
+
+      let topColor = "#81c24f";
+      let bottomColor = "#81c24f";
+
+      console.log(this.panel.config.entities.waterTop, this.panel.config.entities.waterCharge)
+      const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
+      const valc = this.hass.states[this.panel.config.entities.waterCharge.entityId].state
+
+      if (valt < 36) {
+        topColor = "#6892db";
+      }
+      else if (valt < 40) {
+        topColor = "#6892db";
+      }
+
+      if (valc < 36) {
+        bottomColor = "#6892db";
+      }
+      else if (valc < 40) {
+        bottomColor = "#6892db";
+      }
+
+      return    html`
+      <div class="boiler" style="background-image: linear-gradient(${topColor}, ${bottomColor});">
         <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)}</div>
-        <div class="item" >Boiler</div>
+        <div class="item" >
+          <font color="white">
+            <svg-icon type="mdi" size="24" path=${mdiWaterBoiler} ></svg-icon>
+          </font>
+        </div>
         <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)}</div>
       </div>
     `;
+    }
+
 
     const drawHouse = () => html`
       <div class="house">
@@ -213,21 +280,35 @@ class JhomePanel extends LitElement {
     `;
 
 
-    const showAlarmStatus = (status) => html`
-      <div class="alarm-status">
-      <font color="#F5C344"">
-      <ha-icon slot="icon" icon="mdi:shield-off" class="alarm-icon"></ha-icon>
-      </font>
-        <ha-icon slot="icon" icon="mdi:shield-lock"></ha-icon>
-        <ha-icon slot="icon" icon="mdi:shield-home"></ha-icon>
-        <ha-icon slot="icon" icon="mdi:shield-alert"></ha-icon>
-        <ha-icon slot="icon" icon="mdi:weather-sunny"></ha-icon>
-        <ha-icon slot="icon" icon="mdi:weather-cloudy"></ha-icon>
-        <ha-icon slot="icon" icon="mdi:weather-partly-cloudy"></ha-icon>
+    const showAlarmStatus = (status2) => {
 
+      let status = "armed_home";
+      let color = normalTextColor;
+      let icon = mdiShieldOff;
+      let aText = "Disarmed";
+      switch (status) {
+        case "armed_home":
+          color = "#00BFFF";
+          icon = mdiShieldHome;
+          aText = "Armed home";
+
+          break;
+        case "armed_away":
+          color = "#00BFFF";
+          icon = mdiShieldLock;
+          aText = "Armed away";
+        default:
+      }
+      return html`
+      <div class="alarm-status">
+        <font color=${color}>
+          <svg-icon type="mdi" size="48" path=${icon} ></svg-icon>
+        </font>
+        <div class="alarm-text">${aText}</div>
 
       </div>
     `;
+    }
 
     return html`
 
@@ -534,8 +615,8 @@ class JhomePanel extends LitElement {
 
       .boiler {
         height: 80px;
-        width: 80px;
-        border: 1px solid #3333ff;
+        width: 50px;
+        border: 3px solid #333366;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -543,7 +624,7 @@ class JhomePanel extends LitElement {
         background-color: #aa6666;
         padding: 3px;
         margin: 0;
-        border-radius: 30%;
+        border-radius: 10%;
         background: linear-gradient(to bottom, #00cc00 50%,#66ccff 50%);
       }
 
@@ -569,10 +650,18 @@ class JhomePanel extends LitElement {
       }
       .alarm-status {
         position: absolute;
-        top: 30px;
-        left: calc(50% - 12px);
+        width: 150px;
+        top: 24px;
+        left: calc(50% - 75px);
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
       }
+      .alarm-text{
+        text-align: center;
+        width: 140px;
 
+      }
      alarm-icon {
         transform: scale(2);
       }

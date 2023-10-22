@@ -1,5 +1,21 @@
 {
+  "source": "src/panel.js",
+  "module": "dist/panel.js",
+  "targets": {
+    "module": {
+      "includeNodeModules": true
+    }
+  },
+  "scripts": {
+    "watch": "parcel watch",
+    "build": "parcel build"
+  },
   "devDependencies": {
-    "parcel": "^2.10.0"
+    "parcel": "^2.0.0-rc.0"
+  },
+  "dependencies": {
+    "@jamescoyle/svg-icon": "^0.1.1",
+    "@mdi/js": "^7.3.67",
+    "lit": "^3.0.0"
   }
 }
