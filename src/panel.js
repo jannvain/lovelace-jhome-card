@@ -1,4 +1,5 @@
 
+
 import {
   LitElement,
   html,
@@ -7,16 +8,21 @@ import {
 
 import {unsafeHTML} from 'https://unpkg.com/lit-html@2.4.0/directives/unsafe-html.js?module';
 
+
 const faultColor = css`#e300ff`;
 const alarmColor = css`#ff0033`;
 const warningColor = css`#FFBF00`;
 const normalColor = css`#cccccc`;
-const houseOutlineColor = "#a0a0a0";
+const houseOutlineColor = "#909090";
 const hocolor = css`#a0a0a0`;
+const hocolor2 = css`#909090`;
 
 const celciusSymbol = "C";
 
 /*  &#8451;  &#x2103;
+650 lines
+
+521
 */
 
 const tempLL =19;
@@ -35,7 +41,6 @@ class JhomePanel extends LitElement {
     };
   }
 
-
   render() {
 
     console.log(this.panel);
@@ -52,7 +57,7 @@ class JhomePanel extends LitElement {
     const topMargin = 10;
     const houseWidth = svgWidth * 0.70;
     const wallHeight = 650;
-    const roofHeight = houseWidth * 0.5;
+    const roofHeight = houseWidth * 0.3;
     const bottomFloorHeight = 0.33 * wallHeight;
     const firstFloorHeight = 0.33 * wallHeight;
     const secondFloorHeight = 0.33 * wallHeight;
@@ -62,6 +67,12 @@ class JhomePanel extends LitElement {
     const warningColorClass = "warning";
     const normalColorClass = "normal";
 
+
+    const doors = [
+      { floor: 0, side: "left" },
+      { floor: 1, side: "left" },
+      { floor: 1, side: "right" },
+    ]
     const getColor = (val) => {
 
       if (!val) {
@@ -101,18 +112,52 @@ class JhomePanel extends LitElement {
     const sensorValue2 = (val) => html`<div class="sensor-value">${this.hass.states[val.entityId].state}</div>`;
 
     const drawRoofOutline = () => html`
+      ${showAlarmStatus(1)}
+
+
       <div class="roof">
         <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">
-          <polyline points="0,500 500,8, 1000,500" style="fill:#fefefe;stroke:${houseOutlineColor};stroke-width:14" />
+          <polyline points="0,500 500,8, 1000,500" style="fill:transparent;stroke:${houseOutlineColor};stroke-width:14" />
         </svg>
       </div>
     `;
 
-    const radiatorLine = (floor, line, pfix) => html`
-      <div class="radiator-line">
+    const radiatorLine = (floor, line, pfix, extra) => html`
+      <div class="radiator-line ${extra}">
         ${this.panel.config.roomTemperatures.filter(a => a.line === line && a.floor === floor).map(n => sensorValue(n, (line === 1 ? "left" : "right") + pfix, celciusSymbol))}
       </div>
   `;
+
+    const bufferLines = () => html`
+      <div class="buffer-lines">
+        <div class="item-line" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>
+        <div class="arrow red">&larr;</div>
+        <div class="item-line" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>
+        <div class="arrow blue">&rarr;</div>
+      </div>
+    `;
+
+    const buffer = () => html`
+      <div class="buffer">
+        <div class="item" >Buffer</div>
+      </div>
+    `;
+
+    const pump = () => html`
+      <div class="pump">
+        <div class="item" >Pump</div>
+        <div class="item" >${sensorValue2(this.panel.config.entities.pumpPower)} w</div>
+        <div class="item" >Heating</div>
+      </div>
+    `;
+
+    const boiler = () => html`
+      <div class="boiler">
+        <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)}</div>
+        <div class="item" >Boiler</div>
+        <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)}</div>
+      </div>
+    `;
 
     const drawHouse = () => html`
       <div class="house">
@@ -133,65 +178,80 @@ class JhomePanel extends LitElement {
           </div>
 
           <div class="floor basement">
-            <div class="radiator-lines">
-              ${radiatorLine(0, 1, " b")}
-              ${radiatorLine(0, 2, " b")}
-            </div>
 
             <div class="boiler-room">
+              ${bufferLines()}
+              ${buffer()}
+              ${boiler()}
+              ${pump()}
+            </div> <!-- BOILER ROOM -->
 
-              <div class="buffer-lines">
-                <div class="item-line" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>
-                <div class="arrow red">&larr;</div>
-
-                <div class="item-line" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>
-                <div class="arrow blue">&rarr;</div>
-              </div>
-              <div class="buffer">
-                <div class="item" >Buffer</div>
-              </div>
-              <div class="pump">
-                  <div class="item" >Pump</div>
-                  <div class="item" >${sensorValue2(this.panel.config.entities.pumpPower)} w</div>
-                  <div class="item" >Heating</div>
-
-              </div>
-              <div class="boiler">
-                <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)} C</div>
-                <div class="item" >Boiler</div>
-                <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)} C</div>
-
-              </div>
+            <div class="radiator-lines basement">
+              <!-- ${radiatorLine(0, 1, " b")} -->
+              ${radiatorLine(0, 2, " b", "basement")}
             </div>
-          </div>
-        </div>
+
+          </div> <!-- BASEMENT -->
+
+        </div> <!-- FLOORS -->
+
+      </div> <!-- HOUSE -->
+    `;
+
+    const drawDoors = (doors) => html`
+      <div class="doors">
+        ${doors.map(d=>"Door")}
       </div>
     `;
 
-    const drawCorner = (type) => html`<div class="${type}cor">  </div>`;
+    const drawCorner = (type) => html`<div ?hidden=${this.narrow} class="${type}cor">  </div>`;
     const drawCenter = (type, content) => html`<div class="${type}cen"> ${content} </div>`;
-    const drawSide = (type, content) => html`<div class="${type}sid"> ${content} </div>`;
+    const drawSide = (type, doors) => html`
+      <div ?hidden=${this.narrow} class="${type}sid">
+        ${drawDoors(doors)}
+      </div>
+    `;
+
+
+    const showAlarmStatus = (status) => html`
+      <div class="alarm-status">
+      <font color="#F5C344"">
+      <ha-icon slot="icon" icon="mdi:shield-off" class="alarm-icon"></ha-icon>
+      </font>
+        <ha-icon slot="icon" icon="mdi:shield-lock"></ha-icon>
+        <ha-icon slot="icon" icon="mdi:shield-home"></ha-icon>
+        <ha-icon slot="icon" icon="mdi:shield-alert"></ha-icon>
+        <ha-icon slot="icon" icon="mdi:weather-sunny"></ha-icon>
+        <ha-icon slot="icon" icon="mdi:weather-cloudy"></ha-icon>
+        <ha-icon slot="icon" icon="mdi:weather-partly-cloudy"></ha-icon>
+
+
+      </div>
+    `;
 
     return html`
+
+
+
 
       <div class="main">
         ${drawCorner("t")}
         ${drawCenter("t", drawRoofOutline())}
         ${drawCorner("t")}
-        ${drawSide("m")}
+        ${drawSide("m", doors.filter( d => d.side === "left"))}
         ${drawCenter("m", drawHouse())}
-        ${drawSide("m")}
+        ${drawSide("m", doors.filter( d => d.side === "right"))}
         ${drawCorner("b")}
         ${drawCenter("b", "")}
         ${drawCorner("b")}
       </div> `;
-
   }
 
   static get styles() {
     return css`
+
       :host {
-        background-color: #fafafa;
+        background-color: transparent;
         padding: 0px;
         display: block;
       }
@@ -207,14 +267,15 @@ class JhomePanel extends LitElement {
       }
       .tcen, .mcen, .bcen {
         flex: 70%;
+        position: relative;
       }
 
       .tcor, .tcen {
-        height: 25vh;
+        height: 20vh;
       }
 
       .mcen, .msid {
-        height: 60vh;
+        height: 65vh;
       }
 
       .bcor, .bcen {
@@ -225,7 +286,6 @@ class JhomePanel extends LitElement {
         padding: 0;
         width: 100%;
         margin: 0 auto;
-
       }
 
       .fault{
@@ -241,17 +301,15 @@ class JhomePanel extends LitElement {
       .warning {
         background-color: ${warningColor};
         color: #333333;
-
       }
 
       .normal {
         background-color: ${normalColor};
         color: #333333;
-
       }
       .floors {
         padding: 0;
-        border: 6px solid ${hocolor};
+        border: 6px solid ${hocolor2};
       }
       .roof {
         width: 100%;
@@ -268,28 +326,28 @@ class JhomePanel extends LitElement {
         padding: 0px;
         display: flex;
         flex-wrap: wrap;
+        background-color: transparent;
+
       }
       .floor:nth-child(even) {
-        background-color: #fefefe;
+        /*background-color: #fefefe;*/
 
       }
       .floor:nth-child(odd) {
-        background-color: #f0f0f0;
-
+        /*background-color: #f0f0f0;*/
       }
       .floor.first {
-        border-bottom: 6px solid ${hocolor};
-
+        border-bottom: 6px solid ${hocolor2};
       }
       .floor.second {
-        border-bottom: 6px solid ${hocolor};
+        border-bottom: 6px solid ${hocolor2};
       }
       .floor.virtual {
-        border-bottom: 6px solid ${hocolor};
+        border-bottom: 6px solid ${hocolor2};
       }
       .floor.basement {
-          justify-content: center;
-
+          justify-content: space-between;
+          flex-wrap: nowrap;
       }
 
       .item {
@@ -303,7 +361,6 @@ class JhomePanel extends LitElement {
       .item-ground {
         text-align: center;
         flex: 50%;
-
       }
       .item-ground.left {
         text-align: right;
@@ -313,7 +370,6 @@ class JhomePanel extends LitElement {
       .item-ground.right {
         text-align: left;
         padding-left: 6px;
-
         flex: 0 0 35%;
       }
 
@@ -333,11 +389,9 @@ class JhomePanel extends LitElement {
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-
         background-color: transparent;
         padding: 3px;
         margin: 3px;
-
       }
 
       .room {
@@ -390,8 +444,7 @@ class JhomePanel extends LitElement {
         text-align: right;
         border-radius: 6px;
         padding: 3px;
-        width: 3.5vw;
-        height: 3.5vw;
+        flex: 0 1 20%;
       }
       .sensor-unit {
           flex: 100%;
@@ -405,12 +458,10 @@ class JhomePanel extends LitElement {
       .sensor-name {
         display: inline-block;
         width: 20%
-
       }
       .arrow {
         font-size: 32px;
         flex: 50%;
-
       }
       .arrow.red {
         color: red;
@@ -426,18 +477,15 @@ class JhomePanel extends LitElement {
         color: red;
         text-align: right;
         flex: 60%;
-
       }
       .arrowv.blue {
         color: blue;
         text-align: left;
         flex: 40%;
-
-
       }
 
       .boiler-room {
-        width: 100%;
+        width: 60%;
         padding: 6px;
         padding-top: 12px;
         display: flex;
@@ -447,47 +495,41 @@ class JhomePanel extends LitElement {
         height: 80px;
         width: 80px;
         font-size: 14px;
-        border: 1px solid #3333ff;
+        border: 3px solid #cc0033;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-
-        border-radius: 3px;
-        background-color: #aaffff;
+        border-radius: 6px;
+        background-color: #f0f0f0;
         /*flex: 0 0 25%;*/
         padding: 3px;
         margin: 3px;
-
       }
       .buffer {
-        height: 80px;
-        width: 80px;
-        border: 1px solid #3333ff;
+        height: 60px;
+        width: 60px;
+        border: 3px solid #3300cc;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-
-        background-color: #66ccff;
+        background-color: #f0f0f0;
         padding: 3px;
-        margin: 3px;
+        margin-right: 6px;
         border-radius: 50%;
-
       }
       .buffer-lines {
-        height: 80px;
-        width: 80px;
+        height: 70px;
+        width: 70px;
         border: 0px solid #3333ff;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-
         background-color: #transparent;
         padding: 3px;
-        margin: 3px;
-
+        margin: 0;
       }
 
       .boiler {
@@ -498,18 +540,14 @@ class JhomePanel extends LitElement {
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-
         background-color: #aa6666;
         padding: 3px;
-        margin: 3px;
+        margin: 0;
         border-radius: 30%;
         background: linear-gradient(to bottom, #00cc00 50%,#66ccff 50%);
-
-
       }
 
       .radiator-line {
-
         padding: 0px;
         flex: 0 0 40%;
         margin: 0px;
@@ -518,7 +556,25 @@ class JhomePanel extends LitElement {
         display: flex;
         justify-content: space-between;
         width: 100%;
+      }
+      .radiator-lines.basement{
+        display: flex;
+        justify-content: space-between;
+        width: 41.5%;
+      }
+      .radiator-line.basement{
+        padding: 0px;
+        flex: 0 0 100%;
+        margin: 0px;
+      }
+      .alarm-status {
+        position: absolute;
+        top: 30px;
+        left: calc(50% - 12px);
+      }
 
+     alarm-icon {
+        transform: scale(2);
       }
     `;
   }
@@ -526,103 +582,5 @@ class JhomePanel extends LitElement {
 customElements.define("Jhome-panel", JhomePanel);
 
 
-/*
-import {
-  css,
-  CSSResult,
-  html,
-  LitElement,
-  // property,
-  //customElement,
-  TemplateResult,
-  PropertyValues,
-} from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { styleMap, StyleInfo } from 'lit-html/directives/style-map.js';
 
-customElements.define("jhome-panel", FloorplanPanel);
-
-
-//@customElement('jhome-panel')
-export class FloorplanPanel extends LitElement {
-  @property({ type: Object }) public hass!: HomeAssistant;
-  @property({ type: Boolean }) public narrow!: boolean;
-  @property({ type: Object }) public panel!: FloorplanPanelInfo;
-
-  @property({ type: Boolean }) public showSideBar!: boolean;
-  @property({ type: Boolean }) public showAppHeader!: boolean;
-
-  @property({ type: String }) public examplespath!: string;
-  @property({ type: Boolean }) public isDemo!: boolean;
-  @property({ type: Function }) public notify!: (message: string) => void;
-
-  styles: StyleInfo = { height: 'calc(100vh)' };
-
-  static appHeaderHeight = 64;
-
-  protected render(): TemplateResult {
-    return html`
-      <ha-app-layout>
-
-        <app-header fixed slot="header" ?hidden=${!this.showAppHeader}>
-          <app-toolbar>
-            <ha-menu-button .hass=${this.hass} .narrow=${
-      this.narrow
-    }"></ha-menu-button>
-            <div main-title>${this.panel?.title}</div>
-          </app-toolbar>
-        </app-header>
-
-        <div class="content" style=${styleMap(this.styles)}>
-          <floorplan-element .examplespath=${this.examplespath} .hass=${
-      this.hass
-    }
-          ._config=${this.panel?.config?.config} .isDemo=${
-      this.isDemo
-    } .notify=${this.notify}>
-          </floorplan-element>
-        </div>
-
-      </ha-app-layout>
-    `;
-  }
-
-  static get styles(): CSSResult {
-    return css`
-      :host .content,
-      :host .content floorplan-element {
-        display: flex;
-        flex-flow: column;
-        flex: 1;
-        min-height: 0;
-      }
-
-      [hidden] {
-        display: none !important;
-      }
-    `;
-  }
-
-  get appHeaderHeight(): number {
-    if (this.isDemo) return 0;
-    return this.showAppHeader ? FloorplanPanel.appHeaderHeight : 0;
-  }
-
-  update(changedProperties: PropertyValues): void {
-    if (this.panel) {
-      this.showSideBar = this.panel.config.show_side_bar !== false;
-      this.showAppHeader =
-        this.panel.config.show_app_header !== false && !this.isDemo;
-
-      if (this.hass && this.panel.config.show_side_bar === false) {
-        this.hass.dockedSidebar = 'always_hidden';
-      }
-
-      this.styles = { height: `calc(100vh - ${this.appHeaderHeight}px)` };
-    }
-
-    super.update(changedProperties);
-  }
-}
-*/
 

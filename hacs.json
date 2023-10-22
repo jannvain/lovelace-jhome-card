@@ -2,5 +2,5 @@
     "name": "JHome card",
     "render_readme": true,
     "filename": "panel.js",
-    "content_in_root": true
+    "content_in_root": false
   }
