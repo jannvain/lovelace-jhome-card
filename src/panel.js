@@ -1,4 +1,5 @@
 
+import css from "bundle-text:./card.css";
 
 import {
   LitElement,
@@ -15,18 +16,33 @@ import {
   mdiShieldHome,
   mdiWaterBoiler,
   mdiWaterBoilerOff,
+  mdiHeatPump,
+  mdiArrowDownThick,
+  mdiArrowUpThick,
+  mdiArrowRightThick,
+  mdiArrowLeftThick,
+  mdiArrowRight,
+    mdiArrowleft,
+  mdiApproximatelyEqualBox,
+  mdiHeatingCoil,
+  mdiRadiator,
+  mdiRadiatorDisabled,
+  mdiTemperatureCelsius,
+  mdiWaterPercent,
   mdiShieldAlert,
   mdiWeathersunny,
   mdiWeatherCloudy,
-  mdiWeatherPartlyCloudy
+  mdiWeatherPartlyCloudy,
+  mdiRadiatorOff,
+  mdiArrowLeft
 } from '@mdi/js';
 
 import '@jamescoyle/svg-icon';
 
 
 const faultColor = css`#e300ff`;
-const alarmColor = css`#d0342c`; // #ff0033
-const warningColor = css`#FFBF00`;
+const alarmColor = css`#d0342caf`; // #ff0033
+const warningColor = css`#FFBF007f`;
 const normalColor = css`#eeeeee`;
 const normalTextColor = css`#bbbbbb`;
 
@@ -34,7 +50,45 @@ const houseOutlineColor = "#909090";
 const hocolor = css`#a0a0a0`;
 const hocolor2 = css`#909090`;
 
+const activeColor = "#00BFFF";
+
 const celciusSymbol = "C";
+
+const boilerColorLL = "#6892db";
+const boilerColorL = "#c1d3f0";
+
+const boilerColor = "#ef9490";
+const boilerColorH = "#fb8984";
+const boilerColorHH = "#f9423a";
+
+const boilerLL = 30;
+const boilerL = 40;
+const boilerH = 50;
+const boilerHH = 55;
+
+const boilerLimits = [boilerLL, boilerL, boilerH, boilerHH];
+const boilerColors = [boilerColorLL, boilerColorL, boilerColor, boilerColorH, boilerColorHH]
+
+const getLimitedColor = (val, limits, colors) => {
+  let index = 2;
+
+  if (val < boilerLimits[0]) {
+    index = 0;
+  }
+  else if (val < boilerLimits[1]) {
+    index = 1;
+  }
+  else if (val > boilerLimits[3]) {
+    index = 4;
+  }
+  else if (val > boilerLimits[2]) {
+    index = 3;
+  }
+  return boilerColors[index];
+};
+
+
+
 
 /*  &#8451;  &#x2103;
 650 lines
@@ -52,6 +106,8 @@ fa3232 fff546 ff9600 ff64c8 46ff64
 cold blue 81acf5 6892db
 warm green
 81c24f background-image: linear-gradient(red, yellow);
+
+# 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
 */
 
 const tempLL =19;
@@ -60,7 +116,7 @@ const tempL = 20;
 const tempH = 22;
 const tempHH = 23;
 
-class JhomePanel extends LitElement {
+export class JhomePanel extends LitElement {
   static get properties() {
     return {
       hass: { type: Object },
@@ -127,17 +183,34 @@ class JhomePanel extends LitElement {
 
     }
 
-    const showValue = (val, unit) => html`
-                                <div class="sensor ${getColor(val)}">
-                                  <div class="sensor-value">
-                                    ${val}
-                                  </div>
+
+
+    const showValue = (val, step) => html`
+      <div class="sensor-value ${getColor(Math.round(val/0.5)*0.5)}">
+        ${Math.round(val/step)*step}
+      </div>
+    `;
+
+    const showValueWithUnit = (val, unit, step) => html`
+                                <div class="sensor">
+                                  ${showValue(val, step)}
                                   <div class="sensor-unit">
-                                    ${unit}
+                                    ${ unit.length > 10
+                                      ? html`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>`
+                                      : html`${unit}`
+
+                                    }
                                   </div>
                                 </div>`;
 
-    const sensorValue = (val, side, unit) => html`<div class="room ${side}"><div class="sensor-name">${val.name}</div>${showValue(this.hass.states[val.entityId].state, unit)} ${showValue(this.hass.states[val.entityId].state, unit)} ${showValue(this.hass.states[val.entityId].state, unit)}</div>`;
+
+    const showTempValue = (val) => showValueWithUnit(val, mdiTemperatureCelsius, 0.5);
+    const showHumValue = (val) => showValueWithUnit(val, mdiWaterPercent, 1);
+
+
+    const getState = (state) => this.hass.states[state.entityId].state;
+
+    const sensorValue = (val, side, unit) => html`<div class="room ${side}"><div class="sensor-name">${val.name}</div>${showTempValue(this.hass.states[val.entityId].state, unit)} ${showHumValue(this.hass.states[val.entityId].state, unit)}</div>`;
     const sensorValue2 = (val) => html`<div class="sensor-value">${this.hass.states[val.entityId].state}</div>`;
 
     const drawRoofOutline = () => html`
@@ -153,9 +226,44 @@ class JhomePanel extends LitElement {
 
     const radiatorLine = (floor, line, pfix, extra) => html`
       <div class="radiator-line ${extra}">
-        ${this.panel.config.roomTemperatures.filter(a => a.line === line && a.floor === floor).map(n => sensorValue(n, (line === 1 ? "left" : "right") + pfix, celciusSymbol))}
+        ${this.panel.config.roomTemperatures.filter(a => a.line === line && a.floor === floor).map(n => sensorValue(n, (line === 1 ? "left" : "right") + pfix, mdiTemperatureCelsius))}
       </div>
   `;
+
+    const SupplyReturnLines = (supplyTemp, returnTemp, icon, dir) => {
+
+
+      return html`
+        <div class="supply-return-lines">
+
+        <div class="column value" >
+          <div> ${getState(this.panel.config.entities.supplyLine)}</div>
+          <div> ${getState(this.panel.config.entities.returnLine)}</div>
+
+
+        </div>
+
+        <div class="column" >
+          <font color=${boilerColorH}>
+            <svg-icon type="mdi" size="24" path=${mdiArrowRightThick} ></svg-icon>
+          </font>
+          <font color=${boilerColorL}>
+            <svg-icon type="mdi" size="24" path=${mdiArrowLeftThick} ></svg-icon>
+          </font>
+        </div>
+
+        <div class="column" >
+          <div class="item" >
+            <font color="black">
+              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>
+            </font>
+          </div>
+        </div>
+
+
+      </div>
+      `;
+    };
 
     const bufferLines = () => html`
       <div class="buffer-lines">
@@ -168,55 +276,62 @@ class JhomePanel extends LitElement {
 
     const buffer = () => html`
       <div class="buffer">
-        <div class="item" >Buffer</div>
+        <div class="item" >
+          <font color="#cccccc">
+            <svg-icon type="mdi" size="24" path=${mdiApproximatelyEqualBox} ></svg-icon>
+          </font>
+        </div>
       </div>
     `;
 
     const pump = () => html`
       <div class="pump">
-        <div class="item" >Pump</div>
-        <div class="item" >${sensorValue2(this.panel.config.entities.pumpPower)} w</div>
-        <div class="item" >Heating</div>
+      <div class="item" >Heating</div>
+      <div class="item" >
+        <font color=${activeColor}>
+          <svg-icon type="mdi" size="28" path=${mdiHeatPump} ></svg-icon>
+        </font>
+      </div>
+        <div class="item" >${showValueWithUnit(getState(this.panel.config.entities.pumpPower), "w", 1)}</div>
       </div>
     `;
 
+    const pumpLines = () => html`
+    <div class="pumpLines">
+
+
+      <div class="item half" >
+        <font color=${boilerColorH}>
+          <svg-icon type="mdi" size="24" path=${mdiArrowUpThick} ></svg-icon>
+        </font>
+      </div>
+      <div class="item half" >
+        <font color=${boilerColorLL}>
+          <svg-icon type="mdi" size="24" path=${mdiArrowDownThick} ></svg-icon>
+        </font>
+      </div>
+
+      <div class="item half" > <div> ${getState(this.panel.config.entities.brineInLine)}</div>
+
+</div>
+      <div class="item half" ><div> ${getState(this.panel.config.entities.brineOutLine)}</div></div>
+
+    </div>
+  `;
+
     const boiler = () => {
 
-
-      /*
-
-cold blue 81acf5 6892db
-warm green
-81c24f background-image: linear-gradient(red, yellow);
-*/
-
-
-      let topColor = "#81c24f";
-      let bottomColor = "#81c24f";
-
-      console.log(this.panel.config.entities.waterTop, this.panel.config.entities.waterCharge)
       const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
       const valc = this.hass.states[this.panel.config.entities.waterCharge.entityId].state
+      const topColor = getLimitedColor(valt, boilerLimits, boilerColors)
+      const bottomColor = getLimitedColor(valc, boilerLimits, boilerColors)
 
-      if (valt < 36) {
-        topColor = "#6892db";
-      }
-      else if (valt < 40) {
-        topColor = "#6892db";
-      }
+      return html`
 
-      if (valc < 36) {
-        bottomColor = "#6892db";
-      }
-      else if (valc < 40) {
-        bottomColor = "#6892db";
-      }
-
-      return    html`
       <div class="boiler" style="background-image: linear-gradient(${topColor}, ${bottomColor});">
         <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)}</div>
         <div class="item" >
-          <font color="white">
+          <font color="#666666">
             <svg-icon type="mdi" size="24" path=${mdiWaterBoiler} ></svg-icon>
           </font>
         </div>
@@ -247,10 +362,41 @@ warm green
           <div class="floor basement">
 
             <div class="boiler-room">
-              ${bufferLines()}
-              ${buffer()}
-              ${boiler()}
-              ${pump()}
+
+              <div class="column">
+                ${pump()}
+                ${pumpLines()}
+              </div>
+
+              <div class="column narrow">
+
+
+                <div class="buffer-arrow">
+                  <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 2 ? activeColor : normalColor}>
+                    <svg-icon type="mdi" size="20 " path=${mdiArrowRightThick} ></svg-icon>
+                  </font>
+                </div>
+                <div class="boiler-arrow">
+                  <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 3 ? activeColor : normalColor}>
+                    <svg-icon type="mdi" size="20 " path=${mdiArrowRightThick} ></svg-icon>
+                  </font>
+                </div>
+              </div>
+
+              <div class="column">
+                ${buffer()}
+                ${boiler()}
+
+              </div>
+
+
+
+              <div class="column">
+                ${SupplyReturnLines(35, 32, mdiRadiator)}
+                ${SupplyReturnLines(32, 29, mdiHeatingCoil)}
+              </div>
+
+
             </div> <!-- BOILER ROOM -->
 
             <div class="radiator-lines basement">
@@ -331,6 +477,9 @@ warm green
   static get styles() {
     return css`
 
+      * {
+       box-sizing: border-box;
+      }
       :host {
         background-color: transparent;
         padding: 0px;
@@ -370,22 +519,23 @@ warm green
       }
 
       .fault{
-        background-color: ${faultColor};
-        color: #ffffff;
+        background-color: ${faultColor} !important;
+        color: #eeeeee !important;
 
       }
       .alarm {
-        background-color: ${alarmColor};
-        color: #ffffff;
+        background-color: ${alarmColor} !important;
+        color: #eeeeee !important;
       }
 
       .warning {
-        background-color: ${warningColor};
-        color: #333333;
+        background-color: ${warningColor} !important;
+        color: #666666 !important;
+
       }
 
       .normal {
-        background-color: ${normalColor};
+        background-color: transparent;
         color: #333333;
       }
       .floors {
@@ -431,9 +581,42 @@ warm green
           flex-wrap: nowrap;
       }
 
+
       .item {
         flex: 100%;
         text-align: center;
+      }
+      .itemb {
+        text-align: center;
+
+      }
+      .item.twoCol {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        align-content: space-between;
+        flex 10%;
+      }
+      .itemb.twoCol {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        align-content: space-between;
+        flex 10%;
+      }
+      .item.half {
+        flex: 0 0 50%;
+        text-align: center;
+      }
+      .item.left {
+        text-align: left;
+
+      }
+      .item.right {
+        text-align: right;
+
       }
       .item-line {
         flex: 50%;
@@ -475,8 +658,17 @@ warm green
         margin: 3px;
       }
 
+      .supply-return-lines {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+      }
+
+
       .room {
-        height: 5vh;
+        min-height: 5vh;
         padding: 3px;
         margin: 0px;
         display: flex;
@@ -520,25 +712,35 @@ warm green
       .sensor {
         display: flex;
         flex-wrap: wrap;
+        justify-content: center;
         font-weight: bold;
         width: 50%
         text-align: right;
         border-radius: 6px;
-        padding: 3px;
+        padding: 1px;
         flex: 0 1 20%;
       }
       .sensor-unit {
-          flex: 100%;
           text-align: center;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          color: #666666;
       }
       .sensor-value {
-        flex: 100%;
         text-align: center;
+        font-size: 1.3em;
+        color: #444444;
+        padding-left: 2px;
+        padding-right: 2px;
+        border-radius: 3px;
+
       }
 
       .sensor-name {
         display: inline-block;
-        width: 20%
+        font-weight: bold;
+        width: 25%
       }
       .arrow {
         font-size: 32px;
@@ -567,16 +769,29 @@ warm green
 
       .boiler-room {
         width: 60%;
-        padding: 6px;
-        padding-top: 12px;
         display: flex;
         flex-wrap: wrap;
       }
+      .column {
+        flex: 0 0 30%;
+
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+
+      }
+      .column.narrow {
+        flex: 0 0 7%;
+      }
+      .column.value {
+        height: 48px;
+      }
       .pump {
-        height: 80px;
-        width: 80px;
+        height: 95px;
+        width: 60px;
         font-size: 14px;
-        border: 3px solid #cc0033;
+        border: 3px solid #00BFFF;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -588,16 +803,17 @@ warm green
         margin: 3px;
       }
       .buffer {
-        height: 60px;
-        width: 60px;
-        border: 3px solid #3300cc;
+        height: 45px;
+        width: 45px;
+        border: 3px solid #cccccc;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
         background-color: #f0f0f0;
         padding: 3px;
-        margin-right: 6px;
+        margin: 3px;
+
         border-radius: 50%;
       }
       .buffer-lines {
@@ -616,17 +832,41 @@ warm green
       .boiler {
         height: 80px;
         width: 50px;
-        border: 3px solid #333366;
+        border: 3px solid #00BFFF;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
         background-color: #aa6666;
         padding: 3px;
-        margin: 0;
+        margin: 3px;
+        margin-right: 6px;
+
         border-radius: 10%;
         background: linear-gradient(to bottom, #00cc00 50%,#66ccff 50%);
       }
+
+      .buffer-arrow {
+        height: 80px;
+      }
+      .boiler-arrow {
+        height: 95px;
+      }
+      .pumpLines {
+        height: auto;
+        width: 65px;
+        border: 3px solid transparent;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: start;
+        align-items: center;
+        background-color: transparent;
+        padding: 0px;
+        margin: 3px;
+        border-radius: 10%;
+      }
+
+
 
       .radiator-line {
         padding: 0px;
@@ -668,7 +908,6 @@ warm green
     `;
   }
 }
-customElements.define("Jhome-panel", JhomePanel);
 
 
 

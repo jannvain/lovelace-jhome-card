@@ -1,3 +1,7 @@
+var $b79acf566e58a081$exports = {};
+$b79acf566e58a081$exports = "\n";
+
+
 /**
  * @license
  * Copyright 2019 Google LLC
@@ -8114,14 +8118,45 @@ customElements.define('svg-icon', $6bfe5a9db287f795$var$SvgIcon);
 
 
 const $d038626f16c01c34$var$faultColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#e300ff`;
-const $d038626f16c01c34$var$alarmColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#d0342c`; // #ff0033
-const $d038626f16c01c34$var$warningColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#FFBF00`;
+const $d038626f16c01c34$var$alarmColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#d0342caf`; // #ff0033
+const $d038626f16c01c34$var$warningColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#FFBF007f`;
 const $d038626f16c01c34$var$normalColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#eeeeee`;
 const $d038626f16c01c34$var$normalTextColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#bbbbbb`;
 const $d038626f16c01c34$var$houseOutlineColor = "#909090";
 const $d038626f16c01c34$var$hocolor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#a0a0a0`;
 const $d038626f16c01c34$var$hocolor2 = $bf8c91c99931eb07$export$ce8efb75507ffb31`#909090`;
+const $d038626f16c01c34$var$activeColor = "#00BFFF";
 const $d038626f16c01c34$var$celciusSymbol = "C";
+const $d038626f16c01c34$var$boilerColorLL = "#6892db";
+const $d038626f16c01c34$var$boilerColorL = "#c1d3f0";
+const $d038626f16c01c34$var$boilerColor = "#ef9490";
+const $d038626f16c01c34$var$boilerColorH = "#fb8984";
+const $d038626f16c01c34$var$boilerColorHH = "#f9423a";
+const $d038626f16c01c34$var$boilerLL = 30;
+const $d038626f16c01c34$var$boilerL = 40;
+const $d038626f16c01c34$var$boilerH = 50;
+const $d038626f16c01c34$var$boilerHH = 55;
+const $d038626f16c01c34$var$boilerLimits = [
+    $d038626f16c01c34$var$boilerLL,
+    $d038626f16c01c34$var$boilerL,
+    $d038626f16c01c34$var$boilerH,
+    $d038626f16c01c34$var$boilerHH
+];
+const $d038626f16c01c34$var$boilerColors = [
+    $d038626f16c01c34$var$boilerColorLL,
+    $d038626f16c01c34$var$boilerColorL,
+    $d038626f16c01c34$var$boilerColor,
+    $d038626f16c01c34$var$boilerColorH,
+    $d038626f16c01c34$var$boilerColorHH
+];
+const $d038626f16c01c34$var$getLimitedColor = (val, limits, colors)=>{
+    let index = 2;
+    if (val < $d038626f16c01c34$var$boilerLimits[0]) index = 0;
+    else if (val < $d038626f16c01c34$var$boilerLimits[1]) index = 1;
+    else if (val > $d038626f16c01c34$var$boilerLimits[3]) index = 4;
+    else if (val > $d038626f16c01c34$var$boilerLimits[2]) index = 3;
+    return $d038626f16c01c34$var$boilerColors[index];
+};
 /*  &#8451;  &#x2103;
 650 lines
 
@@ -8138,11 +8173,13 @@ fa3232 fff546 ff9600 ff64c8 46ff64
 cold blue 81acf5 6892db
 warm green
 81c24f background-image: linear-gradient(red, yellow);
+
+# 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
 */ const $d038626f16c01c34$var$tempLL = 19;
 const $d038626f16c01c34$var$tempL = 20;
 const $d038626f16c01c34$var$tempH = 22;
 const $d038626f16c01c34$var$tempHH = 23;
-class $d038626f16c01c34$var$JhomePanel extends $b4a62fb26779262a$export$cf8e90db1f38da15 {
+class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export$cf8e90db1f38da15 {
     static get properties() {
         return {
             hass: {
@@ -8201,42 +8238,45 @@ class $d038626f16c01c34$var$JhomePanel extends $b4a62fb26779262a$export$cf8e90db
             else if (val > $d038626f16c01c34$var$tempH) return warningColorClass;
             else return normalColorClass;
         };
-        const showValue = (val, unit)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n                                <div class="sensor ${getColor(val)}">\n                                  <div class="sensor-value">\n                                    ${val}\n                                  </div>\n                                  <div class="sensor-unit">\n                                    ${unit}\n                                  </div>\n                                </div>`
+        const showValue = (val, step)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="sensor-value ${getColor(Math.round(val / 0.5) * 0.5)}">\n        ${Math.round(val / step) * step}\n      </div>\n    `
         ;
-        const sensorValue = (val, side, unit)=>$1f59074a6657ecd6$export$91100b3ec196ccd`<div class="room ${side}"><div class="sensor-name">${val.name}</div>${showValue(this.hass.states[val.entityId].state, unit)} ${showValue(this.hass.states[val.entityId].state, unit)} ${showValue(this.hass.states[val.entityId].state, unit)}</div>`
+        const showValueWithUnit = (val, unit, step)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n                                <div class="sensor">\n                                  ${showValue(val, step)}\n                                  <div class="sensor-unit">\n                                    ${unit.length > 10 ? $1f59074a6657ecd6$export$91100b3ec196ccd`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>` : $1f59074a6657ecd6$export$91100b3ec196ccd`${unit}`}\n                                  </div>\n                                </div>`
+        ;
+        const showTempValue = (val)=>showValueWithUnit(val, $54ad27cb74fefc69$export$5e469a98da2b19d5, 0.5)
+        ;
+        const showHumValue = (val)=>showValueWithUnit(val, $54ad27cb74fefc69$export$389f6a098027e982, 1)
+        ;
+        const getState = (state)=>this.hass.states[state.entityId].state
+        ;
+        const sensorValue = (val, side, unit)=>$1f59074a6657ecd6$export$91100b3ec196ccd`<div class="room ${side}"><div class="sensor-name">${val.name}</div>${showTempValue(this.hass.states[val.entityId].state, unit)} ${showHumValue(this.hass.states[val.entityId].state, unit)}</div>`
         ;
         const sensorValue2 = (val)=>$1f59074a6657ecd6$export$91100b3ec196ccd`<div class="sensor-value">${this.hass.states[val.entityId].state}</div>`
         ;
         const drawRoofOutline = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      ${showAlarmStatus(1)}\n\n\n      <div class="roof">\n        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">\n          <polyline points="0,500 500,8, 1000,500" style="fill:transparent;stroke:${$d038626f16c01c34$var$houseOutlineColor};stroke-width:14" />\n        </svg>\n      </div>\n    `
         ;
         const radiatorLine = (floor, line, pfix, extra)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="radiator-line ${extra}">\n        ${this.panel.config.roomTemperatures.filter((a)=>a.line === line && a.floor === floor
-            ).map((n)=>sensorValue(n, (line === 1 ? "left" : "right") + pfix, $d038626f16c01c34$var$celciusSymbol)
+            ).map((n)=>sensorValue(n, (line === 1 ? "left" : "right") + pfix, $54ad27cb74fefc69$export$5e469a98da2b19d5)
             )}\n      </div>\n  `
         ;
+        const SupplyReturnLines = (supplyTemp, returnTemp, icon, dir)=>{
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="supply-return-lines">\n\n        <div class="column value" >\n          <div> ${getState(this.panel.config.entities.supplyLine)}</div>\n          <div> ${getState(this.panel.config.entities.returnLine)}</div>\n\n\n        </div>\n\n        <div class="column" >\n          <font color=${$d038626f16c01c34$var$boilerColorH}>\n            <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$6d4794dce85c7176} ></svg-icon>\n          </font>\n          <font color=${$d038626f16c01c34$var$boilerColorL}>\n            <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$cd415f089bfcf586} ></svg-icon>\n          </font>\n        </div>\n\n        <div class="column" >\n          <div class="item" >\n            <font color="black">\n              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n            </font>\n          </div>\n        </div>\n\n\n      </div>\n      `;
+        };
         const bufferLines = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="buffer-lines">\n        <div class="item-line" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>\n        <div class="arrow red">&larr;</div>\n        <div class="item-line" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>\n        <div class="arrow blue">&rarr;</div>\n      </div>\n    `
         ;
-        const buffer = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="buffer">\n        <div class="item" >Buffer</div>\n      </div>\n    `
+        const buffer = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="buffer">\n        <div class="item" >\n          <font color="#cccccc">\n            <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$349e454f7ea16f04} ></svg-icon>\n          </font>\n        </div>\n      </div>\n    `
         ;
-        const pump = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="pump">\n        <div class="item" >Pump</div>\n        <div class="item" >${sensorValue2(this.panel.config.entities.pumpPower)} w</div>\n        <div class="item" >Heating</div>\n      </div>\n    `
+        const pump = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="pump">\n      <div class="item" >Heating</div>\n      <div class="item" >\n        <font color=${$d038626f16c01c34$var$activeColor}>\n          <svg-icon type="mdi" size="28" path=${$54ad27cb74fefc69$export$97383223cdf7c255} ></svg-icon>\n        </font>\n      </div>\n        <div class="item" >${showValueWithUnit(getState(this.panel.config.entities.pumpPower), "w", 1)}</div>\n      </div>\n    `
+        ;
+        const pumpLines = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n    <div class="pumpLines">\n\n\n      <div class="item half" >\n        <font color=${$d038626f16c01c34$var$boilerColorH}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$419cefae0d0da274} ></svg-icon>\n        </font>\n      </div>\n      <div class="item half" >\n        <font color=${$d038626f16c01c34$var$boilerColorLL}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$2dfd1f1a4233bde2} ></svg-icon>\n        </font>\n      </div>\n\n      <div class="item half" > <div> ${getState(this.panel.config.entities.brineInLine)}</div>\n\n</div>\n      <div class="item half" ><div> ${getState(this.panel.config.entities.brineOutLine)}</div></div>\n\n    </div>\n  `
         ;
         const boiler = ()=>{
-            /*
-
-cold blue 81acf5 6892db
-warm green
-81c24f background-image: linear-gradient(red, yellow);
-*/ let topColor = "#81c24f";
-            let bottomColor = "#81c24f";
-            console.log(this.panel.config.entities.waterTop, this.panel.config.entities.waterCharge);
             const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
             const valc = this.hass.states[this.panel.config.entities.waterCharge.entityId].state;
-            if (valt < 36) topColor = "#6892db";
-            else if (valt < 40) topColor = "#6892db";
-            if (valc < 36) bottomColor = "#6892db";
-            else if (valc < 40) bottomColor = "#6892db";
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="boiler" style="background-image: linear-gradient(${topColor}, ${bottomColor});">\n        <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)}</div>\n        <div class="item" >\n          <font color="white">\n            <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$8e24d9e2e2f2a445} ></svg-icon>\n          </font>\n        </div>\n        <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)}</div>\n      </div>\n    `;
+            const topColor = $d038626f16c01c34$var$getLimitedColor(valt, $d038626f16c01c34$var$boilerLimits, $d038626f16c01c34$var$boilerColors);
+            const bottomColor = $d038626f16c01c34$var$getLimitedColor(valc, $d038626f16c01c34$var$boilerLimits, $d038626f16c01c34$var$boilerColors);
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n\n      <div class="boiler" style="background-image: linear-gradient(${topColor}, ${bottomColor});">\n        <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)}</div>\n        <div class="item" >\n          <font color="#666666">\n            <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$8e24d9e2e2f2a445} ></svg-icon>\n          </font>\n        </div>\n        <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)}</div>\n      </div>\n    `;
         };
-        const drawHouse = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="house">\n        <div class="floors">\n\n          <div class="floor second">\n           <div class="radiator-lines">\n              ${radiatorLine(2, 1, "")}\n              ${radiatorLine(2, 2, "")}\n            </div>\n          </div>\n\n          <div class="floor first">\n            <div class="radiator-lines">\n              ${radiatorLine(1, 1, "")}\n              ${radiatorLine(1, 2, "")}\n            </div>\n          </div>\n\n          <div class="floor basement">\n\n            <div class="boiler-room">\n              ${bufferLines()}\n              ${buffer()}\n              ${boiler()}\n              ${pump()}\n            </div> <!-- BOILER ROOM -->\n\n            <div class="radiator-lines basement">\n              <!-- ${radiatorLine(0, 1, " b")} -->\n              ${radiatorLine(0, 2, " b", "basement")}\n            </div>\n\n          </div> <!-- BASEMENT -->\n\n        </div> <!-- FLOORS -->\n\n      </div> <!-- HOUSE -->\n    `
+        const drawHouse = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="house">\n        <div class="floors">\n\n          <div class="floor second">\n           <div class="radiator-lines">\n              ${radiatorLine(2, 1, "")}\n              ${radiatorLine(2, 2, "")}\n            </div>\n          </div>\n\n          <div class="floor first">\n            <div class="radiator-lines">\n              ${radiatorLine(1, 1, "")}\n              ${radiatorLine(1, 2, "")}\n            </div>\n          </div>\n\n          <div class="floor basement">\n\n            <div class="boiler-room">\n\n              <div class="column">\n                ${pump()}\n                ${pumpLines()}\n              </div>\n\n              <div class="column narrow">\n\n\n                <div class="buffer-arrow">\n                  <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 2 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalColor}>\n                    <svg-icon type="mdi" size="20 " path=${$54ad27cb74fefc69$export$6d4794dce85c7176} ></svg-icon>\n                  </font>\n                </div>\n                <div class="boiler-arrow">\n                  <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 3 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalColor}>\n                    <svg-icon type="mdi" size="20 " path=${$54ad27cb74fefc69$export$6d4794dce85c7176} ></svg-icon>\n                  </font>\n                </div>\n              </div>\n\n              <div class="column">\n                ${buffer()}\n                ${boiler()}\n\n              </div>\n\n\n\n              <div class="column">\n                ${SupplyReturnLines(35, 32, $54ad27cb74fefc69$export$e6181a0a553014e8)}\n                ${SupplyReturnLines(32, 29, $54ad27cb74fefc69$export$850067d4c9dddf98)}\n              </div>\n\n\n            </div> <!-- BOILER ROOM -->\n\n            <div class="radiator-lines basement">\n              <!-- ${radiatorLine(0, 1, " b")} -->\n              ${radiatorLine(0, 2, " b", "basement")}\n            </div>\n\n          </div> <!-- BASEMENT -->\n\n        </div> <!-- FLOORS -->\n\n      </div> <!-- HOUSE -->\n    `
         ;
         const drawDoors = (doors1)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="doors">\n        ${doors1.map((d)=>"Door"
             )}\n      </div>\n    `
@@ -8271,10 +8311,48 @@ warm green
         ))}\n        ${drawCorner("b")}\n        ${drawCenter("b", "")}\n        ${drawCorner("b")}\n      </div> `;
     }
     static get styles() {
-        return $bf8c91c99931eb07$export$ce8efb75507ffb31`\n\n      :host {\n        background-color: transparent;\n        padding: 0px;\n        display: block;\n      }\n\n      .main{\n        width: 100%;\n        height: 100vh;\n        display: flex;\n        flex-wrap: wrap;\n      }\n      .tcor, .bcor, .msid {\n        flex: 15%;\n      }\n      .tcen, .mcen, .bcen {\n        flex: 70%;\n        position: relative;\n      }\n\n      .tcor, .tcen {\n        height: 20vh;\n      }\n\n      .mcen, .msid {\n        height: 65vh;\n      }\n\n      .bcor, .bcen {\n        height: 15vh;\n      }\n\n      .house {\n        padding: 0;\n        width: 100%;\n        margin: 0 auto;\n      }\n\n      .fault{\n        background-color: ${$d038626f16c01c34$var$faultColor};\n        color: #ffffff;\n\n      }\n      .alarm {\n        background-color: ${$d038626f16c01c34$var$alarmColor};\n        color: #ffffff;\n      }\n\n      .warning {\n        background-color: ${$d038626f16c01c34$var$warningColor};\n        color: #333333;\n      }\n\n      .normal {\n        background-color: ${$d038626f16c01c34$var$normalColor};\n        color: #333333;\n      }\n      .floors {\n        padding: 0;\n        border: 6px solid ${$d038626f16c01c34$var$hocolor2};\n      }\n      .roof {\n        width: 100%;\n        height: 100%;\n        padding: 0;\n        margin:0;\n        border: 0;\n        background-color: transparent;\n      }\n      #svg-roof {\n        vertical-align:top;\n      }\n      .floor {\n        padding: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: transparent;\n\n      }\n      .floor:nth-child(even) {\n        /*background-color: #fefefe;*/\n\n      }\n      .floor:nth-child(odd) {\n        /*background-color: #f0f0f0;*/\n      }\n      .floor.first {\n        border-bottom: 6px solid ${$d038626f16c01c34$var$hocolor2};\n      }\n      .floor.second {\n        border-bottom: 6px solid ${$d038626f16c01c34$var$hocolor2};\n      }\n      .floor.virtual {\n        border-bottom: 6px solid ${$d038626f16c01c34$var$hocolor2};\n      }\n      .floor.basement {\n          justify-content: space-between;\n          flex-wrap: nowrap;\n      }\n\n      .item {\n        flex: 100%;\n        text-align: center;\n      }\n      .item-line {\n        flex: 50%;\n        text-align: center;\n      }\n      .item-ground {\n        text-align: center;\n        flex: 50%;\n      }\n      .item-ground.left {\n        text-align: right;\n        flex: 0 0 55%;\n        padding-right: 6px;\n      }\n      .item-ground.right {\n        text-align: left;\n        padding-left: 6px;\n        flex: 0 0 35%;\n      }\n\n      .ground {\n        padding: 3px;\n        display: flex;\n        flex-wrap: wrap;\n        width: 75%;\n        margin: 0 auto;\n      }\n\n      .ground-lines {\n        /*height: 80px;*/\n        width: 100%;\n        border: 0px solid #3333ff;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: transparent;\n        padding: 3px;\n        margin: 3px;\n      }\n\n      .room {\n        height: 5vh;\n        padding: 3px;\n        margin: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: space-between;\n      }\n      .room.left {\n        border-bottom: 3px solid ${$d038626f16c01c34$var$hocolor};\n        border-right: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n      .room.right {\n        border-bottom: 3px solid ${$d038626f16c01c34$var$hocolor};\n        border-left: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n\n      .room.left:first-child {\n        border-right: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n      .room.left:last-child {\n        border-bottom: 0;\n        border-right: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n      .room.right:first-child {\n        border-left: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n      .room.right:last-child {\n        border-bottom: 0;\n        border-left: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n\n      .room.left.b:last-child {\n        border-bottom: 3px solid ${$d038626f16c01c34$var$hocolor};\n        border-right: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n\n      .room.right.b:last-child {\n        border-bottom: 3px solid ${$d038626f16c01c34$var$hocolor};\n        border-left: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n\n      .sensor {\n        display: flex;\n        flex-wrap: wrap;\n        font-weight: bold;\n        width: 50%\n        text-align: right;\n        border-radius: 6px;\n        padding: 3px;\n        flex: 0 1 20%;\n      }\n      .sensor-unit {\n          flex: 100%;\n          text-align: center;\n      }\n      .sensor-value {\n        flex: 100%;\n        text-align: center;\n      }\n\n      .sensor-name {\n        display: inline-block;\n        width: 20%\n      }\n      .arrow {\n        font-size: 32px;\n        flex: 50%;\n      }\n      .arrow.red {\n        color: red;\n      }\n      .arrow.blue {\n        color: blue;\n      }\n\n      .arrowv {\n        font-size: 32px;\n      }\n      .arrowv.red {\n        color: red;\n        text-align: right;\n        flex: 60%;\n      }\n      .arrowv.blue {\n        color: blue;\n        text-align: left;\n        flex: 40%;\n      }\n\n      .boiler-room {\n        width: 60%;\n        padding: 6px;\n        padding-top: 12px;\n        display: flex;\n        flex-wrap: wrap;\n      }\n      .pump {\n        height: 80px;\n        width: 80px;\n        font-size: 14px;\n        border: 3px solid #cc0033;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        border-radius: 6px;\n        background-color: #f0f0f0;\n        /*flex: 0 0 25%;*/\n        padding: 3px;\n        margin: 3px;\n      }\n      .buffer {\n        height: 60px;\n        width: 60px;\n        border: 3px solid #3300cc;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #f0f0f0;\n        padding: 3px;\n        margin-right: 6px;\n        border-radius: 50%;\n      }\n      .buffer-lines {\n        height: 70px;\n        width: 70px;\n        border: 0px solid #3333ff;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #transparent;\n        padding: 3px;\n        margin: 0;\n      }\n\n      .boiler {\n        height: 80px;\n        width: 50px;\n        border: 3px solid #333366;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #aa6666;\n        padding: 3px;\n        margin: 0;\n        border-radius: 10%;\n        background: linear-gradient(to bottom, #00cc00 50%,#66ccff 50%);\n      }\n\n      .radiator-line {\n        padding: 0px;\n        flex: 0 0 40%;\n        margin: 0px;\n      }\n      .radiator-lines{\n        display: flex;\n        justify-content: space-between;\n        width: 100%;\n      }\n      .radiator-lines.basement{\n        display: flex;\n        justify-content: space-between;\n        width: 41.5%;\n      }\n      .radiator-line.basement{\n        padding: 0px;\n        flex: 0 0 100%;\n        margin: 0px;\n      }\n      .alarm-status {\n        position: absolute;\n        width: 150px;\n        top: 24px;\n        left: calc(50% - 75px);\n        display: flex;\n        justify-content: center;\n        flex-wrap: wrap;\n      }\n      .alarm-text{\n        text-align: center;\n        width: 140px;\n\n      }\n     alarm-icon {\n        transform: scale(2);\n      }\n    `;
+        return $bf8c91c99931eb07$export$ce8efb75507ffb31`\n\n      * {\n       box-sizing: border-box;\n      }\n      :host {\n        background-color: transparent;\n        padding: 0px;\n        display: block;\n      }\n\n      .main{\n        width: 100%;\n        height: 100vh;\n        display: flex;\n        flex-wrap: wrap;\n      }\n      .tcor, .bcor, .msid {\n        flex: 15%;\n      }\n      .tcen, .mcen, .bcen {\n        flex: 70%;\n        position: relative;\n      }\n\n      .tcor, .tcen {\n        height: 20vh;\n      }\n\n      .mcen, .msid {\n        height: 65vh;\n      }\n\n      .bcor, .bcen {\n        height: 15vh;\n      }\n\n      .house {\n        padding: 0;\n        width: 100%;\n        margin: 0 auto;\n      }\n\n      .fault{\n        background-color: ${$d038626f16c01c34$var$faultColor} !important;\n        color: #eeeeee !important;\n\n      }\n      .alarm {\n        background-color: ${$d038626f16c01c34$var$alarmColor} !important;\n        color: #eeeeee !important;\n      }\n\n      .warning {\n        background-color: ${$d038626f16c01c34$var$warningColor} !important;\n        color: #666666 !important;\n\n      }\n\n      .normal {\n        background-color: transparent;\n        color: #333333;\n      }\n      .floors {\n        padding: 0;\n        border: 6px solid ${$d038626f16c01c34$var$hocolor2};\n      }\n      .roof {\n        width: 100%;\n        height: 100%;\n        padding: 0;\n        margin:0;\n        border: 0;\n        background-color: transparent;\n      }\n      #svg-roof {\n        vertical-align:top;\n      }\n      .floor {\n        padding: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: transparent;\n\n      }\n      .floor:nth-child(even) {\n        /*background-color: #fefefe;*/\n\n      }\n      .floor:nth-child(odd) {\n        /*background-color: #f0f0f0;*/\n      }\n      .floor.first {\n        border-bottom: 6px solid ${$d038626f16c01c34$var$hocolor2};\n      }\n      .floor.second {\n        border-bottom: 6px solid ${$d038626f16c01c34$var$hocolor2};\n      }\n      .floor.virtual {\n        border-bottom: 6px solid ${$d038626f16c01c34$var$hocolor2};\n      }\n      .floor.basement {\n          justify-content: space-between;\n          flex-wrap: nowrap;\n      }\n\n\n      .item {\n        flex: 100%;\n        text-align: center;\n      }\n      .itemb {\n        text-align: center;\n\n      }\n      .item.twoCol {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        align-content: space-between;\n        flex 10%;\n      }\n      .itemb.twoCol {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        align-content: space-between;\n        flex 10%;\n      }\n      .item.half {\n        flex: 0 0 50%;\n        text-align: center;\n      }\n      .item.left {\n        text-align: left;\n\n      }\n      .item.right {\n        text-align: right;\n\n      }\n      .item-line {\n        flex: 50%;\n        text-align: center;\n      }\n      .item-ground {\n        text-align: center;\n        flex: 50%;\n      }\n      .item-ground.left {\n        text-align: right;\n        flex: 0 0 55%;\n        padding-right: 6px;\n      }\n      .item-ground.right {\n        text-align: left;\n        padding-left: 6px;\n        flex: 0 0 35%;\n      }\n\n      .ground {\n        padding: 3px;\n        display: flex;\n        flex-wrap: wrap;\n        width: 75%;\n        margin: 0 auto;\n      }\n\n      .ground-lines {\n        /*height: 80px;*/\n        width: 100%;\n        border: 0px solid #3333ff;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: transparent;\n        padding: 3px;\n        margin: 3px;\n      }\n\n      .supply-return-lines {\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n\n      .room {\n        min-height: 5vh;\n        padding: 3px;\n        margin: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: space-between;\n      }\n      .room.left {\n        border-bottom: 3px solid ${$d038626f16c01c34$var$hocolor};\n        border-right: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n      .room.right {\n        border-bottom: 3px solid ${$d038626f16c01c34$var$hocolor};\n        border-left: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n\n      .room.left:first-child {\n        border-right: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n      .room.left:last-child {\n        border-bottom: 0;\n        border-right: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n      .room.right:first-child {\n        border-left: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n      .room.right:last-child {\n        border-bottom: 0;\n        border-left: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n\n      .room.left.b:last-child {\n        border-bottom: 3px solid ${$d038626f16c01c34$var$hocolor};\n        border-right: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n\n      .room.right.b:last-child {\n        border-bottom: 3px solid ${$d038626f16c01c34$var$hocolor};\n        border-left: 3px solid ${$d038626f16c01c34$var$hocolor};\n      }\n\n      .sensor {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        font-weight: bold;\n        width: 50%\n        text-align: right;\n        border-radius: 6px;\n        padding: 1px;\n        flex: 0 1 20%;\n      }\n      .sensor-unit {\n          text-align: center;\n          border-radius: 50%;\n          width: 20px;\n          height: 20px;\n          color: #666666;\n      }\n      .sensor-value {\n        text-align: center;\n        font-size: 1.3em;\n        color: #444444;\n        padding-left: 2px;\n        padding-right: 2px;\n        border-radius: 3px;\n\n      }\n\n      .sensor-name {\n        display: inline-block;\n        font-weight: bold;\n        width: 25%\n      }\n      .arrow {\n        font-size: 32px;\n        flex: 50%;\n      }\n      .arrow.red {\n        color: red;\n      }\n      .arrow.blue {\n        color: blue;\n      }\n\n      .arrowv {\n        font-size: 32px;\n      }\n      .arrowv.red {\n        color: red;\n        text-align: right;\n        flex: 60%;\n      }\n      .arrowv.blue {\n        color: blue;\n        text-align: left;\n        flex: 40%;\n      }\n\n      .boiler-room {\n        width: 60%;\n        display: flex;\n        flex-wrap: wrap;\n      }\n      .column {\n        flex: 0 0 30%;\n\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n\n      }\n      .column.narrow {\n        flex: 0 0 7%;\n      }\n      .column.value {\n        height: 48px;\n      }\n      .pump {\n        height: 95px;\n        width: 60px;\n        font-size: 14px;\n        border: 3px solid #00BFFF;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        border-radius: 6px;\n        background-color: #f0f0f0;\n        /*flex: 0 0 25%;*/\n        padding: 3px;\n        margin: 3px;\n      }\n      .buffer {\n        height: 45px;\n        width: 45px;\n        border: 3px solid #cccccc;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #f0f0f0;\n        padding: 3px;\n        margin: 3px;\n\n        border-radius: 50%;\n      }\n      .buffer-lines {\n        height: 70px;\n        width: 70px;\n        border: 0px solid #3333ff;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #transparent;\n        padding: 3px;\n        margin: 0;\n      }\n\n      .boiler {\n        height: 80px;\n        width: 50px;\n        border: 3px solid #00BFFF;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #aa6666;\n        padding: 3px;\n        margin: 3px;\n        margin-right: 6px;\n\n        border-radius: 10%;\n        background: linear-gradient(to bottom, #00cc00 50%,#66ccff 50%);\n      }\n\n      .buffer-arrow {\n        height: 80px;\n      }\n      .boiler-arrow {\n        height: 95px;\n      }\n      .pumpLines {\n        height: auto;\n        width: 65px;\n        border: 3px solid transparent;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: start;\n        align-items: center;\n        background-color: transparent;\n        padding: 0px;\n        margin: 3px;\n        border-radius: 10%;\n      }\n\n\n\n      .radiator-line {\n        padding: 0px;\n        flex: 0 0 40%;\n        margin: 0px;\n      }\n      .radiator-lines{\n        display: flex;\n        justify-content: space-between;\n        width: 100%;\n      }\n      .radiator-lines.basement{\n        display: flex;\n        justify-content: space-between;\n        width: 41.5%;\n      }\n      .radiator-line.basement{\n        padding: 0px;\n        flex: 0 0 100%;\n        margin: 0px;\n      }\n      .alarm-status {\n        position: absolute;\n        width: 150px;\n        top: 24px;\n        left: calc(50% - 75px);\n        display: flex;\n        justify-content: center;\n        flex-wrap: wrap;\n      }\n      .alarm-text{\n        text-align: center;\n        width: 140px;\n\n      }\n     alarm-icon {\n        transform: scale(2);\n      }\n    `;
     }
 }
-customElements.define("Jhome-panel", $d038626f16c01c34$var$JhomePanel);
+
+
+
+class $a3f1fe9da0d2b21d$export$e5100f060ab434f7 extends $b4a62fb26779262a$export$cf8e90db1f38da15 {
+    static get properties() {
+        return {
+            // hass: {},
+            _config: {
+                state: true
+            }
+        };
+    }
+    setConfig(config) {
+        this._config = config;
+    }
+    static styles = $bf8c91c99931eb07$export$ce8efb75507ffb31`\n            .table {\n                display: table;\n            }\n            .row {\n                display: table-row;\n            }\n            .cell {\n                display: table-cell;\n                padding: 0.5em;\n            }\n        `;
+    render() {
+        return $1f59074a6657ecd6$export$91100b3ec196ccd`\n            <form class="table">\n                <div class="row">\n                    <label class="label cell" for="header">Header:</label>\n                    <input\n                        @change="${this.handleChangedEvent}"\n                        class="value cell" id="header" value="${this._config.header}"></input>\n                </div>\n                <div class="row">\n                    <label class="label cell" for="entity">Entity:</label>\n                    <input\n                        @change="${this.handleChangedEvent}"\n                        class="value cell" id="entity" value="${this._config.entity}"></input>\n                </div>\n            </form>\n        `;
+    }
+    handleChangedEvent(changedEvent) {
+        // this._config is readonly, copy needed
+        var newConfig = Object.assign({
+        }, this._config);
+        if (changedEvent.target.id == "header") newConfig.header = changedEvent.target.value;
+        else if (changedEvent.target.id == "entity") newConfig.entity = changedEvent.target.value;
+        const messageEvent = new CustomEvent("config-changed", {
+            detail: {
+                config: newConfig
+            },
+            bubbles: true,
+            composed: true
+        });
+        this.dispatchEvent(messageEvent);
+    }
+}
+
+
+customElements.define("jhome-panel", $d038626f16c01c34$export$32b580a2acebf3c9);
+customElements.define("jhome-panel-editor", $a3f1fe9da0d2b21d$export$e5100f060ab434f7);
 
 
 //# sourceMappingURL=panel.js.map
