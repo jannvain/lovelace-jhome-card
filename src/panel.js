@@ -348,12 +348,12 @@ export class JhomePanel extends LitElement {
       return html`
         <div class="pump-power-target" >
           <div class="buffer-arrow">
-            <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 2 ? activeColor : normalColor}>
+            <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? activeColor : normalColor}>
               <svg-icon type="mdi" size="20 " path=${mdiArrowRightThick} ></svg-icon>
             </font>
           </div>
           <div class="boiler-arrow">
-            <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 3 ? activeColor : normalColor}>
+            <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? activeColor : normalColor}>
               <svg-icon type="mdi" size="20 " path=${mdiArrowRightThick} ></svg-icon>
             </font>
           </div>
