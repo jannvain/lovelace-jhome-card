@@ -1,13 +1,11 @@
 
-import css from "bundle-text:./card.css";
+import styles from './panel.styles';
 
 import {
   LitElement,
   html,
   css
 } from 'lit';
-
-
 
 import {
   mdiAccount,
@@ -17,10 +15,15 @@ import {
   mdiWaterBoiler,
   mdiWaterBoilerOff,
   mdiHeatPump,
+  mdiHeatPumpOutline,
   mdiArrowDownThick,
   mdiArrowUpThick,
+  mdiArrowDownThin,
+  mdiArrowUpThin,
   mdiArrowRightThick,
   mdiArrowLeftThick,
+  mdiArrowRightBold,
+  mdiArrowLeftBold,
   mdiArrowRight,
     mdiArrowleft,
   mdiApproximatelyEqualBox,
@@ -34,87 +37,139 @@ import {
   mdiWeatherCloudy,
   mdiWeatherPartlyCloudy,
   mdiRadiatorOff,
-  mdiArrowLeft
+  mdiArrowLeft,
+  mdiMoleculeCo2,
+  mdiNumeric,
+  mdiPump,
+  mdiArrowRightBoldBoxOutline
 } from '@mdi/js';
 
 import '@jamescoyle/svg-icon';
 
-
 const faultColor = css`#e300ff`;
-const alarmColor = css`#d0342caf`; // #ff0033
-const warningColor = css`#FFBF007f`;
+const faultTextColor = css`#eeeeee`;
+
+const alarmColor = css`#d0342cdf`; // #ff0033
+const alarmTextColor = css`#eeeeee`; // #ff0033
+
+const warningColor = css`#FFBF00df`;
+const warningTextColor = css`#666666`;
+
 const normalColor = css`#eeeeee`;
 const normalTextColor = css`#bbbbbb`;
-
 const houseOutlineColor = "#909090";
 const hocolor = css`#a0a0a0`;
 const hocolor2 = css`#909090`;
-
-const activeColor = "#00BFFF";
-
-const celciusSymbol = "C";
+const activeColor = css`#00BFFF`;
+const inActiveColor = css`#FFFFFF22`;
+const offColor = css`#cccccc`;
 
 const boilerColorLL = "#6892db";
 const boilerColorL = "#c1d3f0";
-
 const boilerColor = "#ef9490";
 const boilerColorH = "#fb8984";
 const boilerColorHH = "#f9423a";
+
+const pumpLineInColor = "#ffcccc";
+const pumpLineOutColor = "#b3d9ff";
+
+
+const powerColorLL = "#6892db";
+const powerColorL = "#c1d3f0";
+const powerColor = "#ef9490";
+const powerColorH = "#fdb8b5";
+const powerColorHH = "#fa726b";
 
 const boilerLL = 30;
 const boilerL = 40;
 const boilerH = 50;
 const boilerHH = 55;
 
+const powerLL = -50;
+const powerL = -1;
+const powerH = 1500;
+const powerHH = 2000;
+
 const boilerLimits = [boilerLL, boilerL, boilerH, boilerHH];
 const boilerColors = [boilerColorLL, boilerColorL, boilerColor, boilerColorH, boilerColorHH]
+
+const powerLimits = [powerLL, powerL, powerH, powerHH];
+const powerColors = [powerColorLL, powerColorL, powerColor, powerColorH, powerColorHH]
+
+const currentThemeName = "dark"
+const theme = {
+  light: {
+    backgroundColor: css`#fefefe`,
+    houseColor: css`#ffffff22`,
+    unitColor: css`#666666`,
+    valueColor: css`#333333`,
+    titleColor: css`#333333`
+
+  },
+  dark: {
+    backgroundColor: css`#113366`,
+    houseColor: css`#ffffff22`,
+    unitColor: css`#dddddd`,
+    valueColor: css`#efefef`,
+    valueDarkColor: css`#333333`,
+
+    titleColor: css`#efefef`
+
+  }
+
+}
+
+const currentTheme = theme[currentThemeName];
 
 const getLimitedColor = (val, limits, colors) => {
   let index = 2;
 
-  if (val < boilerLimits[0]) {
+  if (val < limits[0]) {
     index = 0;
   }
-  else if (val < boilerLimits[1]) {
+  else if (val < limits[1]) {
     index = 1;
   }
-  else if (val > boilerLimits[3]) {
+  else if (val > limits[3]) {
     index = 4;
   }
-  else if (val > boilerLimits[2]) {
+  else if (val > limits[2]) {
     index = 3;
   }
-  return boilerColors[index];
+  return colors[index];
 };
 
-
-
-
-/*  &#8451;  &#x2103;
-650 lines
-
-521
-
-000000 333333 666666 999999 cccccc ffffff
-
-002878 5064b4 c8ecfa 008c3c
-
-alarm
-fa3232 fff546 ff9600 ff64c8 46ff64
-
-
-cold blue 81acf5 6892db
-warm green
-81c24f background-image: linear-gradient(red, yellow);
-
-# 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
-*/
-
 const tempLL =19;
-
 const tempL = 20;
-const tempH = 22;
-const tempHH = 23;
+const tempH = 23;
+const tempHH = 24;
+
+const valueLimits = {
+  temperature: {
+    LL: tempLL,
+    L: tempL,
+    H: tempH,
+    HH: tempHH
+  },
+  percentage: {
+    LL: 10,
+    L: 20,
+    H: 40,
+    HH: 60
+  },
+  co2: {
+    LL: tempLL,
+    L: tempL,
+    H: tempH,
+    HH: tempHH
+  },
+  power: {
+    LL: -10,
+    L: -1,
+    H: 1500,
+    HH: 2000
+  },
+};
 
 export class JhomePanel extends LitElement {
   static get properties() {
@@ -136,9 +191,6 @@ export class JhomePanel extends LitElement {
 
     console.log(this.panel);
 
-
-    const temps = this.panel.config.roomTemperatures.reduce((res, cur) => res + '<div style="color:#2222ff">' + cur.name + '</div>', '')
-
     const x = 200;
     const svgWidth = 1000;
     const svgHeight = 500;
@@ -159,27 +211,39 @@ export class JhomePanel extends LitElement {
     const normalColorClass = "normal";
 
 
+    const secondFloorLine1Count = this.panel.config.rooms.filter(a => a.line === 1 && a.floor === 2).length;
+    const secondFloorLine2Count = this.panel.config.rooms.filter(a => a.line === 2 && a.floor === 2).length;
+    const firstFloorLine1Count = this.panel.config.rooms.filter(a => a.line === 1 && a.floor === 1).length;
+    const firstFloorLine2Count = this.panel.config.rooms.filter(a => a.line === 2 && a.floor === 1).length;
+    const basementLine1Count = this.panel.config.rooms.filter(a => a.line === 1 && a.floor === 0).length;
+    const basementLine2Count = this.panel.config.rooms.filter(a => a.line === 2 && a.floor === 0).length;
+
+
     const doors = [
       { floor: 0, side: "left" },
       { floor: 1, side: "left" },
       { floor: 1, side: "right" },
     ]
-    const getColor = (val) => {
+    const getColor = (val, limitTarget) => {
 
-      if (!val) {
-        return faultColorClass;
-
+      if (!limitTarget) {
+        return normalColorClass
       }
-      else if (val < tempLL) {
+      const limits = valueLimits[limitTarget];
+
+      if (typeof val !== "number") {
+        return faultColorClass;
+      }
+      else if (val < limits.LL) {
         return alarmColorClass;
       }
-      else if (val < tempL) {
+      else if (val < limits.L) {
         return warningColorClass;
       }
-      else if (val > tempHH) {
+      else if (val > limits.HH) {
         return alarmColorClass;
       }
-      else if (val > tempH) {
+      else if (val > limits.H) {
         return warningColorClass;
       }
       else {
@@ -191,15 +255,15 @@ export class JhomePanel extends LitElement {
 
 
 
-    const showValue = (val, step, dec) => html`
-      <div class="sensor-value ${getColor(Math.round(val/0.5)*0.5)}">
+    const showValue = (val, step, dec, limitTarget) => html`
+      <div class="sensor-value ${getColor(Math.round(val/0.5)*0.5, limitTarget)}">
         ${(Math.round(val/step)*step).toFixed(dec)}
       </div>
     `;
 
-    const showValueWithUnit = (val, unit, step, dec) => html`
+    const showValueWithUnit = (val, unit, step, dec, limitTarget) => html`
                                 <div class="sensor">
-                                  ${showValue(val, step, dec)}
+                                  ${showValue(val, step, dec, limitTarget)}
                                   <div class="sensor-unit">
                                     ${ unit.length > 10
                                       ? html`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>`
@@ -210,61 +274,110 @@ export class JhomePanel extends LitElement {
                                 </div>`;
 
 
-    const showTempValue = (val) => showValueWithUnit(val, mdiTemperatureCelsius, 0.5, 1);
-    const showHumValue = (val) => showValueWithUnit(val, mdiWaterPercent, 1, 0);
+    const showSensorValue = (val, unit) => {
 
+      if (unit === "C") {
+        return showValueWithUnit(val, mdiTemperatureCelsius, 0.5, 1, "temperature");
+      }
+      else if (unit === "%") {
+        return showValueWithUnit(val, mdiWaterPercent, 1, 0, "percentage");
+      }
+      else if (unit === CO2) {
+        return showValueWithUnit(val, mdiMoleculeCo2, 1, 0, "co2");
+      }
+      else {
+        return showValueWithUnit(val, mdiNumeric, 1, 0, "power");
+      }
+    }
 
     const getState = (state) => this.hass.states[state.entityId].state;
+    const getStateFromId = (id) => this.hass.states[id].state;
 
-    const sensorValue = (val, side, unit) => html`<div class="room ${side}"><div class="sensor-name">${val.name}</div>${showTempValue(this.hass.states[val.entityId].state, unit)} ${showHumValue(this.hass.states[val.entityId].state, unit)}</div>`;
     const sensorValue2 = (val) => html`<div class="sensor-value">${this.hass.states[val.entityId].state}</div>`;
+    const sensorValueBoiler = (val) => html`<div class="sensor-value dark">${this.hass.states[val.entityId].state}</div>`;
+
+    const showSensor = (sensor) => {
+      return html`
+        ${ showSensorValue(this.hass.states[sensor.id].state, sensor.unit) }
+      `;
+    }
+
+    const showRoom = (room, side) => {
+      return html`
+        <div class="room ${side}">
+          <div class="sensor-name">${room.name}</div>
+          ${room.entities.map(s => showSensor(s))}
+        </div>
+      `;
+    }
 
     const drawRoofOutline = () => html`
       ${showAlarmStatus(1)}
 
-
       <div class="roof">
         <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">
-          <polyline points="0,500 500,8, 1000,500" style="fill:transparent;stroke:${houseOutlineColor};stroke-width:14" />
+          <polyline points="0,500 500,8, 1000,500" style="fill:${currentTheme.houseColor};stroke:${houseOutlineColor};stroke-width:14" />
         </svg>
       </div>
     `;
 
     const radiatorLine = (floor, line, pfix, extra) => html`
       <div class="radiator-line ${extra}">
-        ${this.panel.config.roomTemperatures.filter(a => a.line === line && a.floor === floor).map(n => sensorValue(n, (line === 1 ? "left" : "right") + pfix, mdiTemperatureCelsius))}
+        ${this.panel.config.rooms.filter(a => a.line === line && a.floor === floor).map(room => showRoom(room, (line === 1 ? "left" : "right") + pfix))}
       </div>
   `;
 
-    const SupplyReturnLines = (supplyTemp, returnTemp, icon, dir) => {
+    const radiatorLines = (floor) => {
 
+      const pfix = floor === 0 ? " b" : "";
+      const extra = floor === 0 ? " basement" : "";
 
       return html`
-        <div class="supply-return-lines">
-        <div class="column value" >
-          <div> ${getState(this.panel.config.entities.supplyLine)}</div>
-          <div> ${getState(this.panel.config.entities.returnLine)}</div>
+        <div class="radiator-lines${extra}">
+          ${floor !== 0 ? radiatorLine(floor, 1, pfix, extra) : null}
+          ${radiatorLine(floor, 2, pfix, extra)}
         </div>
+      `;
+    }
 
-        <div class="column" >
-          <font color=${boilerColorH}>
-            <svg-icon type="mdi" size="24" path=${mdiArrowRightThick} ></svg-icon>
-          </font>
-          <font color=${boilerColorLL}>
-            <svg-icon type="mdi" size="24" path=${mdiArrowLeftThick} ></svg-icon>
-          </font>
-        </div>
 
-        <div class="column" >
-          <div class="item" >
-            <font color="black">
-              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>
+    const supplyAndReturnLine = (c) => {
+
+      const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [10, 20]);
+      const iconColor = (deviceOn === "active" ? activeColor : normalTextColor);
+
+      return html`
+          <div class="supply-return-line" >
+            <div class="column" >
+            <font color=${boilerColorH}>
+              <svg-icon type="mdi" size="24" path=${mdiArrowRightThick} ></svg-icon>
+            </font>
+            <font color=${boilerColorL}>
+              <svg-icon type="mdi" size="24" path=${mdiArrowLeftThick} ></svg-icon>
             </font>
           </div>
+
+          <div class="column value" >
+            <div> ${getStateFromId(c.supplyId)}</div>
+            <div> ${getStateFromId(c.returnId)}</div>
+          </div>
+
+          <div class="column" >
+            <div class="item" >
+              <font color=${iconColor}>
+                <svg-icon type="mdi" size="24" path=${c.type === "radiator" ? mdiRadiator : mdiHeatingCoil} ></svg-icon>
+              </font>
+            </div>
+          </div>
         </div>
+      `;
+    }
 
 
-      </div>
+    const SupplyReturnLines = () => {
+
+      return html`
+        ${this.panel.config.heatingCircuits.map(c => supplyAndReturnLine(c))}
       `;
     };
 
@@ -277,51 +390,79 @@ export class JhomePanel extends LitElement {
       </div>
     `;
 
-    const buffer = () => html`
-      <div class="buffer">
-        <div class="item" >
-          <font color="#cccccc">
-            <svg-icon type="mdi" size="24" path=${mdiApproximatelyEqualBox} ></svg-icon>
-          </font>
-        </div>
-      </div>
-    `;
 
 
+    // NIBE # 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
+    const getDeviceStatus = (currentValue, inActiveValues) => {
+      let status = "inactive";
 
-    const pump = () => html`
-      <div class="pump" @click="${this._handlePumpClick}">
-      <div class="item" >
-        <font color=${activeColor}>
-          <svg-icon type="mdi" size="28" path=${mdiHeatPump} ></svg-icon>
-        </font>
-      </div>
-        <div class="item" >${showValueWithUnit(getState(this.panel.config.entities.pumpPower)*0.001, "kWh", 0.1, 1)}</div>
-      </div>
-    `;
+      if (!inActiveValues.includes(parseInt(currentValue))) {
+        status = "active";
+      }
+      return status;
+    }
+
+
 
     const pumpLines = () => html`
     <div class="pumpLines">
 
-
       <div class="item half" >
-        <font color=${boilerColorH}>
-          <svg-icon type="mdi" size="24" path=${mdiArrowUpThick} ></svg-icon>
+        <font color=${pumpLineInColor}>
+          <svg-icon type="mdi" size="24" path=${mdiArrowUpThin} ></svg-icon>
         </font>
       </div>
       <div class="item half" >
-        <font color=${boilerColorLL}>
-          <svg-icon type="mdi" size="24" path=${mdiArrowDownThick} ></svg-icon>
+        <font color=${pumpLineOutColor}>
+          <svg-icon type="mdi" size="24" path=${mdiArrowDownThin} ></svg-icon>
         </font>
       </div>
 
-      <div class="item half" > <div> ${getState(this.panel.config.entities.brineInLine)}</div>
+      <div class="item half" > <div> ${showValue(getState(this.panel.config.entities.brineInLine), 0.5, 1, "")}</div>
 
 </div>
-      <div class="item half" ><div> ${getState(this.panel.config.entities.brineOutLine)}</div></div>
+      <div class="item half" ><div> ${showValue(getState(this.panel.config.entities.brineOutLine), 0.5, 1, "")}</div></div>
 
     </div>
   `;
+
+
+    const pump = () => {
+
+      const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [10]);
+      const icon = (deviceOn === "active" ? mdiHeatPump : mdiHeatPumpOutline);
+      const iconColor = (deviceOn === "active" ? activeColor : normalTextColor);
+      const power = deviceOn === "active" ? getState(this.panel.config.entities.pumpPower) * 0.001 : 0;
+
+      return html`
+
+      <div class="device ${deviceOn}" >
+        <div class="pump" @click="${this._handlePumpClick}">
+        <div class="item" style="color: ${iconColor}">
+            <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>
+        </div>
+        <div class="item" >${showValueWithUnit(power, "kWh", 0.1, 1, "power")}</div>
+        </div>
+      </div>
+    `;
+    }
+
+    const buffer = () => {
+
+      const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [10, 20]);
+      const icon = (deviceOn === "active" ? mdiWaterBoiler : mdiWaterBoilerOff);
+      const iconColor = (deviceOn === "active" ? activeColor : normalTextColor);
+
+      return html`
+        <div class="device ${deviceOn} round" >
+          <div class="buffer">
+            <div class="item" style="color: ${iconColor}">
+              <svg-icon type="mdi" size="24" path=${mdiApproximatelyEqualBox} ></svg-icon>
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
     const boiler = () => {
 
@@ -330,60 +471,50 @@ export class JhomePanel extends LitElement {
       const topColor = getLimitedColor(valt, boilerLimits, boilerColors)
       const bottomColor = getLimitedColor(valc, boilerLimits, boilerColors)
 
-      return html`
+      const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [10, 30]);
+      const icon = (deviceOn === "active" ? mdiWaterBoiler : mdiWaterBoilerOff);
+      const iconColor = (deviceOn === "active" ? activeColor : inActiveColor);
 
-      <div class="boiler" style="background-image: linear-gradient(${topColor}, ${bottomColor});">
-        <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)}</div>
-        <div class="item" >
-          <font color="#666666">
-            <svg-icon type="mdi" size="24" path=${mdiWaterBoiler} ></svg-icon>
-          </font>
+      return html`
+      <div class="device ${deviceOn} roundish" style="background-image: linear-gradient(${topColor}, ${bottomColor});">
+        <div class="boiler">
+          <div class="item" >${sensorValueBoiler(this.panel.config.entities.waterTop)}</div>
+          <div class="item withbackground" style="color: ${iconColor}">
+            <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>
+          </div>
+          <div class="item" >${sensorValueBoiler(this.panel.config.entities.waterCharge)}</div>
         </div>
-        <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)}</div>
       </div>
     `;
     }
-    const pumpPowerTargetIndicator = () => {
 
+    const pumpPowerTargetIndicator = () => {
       return html`
         <div class="pump-power-target" >
-          <div class="buffer-arrow">
-            <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? activeColor : normalColor}>
-              <svg-icon type="mdi" size="20 " path=${mdiArrowRightThick} ></svg-icon>
-            </font>
+          <div class="buffer-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? activeColor : inActiveColor}">
+            <svg-icon type="mdi" size="28" path=${mdiArrowRightBold} ></svg-icon>
           </div>
-          <div class="boiler-arrow">
-            <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? activeColor : normalColor}>
-              <svg-icon type="mdi" size="20 " path=${mdiArrowRightThick} ></svg-icon>
-            </font>
+          <div class="boiler-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? activeColor : inActiveColor}">
+            <svg-icon type="mdi" size="28" path=${mdiArrowRightBold} ></svg-icon>
           </div>
         </div>
       `;
     }
-
 
     const drawHouse = () => html`
       <div class="house">
         <div class="floors">
 
           <div class="floor second">
-           <div class="radiator-lines">
-              ${radiatorLine(2, 1, "")}
-              ${radiatorLine(2, 2, "")}
-            </div>
+            ${radiatorLines(2)}
           </div>
 
           <div class="floor first">
-            <div class="radiator-lines">
-              ${radiatorLine(1, 1, "")}
-              ${radiatorLine(1, 2, "")}
-            </div>
+            ${radiatorLines(1)}
           </div>
 
           <div class="floor basement">
-
             <div class="boiler-room">
-
               <div class="column-pump">
                 ${pump()}
                 ${pumpLines()}
@@ -396,23 +527,19 @@ export class JhomePanel extends LitElement {
               <div class="column-boiler">
                 ${buffer()}
                 ${boiler()}
-
               </div>
-
-
 
               <div class="column">
-                ${SupplyReturnLines(35, 32, mdiRadiator)}
-                ${SupplyReturnLines(32, 29, mdiHeatingCoil)}
+                ${SupplyReturnLines()}
               </div>
-
 
             </div> <!-- BOILER ROOM -->
 
-            <div class="radiator-lines basement">
-              <!-- ${radiatorLine(0, 1, " b")} -->
+            ${radiatorLines(0)}
+
+            <!-- div class="radiator-lines basement">
               ${radiatorLine(0, 2, " b", "basement")}
-            </div>
+            </div -->
 
           </div> <!-- BASEMENT -->
 
@@ -434,7 +561,6 @@ export class JhomePanel extends LitElement {
         ${drawDoors(doors)}
       </div>
     `;
-
 
     const showAlarmStatus = (status2) => {
 
@@ -467,10 +593,6 @@ export class JhomePanel extends LitElement {
     }
 
     return html`
-
-
-
-
       <div class="main">
         ${drawCorner("t")}
         ${drawCenter("t", drawRoofOutline())}
@@ -485,14 +607,13 @@ export class JhomePanel extends LitElement {
   }
 
   static get styles() {
-    return css`
+    return [ styles, css`
 
       * {
        box-sizing: border-box;
       }
       :host {
         background-color: transparent;
-        padding: 0px;
         display: block;
       }
 
@@ -501,7 +622,11 @@ export class JhomePanel extends LitElement {
         height: 100vh;
         display: flex;
         flex-wrap: wrap;
+        background-color: ${currentTheme.backgroundColor};
+        padding-top: 12px;
+
       }
+
       .tcor, .bcor, .msid {
         flex: 15%;
       }
@@ -524,30 +649,11 @@ export class JhomePanel extends LitElement {
 
       .house {
         padding: 0;
-        width: 100%;
+        width: 96%;
         margin: 0 auto;
+        background-color: ${currentTheme.houseColor};
       }
 
-      .fault{
-        background-color: ${faultColor} !important;
-        color: #eeeeee !important;
-
-      }
-      .alarm {
-        background-color: ${alarmColor} !important;
-        color: #eeeeee !important;
-      }
-
-      .warning {
-        background-color: ${warningColor} !important;
-        color: #666666 !important;
-
-      }
-
-      .normal {
-        background-color: transparent;
-        color: #333333;
-      }
       .floors {
         padding: 0;
         border: 6px solid ${hocolor2};
@@ -570,13 +676,6 @@ export class JhomePanel extends LitElement {
         background-color: transparent;
 
       }
-      .floor:nth-child(even) {
-        /*background-color: #fefefe;*/
-
-      }
-      .floor:nth-child(odd) {
-        /*background-color: #f0f0f0;*/
-      }
       .floor.first {
         border-bottom: 6px solid ${hocolor2};
       }
@@ -591,10 +690,64 @@ export class JhomePanel extends LitElement {
           flex-wrap: nowrap;
       }
 
+      .device {
+        border: 3px solid #cccccc;
+        border-radius: 3px;
+      }
+
+      .device.round {
+        border-radius: 50%;
+      }
+      .device.roundish {
+        border-radius: 25%;
+      }
+
+
+      .device.active {
+        border-color: ${activeColor};
+
+      }
+      .device.off {
+        border-color: ${offColor};
+
+      }
+      .device.inactive {
+        border-color: ${normalTextColor};
+      }
+
+      .fault{
+        background-color: ${faultColor} !important;
+        color: ${faultTextColor} !important;
+
+      }
+      .alarm {
+        background-color: ${alarmColor} !important;
+        color: ${alarmTextColor} !important;
+      }
+
+      .warning {
+        background-color: ${warningColor} !important;
+        color: ${warningTextColor} !important;
+
+      }
+
+      .normal {
+        background-color: transparent !important;
+        color: #333333;
+      }
+
 
       .item {
         flex: 100%;
         text-align: center;
+        color: ${currentTheme.valueColor};
+      }
+      .item.withbackground {
+        flex: 0 1;
+
+        background-color: #00000055;
+        border-radius: 50%;
+        padding: 2px;
       }
       .itemb {
         text-align: center;
@@ -619,6 +772,7 @@ export class JhomePanel extends LitElement {
       .item.half {
         flex: 0 0 50%;
         text-align: center;
+        font-size: 13px;
       }
       .item.left {
         text-align: left;
@@ -668,7 +822,7 @@ export class JhomePanel extends LitElement {
         margin: 3px;
       }
 
-      .supply-return-lines {
+      .supply-return-line {
         width: 100%;
         display: flex;
         flex-wrap: wrap;
@@ -688,26 +842,31 @@ export class JhomePanel extends LitElement {
         justify-content: space-between;
       }
       .room.left {
-        border-bottom: 3px solid ${hocolor};
+        border-top: 3px solid ${hocolor};
         border-right: 3px solid ${hocolor};
       }
       .room.right {
-        border-bottom: 3px solid ${hocolor};
+        border-top: 3px solid ${hocolor};
         border-left: 3px solid ${hocolor};
       }
 
       .room.left:first-child {
+        border-top: 0px solid ${hocolor};
         border-right: 3px solid ${hocolor};
       }
       .room.left:last-child {
-        border-bottom: 0;
+        border-top: 3px solid ${hocolor};
+        border-bottom: 3px solid ${hocolor};
+
         border-right: 3px solid ${hocolor};
       }
       .room.right:first-child {
+        border-top: 0px solid ${hocolor};
         border-left: 3px solid ${hocolor};
       }
       .room.right:last-child {
-        border-bottom: 0;
+        border-top: 3px solid ${hocolor};
+        border-bottom: 3px solid ${hocolor};
         border-left: 3px solid ${hocolor};
       }
 
@@ -741,22 +900,29 @@ export class JhomePanel extends LitElement {
           border-radius: 50%;
           width: auto;
           height: 20px;
-          color: #666666;
+          color: ${currentTheme.unitColor};
       }
       .sensor-value {
         text-align: center;
         font-size: 1.3em;
-        color: #555555;
+        color: ${currentTheme.valueColor};
         padding-left: 2px;
         padding-right: 2px;
         border-radius: 3px;
+
+      }
+      .sensor-value.dark {
+        color: ${currentTheme.valueDarkColor};
+        font-weight: 500;
 
       }
 
       .sensor-name {
         display: inline-block;
         font-weight: bold;
-        width: 25%
+        width: 25%;
+        color: ${currentTheme.titleColor};
+
       }
       .arrow {
         font-size: 32px;
@@ -788,7 +954,8 @@ export class JhomePanel extends LitElement {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-around;
-
+        padding-left: 3px;
+        padding-top: 6px;
       }
       .column {
         flex: 0 0 30%;
@@ -808,38 +975,35 @@ export class JhomePanel extends LitElement {
         justify-content: center;
         align-items: flex-start;
         padding-top: 3px
+        color: ${currentTheme.valueColor};
+
 
       }
       .column-boiler {
-        flex: 0 0 50px;
-
+        flex: 0 0 45px;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: flex-start;
-        padding-top: 3px
 
       }
       .column.narrow {
         flex: 0 0 7%;
-
-
       }
       .column.value {
         height: 48px;
+        color: ${currentTheme.titleColor};
       }
       .pump {
         cursor: pointer;
         height: 95px;
         width: 60px;
         font-size: 14px;
-        border: 3px solid #00BFFF;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
         border-radius: 3px;
-        background-color: #f0f0f0;
         /*flex: 0 0 25%;*/
         padding: 3px;
       }
@@ -873,12 +1037,10 @@ export class JhomePanel extends LitElement {
       .buffer {
         height: 45px;
         width: 50px;
-        border: 3px solid #cccccc;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        background-color: #f0f0f0;
         padding: 3px;
         border-radius: 50%;
       }
@@ -896,27 +1058,18 @@ export class JhomePanel extends LitElement {
       }
 
       .boiler {
-        height: 80px;
-        width: 50px;
-        border: 3px solid #00BFFF;
+        height: 100%;
+        width: 100%;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        background-color: #aa6666;
-        padding: 3px;
-
-        border-top-left-radius: 30%;
-        border-top-right-radius: 30%;
-        border-bottom-left-radius: 30%;
-        border-bottom-right-radius: 30%;
-        background: linear-gradient(to bottom, #00cc00 50%,#66ccff 50%);
       }
 
 
       .pumpLines {
         height: auto;
-        width: 60px;
+        width: 66px;
         border: 1px dashed #999999;
         display: flex;
         flex-wrap: wrap;
@@ -924,11 +1077,11 @@ export class JhomePanel extends LitElement {
         align-items: center;
         background-color: transparent;
         padding: 0px;
-        margin: 3px;
-        border-radius: 10%;
+        margin-top: 3px;
+        margin-bottom: 3px;
+
+        border-radius: 3px;
       }
-
-
 
       .radiator-line {
         padding: 0px;
@@ -943,7 +1096,7 @@ export class JhomePanel extends LitElement {
       .radiator-lines.basement{
         display: flex;
         justify-content: space-between;
-        width: 41.5%;
+        width: 40%;
       }
       .radiator-line.basement{
         padding: 0px;
@@ -967,7 +1120,7 @@ export class JhomePanel extends LitElement {
      alarm-icon {
         transform: scale(2);
       }
-    `;
+    `];
   }
 }
 
