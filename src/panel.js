@@ -57,9 +57,9 @@ const warningTextColor = css`#666666`;
 
 const normalColor = css`#eeeeee`;
 const normalTextColor = css`#bbbbbb`;
-const houseOutlineColor = "#909090";
-const hocolor = css`#a0a0a0`;
-const hocolor2 = css`#909090`;
+const houseOutlineColor = "#90909066";
+const hocolor = css`#a0a0a099`;
+const hocolor2 = css`#90909066`;
 const activeColor = css`#00BFFF`;
 const inActiveColor = css`#FFFFFF22`;
 const offColor = css`#cccccc`;
