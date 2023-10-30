@@ -465,30 +465,45 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "JhomePanel", ()=>JhomePanel
 );
-var _cardCss = require("bundle-text:./card.css");
-var _cardCssDefault = parcelHelpers.interopDefault(_cardCss);
+var _panelStyles = require("./panel.styles");
+var _panelStylesDefault = parcelHelpers.interopDefault(_panelStyles);
 var _lit = require("lit");
 var _js = require("@mdi/js");
 var _svgIcon = require("@jamescoyle/svg-icon");
 const faultColor = _lit.css`#e300ff`;
-const alarmColor = _lit.css`#d0342caf`; // #ff0033
-const warningColor = _lit.css`#FFBF007f`;
+const faultTextColor = _lit.css`#eeeeee`;
+const alarmColor = _lit.css`#d0342cdf`; // #ff0033
+const alarmTextColor = _lit.css`#eeeeee`; // #ff0033
+const warningColor = _lit.css`#FFBF00df`;
+const warningTextColor = _lit.css`#666666`;
 const normalColor = _lit.css`#eeeeee`;
 const normalTextColor = _lit.css`#bbbbbb`;
-const houseOutlineColor = "#909090";
-const hocolor = _lit.css`#a0a0a0`;
-const hocolor2 = _lit.css`#909090`;
-const activeColor = "#00BFFF";
-const celciusSymbol = "C";
+const houseOutlineColor = "#90909066";
+const hocolor = _lit.css`#a0a0a099`;
+const hocolor2 = _lit.css`#90909066`;
+const activeColor = _lit.css`#00BFFF`;
+const inActiveColor = _lit.css`#FFFFFF22`;
+const offColor = _lit.css`#cccccc`;
 const boilerColorLL = "#6892db";
 const boilerColorL = "#c1d3f0";
 const boilerColor = "#ef9490";
 const boilerColorH = "#fb8984";
 const boilerColorHH = "#f9423a";
+const pumpLineInColor = "#ffcccc";
+const pumpLineOutColor = "#b3d9ff";
+const powerColorLL = "#6892db";
+const powerColorL = "#c1d3f0";
+const powerColor = "#ef9490";
+const powerColorH = "#fdb8b5";
+const powerColorHH = "#fa726b";
 const boilerLL = 30;
 const boilerL = 40;
 const boilerH = 50;
 const boilerHH = 55;
+const powerLL = -50;
+const powerL = -1;
+const powerH = 1500;
+const powerHH = 2000;
 const boilerLimits = [
     boilerLL,
     boilerL,
@@ -502,36 +517,76 @@ const boilerColors = [
     boilerColorH,
     boilerColorHH
 ];
+const powerLimits = [
+    powerLL,
+    powerL,
+    powerH,
+    powerHH
+];
+const powerColors = [
+    powerColorLL,
+    powerColorL,
+    powerColor,
+    powerColorH,
+    powerColorHH
+];
+const currentThemeName = "dark";
+const theme = {
+    light: {
+        backgroundColor: _lit.css`#fefefe`,
+        houseColor: _lit.css`#ffffff22`,
+        unitColor: _lit.css`#666666`,
+        valueColor: _lit.css`#333333`,
+        titleColor: _lit.css`#333333`
+    },
+    dark: {
+        backgroundColor: _lit.css`#113366`,
+        houseColor: _lit.css`#ffffff22`,
+        unitColor: _lit.css`#dddddd`,
+        valueColor: _lit.css`#efefef`,
+        valueDarkColor: _lit.css`#333333`,
+        titleColor: _lit.css`#efefef`
+    }
+};
+const currentTheme = theme[currentThemeName];
 const getLimitedColor = (val, limits, colors)=>{
     let index = 2;
-    if (val < boilerLimits[0]) index = 0;
-    else if (val < boilerLimits[1]) index = 1;
-    else if (val > boilerLimits[3]) index = 4;
-    else if (val > boilerLimits[2]) index = 3;
-    return boilerColors[index];
+    if (val < limits[0]) index = 0;
+    else if (val < limits[1]) index = 1;
+    else if (val > limits[3]) index = 4;
+    else if (val > limits[2]) index = 3;
+    return colors[index];
 };
-/*  &#8451;  &#x2103;
-650 lines
-
-521
-
-000000 333333 666666 999999 cccccc ffffff
-
-002878 5064b4 c8ecfa 008c3c
-
-alarm
-fa3232 fff546 ff9600 ff64c8 46ff64
-
-
-cold blue 81acf5 6892db
-warm green
-81c24f background-image: linear-gradient(red, yellow);
-
-# 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
-*/ const tempLL = 19;
+const tempLL = 19;
 const tempL = 20;
-const tempH = 22;
-const tempHH = 23;
+const tempH = 23;
+const tempHH = 24;
+const valueLimits = {
+    temperature: {
+        LL: tempLL,
+        L: tempL,
+        H: tempH,
+        HH: tempHH
+    },
+    percentage: {
+        LL: 10,
+        L: 20,
+        H: 40,
+        HH: 60
+    },
+    co2: {
+        LL: tempLL,
+        L: tempL,
+        H: tempH,
+        HH: tempHH
+    },
+    power: {
+        LL: -10,
+        L: -1,
+        H: 1500,
+        HH: 2000
+    }
+};
 class JhomePanel extends _lit.LitElement {
     static get properties() {
         return {
@@ -555,8 +610,6 @@ class JhomePanel extends _lit.LitElement {
     }
     render() {
         console.log(this.panel);
-        const temps = this.panel.config.roomTemperatures.reduce((res, cur)=>res + '<div style="color:#2222ff">' + cur.name + '</div>'
-        , '');
         const x = 200;
         const svgWidth = 1000;
         const svgHeight = 500;
@@ -573,6 +626,18 @@ class JhomePanel extends _lit.LitElement {
         const alarmColorClass = "alarm";
         const warningColorClass = "warning";
         const normalColorClass = "normal";
+        const secondFloorLine1Count = this.panel.config.rooms.filter((a)=>a.line === 1 && a.floor === 2
+        ).length;
+        const secondFloorLine2Count = this.panel.config.rooms.filter((a)=>a.line === 2 && a.floor === 2
+        ).length;
+        const firstFloorLine1Count = this.panel.config.rooms.filter((a)=>a.line === 1 && a.floor === 1
+        ).length;
+        const firstFloorLine2Count = this.panel.config.rooms.filter((a)=>a.line === 2 && a.floor === 1
+        ).length;
+        const basementLine1Count = this.panel.config.rooms.filter((a)=>a.line === 1 && a.floor === 0
+        ).length;
+        const basementLine2Count = this.panel.config.rooms.filter((a)=>a.line === 2 && a.floor === 0
+        ).length;
         const doors = [
             {
                 floor: 0,
@@ -587,56 +652,109 @@ class JhomePanel extends _lit.LitElement {
                 side: "right"
             }, 
         ];
-        const getColor = (val)=>{
-            if (!val) return faultColorClass;
-            else if (val < tempLL) return alarmColorClass;
-            else if (val < tempL) return warningColorClass;
-            else if (val > tempHH) return alarmColorClass;
-            else if (val > tempH) return warningColorClass;
+        const getColor = (val, limitTarget)=>{
+            if (!limitTarget) return normalColorClass;
+            const limits = valueLimits[limitTarget];
+            if (typeof val !== "number") return faultColorClass;
+            else if (val < limits.LL) return alarmColorClass;
+            else if (val < limits.L) return warningColorClass;
+            else if (val > limits.HH) return alarmColorClass;
+            else if (val > limits.H) return warningColorClass;
             else return normalColorClass;
         };
-        const showValue = (val, step, dec)=>_lit.html`\n      <div class="sensor-value ${getColor(Math.round(val / 0.5) * 0.5)}">\n        ${(Math.round(val / step) * step).toFixed(dec)}\n      </div>\n    `
+        const showValue = (val, step, dec, limitTarget)=>_lit.html`\n      <div class="sensor-value ${getColor(Math.round(val / 0.5) * 0.5, limitTarget)}">\n        ${(Math.round(val / step) * step).toFixed(dec)}\n      </div>\n    `
         ;
-        const showValueWithUnit = (val, unit, step, dec)=>_lit.html`\n                                <div class="sensor">\n                                  ${showValue(val, step, dec)}\n                                  <div class="sensor-unit">\n                                    ${unit.length > 10 ? _lit.html`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>` : _lit.html`<div class="plain-unit">${unit}</div>`}\n                                  </div>\n                                </div>`
+        const showValueWithUnit = (val, unit, step, dec, limitTarget)=>_lit.html`\n                                <div class="sensor">\n                                  ${showValue(val, step, dec, limitTarget)}\n                                  <div class="sensor-unit">\n                                    ${unit.length > 10 ? _lit.html`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>` : _lit.html`<div class="plain-unit">${unit}</div>`}\n                                  </div>\n                                </div>`
         ;
-        const showTempValue = (val)=>showValueWithUnit(val, _js.mdiTemperatureCelsius, 0.5, 1)
-        ;
-        const showHumValue = (val)=>showValueWithUnit(val, _js.mdiWaterPercent, 1, 0)
-        ;
+        const showSensorValue = (val, unit)=>{
+            if (unit === "C") return showValueWithUnit(val, _js.mdiTemperatureCelsius, 0.5, 1, "temperature");
+            else if (unit === "%") return showValueWithUnit(val, _js.mdiWaterPercent, 1, 0, "percentage");
+            else if (unit === CO2) return showValueWithUnit(val, _js.mdiMoleculeCo2, 1, 0, "co2");
+            else return showValueWithUnit(val, _js.mdiNumeric, 1, 0, "power");
+        };
         const getState = (state)=>this.hass.states[state.entityId].state
         ;
-        const sensorValue = (val, side, unit)=>_lit.html`<div class="room ${side}"><div class="sensor-name">${val.name}</div>${showTempValue(this.hass.states[val.entityId].state, unit)} ${showHumValue(this.hass.states[val.entityId].state, unit)}</div>`
+        const getStateFromId = (id)=>this.hass.states[id].state
         ;
         const sensorValue2 = (val)=>_lit.html`<div class="sensor-value">${this.hass.states[val.entityId].state}</div>`
         ;
-        const drawRoofOutline = ()=>_lit.html`\n      ${showAlarmStatus(1)}\n\n\n      <div class="roof">\n        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">\n          <polyline points="0,500 500,8, 1000,500" style="fill:transparent;stroke:${houseOutlineColor};stroke-width:14" />\n        </svg>\n      </div>\n    `
+        const sensorValueBoiler = (val)=>_lit.html`<div class="sensor-value dark">${this.hass.states[val.entityId].state}</div>`
         ;
-        const radiatorLine = (floor, line, pfix, extra)=>_lit.html`\n      <div class="radiator-line ${extra}">\n        ${this.panel.config.roomTemperatures.filter((a)=>a.line === line && a.floor === floor
-            ).map((n)=>sensorValue(n, (line === 1 ? "left" : "right") + pfix, _js.mdiTemperatureCelsius)
+        const showSensor = (sensor)=>{
+            return _lit.html`\n        ${showSensorValue(this.hass.states[sensor.id].state, sensor.unit)}\n      `;
+        };
+        const showRoom = (room, side)=>{
+            return _lit.html`\n        <div class="room ${side}">\n          <div class="sensor-name">${room.name}</div>\n          ${room.entities.map((s)=>showSensor(s)
+            )}\n        </div>\n      `;
+        };
+        const drawRoofOutline = ()=>_lit.html`\n      ${showAlarmStatus(1)}\n\n      <div class="roof">\n        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">\n          <polyline points="0,500 500,8, 1000,500" style="fill:${currentTheme.houseColor};stroke:${houseOutlineColor};stroke-width:14" />\n        </svg>\n      </div>\n    `
+        ;
+        const radiatorLine = (floor, line, pfix, extra)=>_lit.html`\n      <div class="radiator-line ${extra}">\n        ${this.panel.config.rooms.filter((a)=>a.line === line && a.floor === floor
+            ).map((room)=>showRoom(room, (line === 1 ? "left" : "right") + pfix)
             )}\n      </div>\n  `
         ;
-        const SupplyReturnLines = (supplyTemp, returnTemp, icon, dir)=>{
-            return _lit.html`\n        <div class="supply-return-lines">\n        <div class="column value" >\n          <div> ${getState(this.panel.config.entities.supplyLine)}</div>\n          <div> ${getState(this.panel.config.entities.returnLine)}</div>\n        </div>\n\n        <div class="column" >\n          <font color=${boilerColorH}>\n            <svg-icon type="mdi" size="24" path=${_js.mdiArrowRightThick} ></svg-icon>\n          </font>\n          <font color=${boilerColorLL}>\n            <svg-icon type="mdi" size="24" path=${_js.mdiArrowLeftThick} ></svg-icon>\n          </font>\n        </div>\n\n        <div class="column" >\n          <div class="item" >\n            <font color="black">\n              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n            </font>\n          </div>\n        </div>\n\n\n      </div>\n      `;
+        const radiatorLines = (floor)=>{
+            const pfix = floor === 0 ? " b" : "";
+            const extra = floor === 0 ? " basement" : "";
+            return _lit.html`\n        <div class="radiator-lines${extra}">\n          ${floor !== 0 ? radiatorLine(floor, 1, pfix, extra) : null}\n          ${radiatorLine(floor, 2, pfix, extra)}\n        </div>\n      `;
+        };
+        const supplyAndReturnLine = (c)=>{
+            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
+                10,
+                20
+            ]);
+            const iconColor = deviceOn === "active" ? activeColor : normalTextColor;
+            return _lit.html`\n          <div class="supply-return-line" >\n            <div class="column" >\n            <font color=${boilerColorH}>\n              <svg-icon type="mdi" size="24" path=${_js.mdiArrowRightThick} ></svg-icon>\n            </font>\n            <font color=${boilerColorL}>\n              <svg-icon type="mdi" size="24" path=${_js.mdiArrowLeftThick} ></svg-icon>\n            </font>\n          </div>\n\n          <div class="column value" >\n            <div> ${getStateFromId(c.supplyId)}</div>\n            <div> ${getStateFromId(c.returnId)}</div>\n          </div>\n\n          <div class="column" >\n            <div class="item" >\n              <font color=${iconColor}>\n                <svg-icon type="mdi" size="24" path=${c.type === "radiator" ? _js.mdiRadiator : _js.mdiHeatingCoil} ></svg-icon>\n              </font>\n            </div>\n          </div>\n        </div>\n      `;
+        };
+        const SupplyReturnLines = ()=>{
+            return _lit.html`\n        ${this.panel.config.heatingCircuits.map((c)=>supplyAndReturnLine(c)
+            )}\n      `;
         };
         const bufferLines = ()=>_lit.html`\n      <div class="buffer-lines">\n        <div class="item-line" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>\n        <div class="arrow red">&larr;</div>\n        <div class="item-line" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>\n        <div class="arrow blue">&rarr;</div>\n      </div>\n    `
         ;
-        const buffer = ()=>_lit.html`\n      <div class="buffer">\n        <div class="item" >\n          <font color="#cccccc">\n            <svg-icon type="mdi" size="24" path=${_js.mdiApproximatelyEqualBox} ></svg-icon>\n          </font>\n        </div>\n      </div>\n    `
+        // NIBE # 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
+        const getDeviceStatus = (currentValue, inActiveValues)=>{
+            let status = "inactive";
+            if (!inActiveValues.includes(parseInt(currentValue))) status = "active";
+            return status;
+        };
+        const pumpLines = ()=>_lit.html`\n    <div class="pumpLines">\n\n      <div class="item half" >\n        <font color=${pumpLineInColor}>\n          <svg-icon type="mdi" size="24" path=${_js.mdiArrowUpThin} ></svg-icon>\n        </font>\n      </div>\n      <div class="item half" >\n        <font color=${pumpLineOutColor}>\n          <svg-icon type="mdi" size="24" path=${_js.mdiArrowDownThin} ></svg-icon>\n        </font>\n      </div>\n\n      <div class="item half" > <div> ${showValue(getState(this.panel.config.entities.brineInLine), 0.5, 1, "")}</div>\n\n</div>\n      <div class="item half" ><div> ${showValue(getState(this.panel.config.entities.brineOutLine), 0.5, 1, "")}</div></div>\n\n    </div>\n  `
         ;
-        const pump = ()=>_lit.html`\n      <div class="pump" @click="${this._handlePumpClick}">\n      <div class="item" >\n        <font color=${activeColor}>\n          <svg-icon type="mdi" size="28" path=${_js.mdiHeatPump} ></svg-icon>\n        </font>\n      </div>\n        <div class="item" >${showValueWithUnit(getState(this.panel.config.entities.pumpPower) * 0.001, "kWh", 0.1, 1)}</div>\n      </div>\n    `
-        ;
-        const pumpLines = ()=>_lit.html`\n    <div class="pumpLines">\n\n\n      <div class="item half" >\n        <font color=${boilerColorH}>\n          <svg-icon type="mdi" size="24" path=${_js.mdiArrowUpThick} ></svg-icon>\n        </font>\n      </div>\n      <div class="item half" >\n        <font color=${boilerColorLL}>\n          <svg-icon type="mdi" size="24" path=${_js.mdiArrowDownThick} ></svg-icon>\n        </font>\n      </div>\n\n      <div class="item half" > <div> ${getState(this.panel.config.entities.brineInLine)}</div>\n\n</div>\n      <div class="item half" ><div> ${getState(this.panel.config.entities.brineOutLine)}</div></div>\n\n    </div>\n  `
-        ;
+        const pump = ()=>{
+            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
+                10
+            ]);
+            const icon = deviceOn === "active" ? _js.mdiHeatPump : _js.mdiHeatPumpOutline;
+            const iconColor = deviceOn === "active" ? activeColor : normalTextColor;
+            const power = deviceOn === "active" ? getState(this.panel.config.entities.pumpPower) * 0.001 : 0;
+            return _lit.html`\n\n      <div class="device ${deviceOn}" >\n        <div class="pump" @click="${this._handlePumpClick}">\n        <div class="item" style="color: ${iconColor}">\n            <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>\n        </div>\n        <div class="item" >${showValueWithUnit(power, "kWh", 0.1, 1, "power")}</div>\n        </div>\n      </div>\n    `;
+        };
+        const buffer = ()=>{
+            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
+                10,
+                20
+            ]);
+            const icon = deviceOn === "active" ? _js.mdiWaterBoiler : _js.mdiWaterBoilerOff;
+            const iconColor = deviceOn === "active" ? activeColor : normalTextColor;
+            return _lit.html`\n        <div class="device ${deviceOn} round" >\n          <div class="buffer">\n            <div class="item" style="color: ${iconColor}">\n              <svg-icon type="mdi" size="24" path=${_js.mdiApproximatelyEqualBox} ></svg-icon>\n            </div>\n          </div>\n        </div>\n      `;
+        };
         const boiler = ()=>{
             const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
             const valc = this.hass.states[this.panel.config.entities.waterCharge.entityId].state;
             const topColor = getLimitedColor(valt, boilerLimits, boilerColors);
             const bottomColor = getLimitedColor(valc, boilerLimits, boilerColors);
-            return _lit.html`\n\n      <div class="boiler" style="background-image: linear-gradient(${topColor}, ${bottomColor});">\n        <div class="item" >${sensorValue2(this.panel.config.entities.waterTop)}</div>\n        <div class="item" >\n          <font color="#666666">\n            <svg-icon type="mdi" size="24" path=${_js.mdiWaterBoiler} ></svg-icon>\n          </font>\n        </div>\n        <div class="item" >${sensorValue2(this.panel.config.entities.waterCharge)}</div>\n      </div>\n    `;
+            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
+                10,
+                30
+            ]);
+            const icon = deviceOn === "active" ? _js.mdiWaterBoiler : _js.mdiWaterBoilerOff;
+            const iconColor = deviceOn === "active" ? activeColor : inActiveColor;
+            return _lit.html`\n      <div class="device ${deviceOn} roundish" style="background-image: linear-gradient(${topColor}, ${bottomColor});">\n        <div class="boiler">\n          <div class="item" >${sensorValueBoiler(this.panel.config.entities.waterTop)}</div>\n          <div class="item withbackground" style="color: ${iconColor}">\n            <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n          </div>\n          <div class="item" >${sensorValueBoiler(this.panel.config.entities.waterCharge)}</div>\n        </div>\n      </div>\n    `;
         };
         const pumpPowerTargetIndicator = ()=>{
-            return _lit.html`\n        <div class="pump-power-target" >\n          <div class="buffer-arrow">\n            <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? activeColor : normalColor}>\n              <svg-icon type="mdi" size="20 " path=${_js.mdiArrowRightThick} ></svg-icon>\n            </font>\n          </div>\n          <div class="boiler-arrow">\n            <font color=${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? activeColor : normalColor}>\n              <svg-icon type="mdi" size="20 " path=${_js.mdiArrowRightThick} ></svg-icon>\n            </font>\n          </div>\n        </div>\n      `;
+            return _lit.html`\n        <div class="pump-power-target" >\n          <div class="buffer-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? activeColor : inActiveColor}">\n            <svg-icon type="mdi" size="28" path=${_js.mdiArrowRightBold} ></svg-icon>\n          </div>\n          <div class="boiler-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? activeColor : inActiveColor}">\n            <svg-icon type="mdi" size="28" path=${_js.mdiArrowRightBold} ></svg-icon>\n          </div>\n        </div>\n      `;
         };
-        const drawHouse = ()=>_lit.html`\n      <div class="house">\n        <div class="floors">\n\n          <div class="floor second">\n           <div class="radiator-lines">\n              ${radiatorLine(2, 1, "")}\n              ${radiatorLine(2, 2, "")}\n            </div>\n          </div>\n\n          <div class="floor first">\n            <div class="radiator-lines">\n              ${radiatorLine(1, 1, "")}\n              ${radiatorLine(1, 2, "")}\n            </div>\n          </div>\n\n          <div class="floor basement">\n\n            <div class="boiler-room">\n\n              <div class="column-pump">\n                ${pump()}\n                ${pumpLines()}\n              </div>\n\n              <div class="column narrow">\n                ${pumpPowerTargetIndicator()}\n              </div>\n\n              <div class="column-boiler">\n                ${buffer()}\n                ${boiler()}\n\n              </div>\n\n\n\n              <div class="column">\n                ${SupplyReturnLines(35, 32, _js.mdiRadiator)}\n                ${SupplyReturnLines(32, 29, _js.mdiHeatingCoil)}\n              </div>\n\n\n            </div> <!-- BOILER ROOM -->\n\n            <div class="radiator-lines basement">\n              <!-- ${radiatorLine(0, 1, " b")} -->\n              ${radiatorLine(0, 2, " b", "basement")}\n            </div>\n\n          </div> <!-- BASEMENT -->\n\n        </div> <!-- FLOORS -->\n\n      </div> <!-- HOUSE -->\n    `
+        const drawHouse = ()=>_lit.html`\n      <div class="house">\n        <div class="floors">\n\n          <div class="floor second">\n            ${radiatorLines(2)}\n          </div>\n\n          <div class="floor first">\n            ${radiatorLines(1)}\n          </div>\n\n          <div class="floor basement">\n            <div class="boiler-room">\n              <div class="column-pump">\n                ${pump()}\n                ${pumpLines()}\n              </div>\n\n              <div class="column narrow">\n                ${pumpPowerTargetIndicator()}\n              </div>\n\n              <div class="column-boiler">\n                ${buffer()}\n                ${boiler()}\n              </div>\n\n              <div class="column">\n                ${SupplyReturnLines()}\n              </div>\n\n            </div> <!-- BOILER ROOM -->\n\n            ${radiatorLines(0)}\n\n            <!-- div class="radiator-lines basement">\n              ${radiatorLine(0, 2, " b", "basement")}\n            </div -->\n\n          </div> <!-- BASEMENT -->\n\n        </div> <!-- FLOORS -->\n\n      </div> <!-- HOUSE -->\n    `
         ;
         const drawDoors = (doors1)=>_lit.html`\n      <div class="doors">\n        ${doors1.map((d)=>"Door"
             )}\n      </div>\n    `
@@ -666,16 +784,17 @@ class JhomePanel extends _lit.LitElement {
             }
             return _lit.html`\n      <div class="alarm-status">\n        <font color=${color}>\n          <svg-icon type="mdi" size="48" path=${icon} ></svg-icon>\n        </font>\n        <div class="alarm-text">${aText}</div>\n\n      </div>\n    `;
         };
-        return _lit.html`\n\n\n\n\n      <div class="main">\n        ${drawCorner("t")}\n        ${drawCenter("t", drawRoofOutline())}\n        ${drawCorner("t")}\n        ${drawSide("m", doors.filter((d)=>d.side === "left"
+        return _lit.html`\n      <div class="main">\n        ${drawCorner("t")}\n        ${drawCenter("t", drawRoofOutline())}\n        ${drawCorner("t")}\n        ${drawSide("m", doors.filter((d)=>d.side === "left"
         ))}\n        ${drawCenter("m", drawHouse())}\n        ${drawSide("m", doors.filter((d)=>d.side === "right"
         ))}\n        ${drawCorner("b")}\n        ${drawCenter("b", "")}\n        ${drawCorner("b")}\n      </div> `;
     }
     static get styles() {
-        return _lit.css`\n\n      * {\n       box-sizing: border-box;\n      }\n      :host {\n        background-color: transparent;\n        padding: 0px;\n        display: block;\n      }\n\n      .main{\n        width: 100%;\n        height: 100vh;\n        display: flex;\n        flex-wrap: wrap;\n      }\n      .tcor, .bcor, .msid {\n        flex: 15%;\n      }\n      .tcen, .mcen, .bcen {\n        flex: 70%;\n        position: relative;\n      }\n\n      .tcor, .tcen {\n        height: 20vh;\n      }\n\n      .mcen, .msid {\n        height: 65vh;\n      }\n\n      .bcor, .bcen {\n        height: 15vh;\n      }\n\n      .house {\n        padding: 0;\n        width: 100%;\n        margin: 0 auto;\n      }\n\n      .fault{\n        background-color: ${faultColor} !important;\n        color: #eeeeee !important;\n\n      }\n      .alarm {\n        background-color: ${alarmColor} !important;\n        color: #eeeeee !important;\n      }\n\n      .warning {\n        background-color: ${warningColor} !important;\n        color: #666666 !important;\n\n      }\n\n      .normal {\n        background-color: transparent;\n        color: #333333;\n      }\n      .floors {\n        padding: 0;\n        border: 6px solid ${hocolor2};\n      }\n      .roof {\n        width: 100%;\n        height: 100%;\n        padding: 0;\n        margin:0;\n        border: 0;\n        background-color: transparent;\n      }\n      #svg-roof {\n        vertical-align:top;\n      }\n      .floor {\n        padding: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: transparent;\n\n      }\n      .floor:nth-child(even) {\n        /*background-color: #fefefe;*/\n\n      }\n      .floor:nth-child(odd) {\n        /*background-color: #f0f0f0;*/\n      }\n      .floor.first {\n        border-bottom: 6px solid ${hocolor2};\n      }\n      .floor.second {\n        border-bottom: 6px solid ${hocolor2};\n      }\n      .floor.virtual {\n        border-bottom: 6px solid ${hocolor2};\n      }\n      .floor.basement {\n          justify-content: space-between;\n          flex-wrap: nowrap;\n      }\n\n\n      .item {\n        flex: 100%;\n        text-align: center;\n      }\n      .itemb {\n        text-align: center;\n\n      }\n      .item.twoCol {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        align-content: space-between;\n        flex 10%;\n      }\n      .itemb.twoCol {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        align-content: space-between;\n        flex 10%;\n      }\n      .item.half {\n        flex: 0 0 50%;\n        text-align: center;\n      }\n      .item.left {\n        text-align: left;\n\n      }\n      .item.right {\n        text-align: right;\n\n      }\n      .item-line {\n        flex: 50%;\n        text-align: center;\n      }\n      .item-ground {\n        text-align: center;\n        flex: 50%;\n      }\n      .item-ground.left {\n        text-align: right;\n        flex: 0 0 55%;\n        padding-right: 6px;\n      }\n      .item-ground.right {\n        text-align: left;\n        padding-left: 6px;\n        flex: 0 0 35%;\n      }\n\n      .ground {\n        padding: 3px;\n        display: flex;\n        flex-wrap: wrap;\n        width: 75%;\n        margin: 0 auto;\n      }\n\n      .ground-lines {\n        /*height: 80px;*/\n        width: 100%;\n        border: 0px solid #3333ff;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: transparent;\n        padding: 3px;\n        margin: 3px;\n      }\n\n      .supply-return-lines {\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        border: 1px dashed #999999;\n\n      }\n\n\n      .room {\n        min-height: 5vh;\n        padding: 3px;\n        margin: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: space-between;\n      }\n      .room.left {\n        border-bottom: 3px solid ${hocolor};\n        border-right: 3px solid ${hocolor};\n      }\n      .room.right {\n        border-bottom: 3px solid ${hocolor};\n        border-left: 3px solid ${hocolor};\n      }\n\n      .room.left:first-child {\n        border-right: 3px solid ${hocolor};\n      }\n      .room.left:last-child {\n        border-bottom: 0;\n        border-right: 3px solid ${hocolor};\n      }\n      .room.right:first-child {\n        border-left: 3px solid ${hocolor};\n      }\n      .room.right:last-child {\n        border-bottom: 0;\n        border-left: 3px solid ${hocolor};\n      }\n\n      .room.left.b:last-child {\n        border-bottom: 3px solid ${hocolor};\n        border-right: 3px solid ${hocolor};\n      }\n\n      .room.right.b:last-child {\n        border-bottom: 3px solid ${hocolor};\n        border-left: 3px solid ${hocolor};\n      }\n\n      .sensor {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        font-weight: bold;\n        width: 50%\n        text-align: right;\n        border-radius: 6px;\n        padding: 1px;\n        flex: 0 1 20%;\n      }\n      .plain-unit {\n        font-size: 1.2em;\n        width: auto;\n      }\n      .sensor-unit {\n          text-align: center;\n          border-radius: 50%;\n          width: auto;\n          height: 20px;\n          color: #666666;\n      }\n      .sensor-value {\n        text-align: center;\n        font-size: 1.3em;\n        color: #555555;\n        padding-left: 2px;\n        padding-right: 2px;\n        border-radius: 3px;\n\n      }\n\n      .sensor-name {\n        display: inline-block;\n        font-weight: bold;\n        width: 25%\n      }\n      .arrow {\n        font-size: 32px;\n        flex: 50%;\n      }\n      .arrow.red {\n        color: red;\n      }\n      .arrow.blue {\n        color: blue;\n      }\n\n      .arrowv {\n        font-size: 32px;\n      }\n      .arrowv.red {\n        color: red;\n        text-align: right;\n        flex: 60%;\n      }\n      .arrowv.blue {\n        color: blue;\n        text-align: left;\n        flex: 40%;\n      }\n\n      .boiler-room {\n        width: 60%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: space-around;\n\n      }\n      .column {\n        flex: 0 0 30%;\n\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        padding-top: 3px\n\n      }\n      .column-pump {\n        flex: 0 0 60px;\n\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        padding-top: 3px\n\n      }\n      .column-boiler {\n        flex: 0 0 50px;\n\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        padding-top: 3px\n\n      }\n      .column.narrow {\n        flex: 0 0 7%;\n\n\n      }\n      .column.value {\n        height: 48px;\n      }\n      .pump {\n        cursor: pointer;\n        height: 95px;\n        width: 60px;\n        font-size: 14px;\n        border: 3px solid #00BFFF;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        border-radius: 3px;\n        background-color: #f0f0f0;\n        /*flex: 0 0 25%;*/\n        padding: 3px;\n      }\n      .pump-power-target {\n        height: 95px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n      }\n\n      .buffer-arrow {\n        height: 45px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        /*border-top: 1px solid #999999;\n        border-bottom: 1px solid #999999;*/\n      }\n      .boiler-arrow {\n        height: 50px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-end;\n       /* border-top: 1px solid #999999;\n        border-bottom: 1px solid #999999;*/\n\n      }\n      .buffer {\n        height: 45px;\n        width: 50px;\n        border: 3px solid #cccccc;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #f0f0f0;\n        padding: 3px;\n        border-radius: 50%;\n      }\n      .buffer-lines {\n        height: 70px;\n        width: 70px;\n        border: 0px solid #3333ff;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #transparent;\n        padding: 3px;\n        margin: 0;\n      }\n\n      .boiler {\n        height: 80px;\n        width: 50px;\n        border: 3px solid #00BFFF;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #aa6666;\n        padding: 3px;\n\n        border-top-left-radius: 30%;\n        border-top-right-radius: 30%;\n        border-bottom-left-radius: 30%;\n        border-bottom-right-radius: 30%;\n        background: linear-gradient(to bottom, #00cc00 50%,#66ccff 50%);\n      }\n\n\n      .pumpLines {\n        height: auto;\n        width: 60px;\n        border: 1px dashed #999999;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: start;\n        align-items: center;\n        background-color: transparent;\n        padding: 0px;\n        margin: 3px;\n        border-radius: 10%;\n      }\n\n\n\n      .radiator-line {\n        padding: 0px;\n        flex: 0 0 40%;\n        margin: 0px;\n      }\n      .radiator-lines{\n        display: flex;\n        justify-content: space-between;\n        width: 100%;\n      }\n      .radiator-lines.basement{\n        display: flex;\n        justify-content: space-between;\n        width: 41.5%;\n      }\n      .radiator-line.basement{\n        padding: 0px;\n        flex: 0 0 100%;\n        margin: 0px;\n      }\n      .alarm-status {\n        position: absolute;\n        width: 150px;\n        top: 24px;\n        left: calc(50% - 75px);\n        display: flex;\n        justify-content: center;\n        flex-wrap: wrap;\n      }\n      .alarm-text{\n        text-align: center;\n        width: 140px;\n\n      }\n     alarm-icon {\n        transform: scale(2);\n      }\n    `;
+        return [_panelStylesDefault.default, _lit.css`\n\n      * {\n       box-sizing: border-box;\n      }\n      :host {\n        background-color: transparent;\n        display: block;\n      }\n\n      .main{\n        width: 100%;\n        height: 100vh;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: ${currentTheme.backgroundColor};\n        padding-top: 12px;\n\n      }\n\n      .tcor, .bcor, .msid {\n        flex: 15%;\n      }\n      .tcen, .mcen, .bcen {\n        flex: 70%;\n        position: relative;\n      }\n\n      .tcor, .tcen {\n        height: 20vh;\n      }\n\n      .mcen, .msid {\n        height: 65vh;\n      }\n\n      .bcor, .bcen {\n        height: 15vh;\n      }\n\n      .house {\n        padding: 0;\n        width: 96%;\n        margin: 0 auto;\n        background-color: ${currentTheme.houseColor};\n      }\n\n      .floors {\n        padding: 0;\n        border: 6px solid ${hocolor2};\n      }\n      .roof {\n        width: 100%;\n        height: 100%;\n        padding: 0;\n        margin:0;\n        border: 0;\n        background-color: transparent;\n      }\n      #svg-roof {\n        vertical-align:top;\n      }\n      .floor {\n        padding: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: transparent;\n\n      }\n      .floor.first {\n        border-bottom: 6px solid ${hocolor2};\n      }\n      .floor.second {\n        border-bottom: 6px solid ${hocolor2};\n      }\n      .floor.virtual {\n        border-bottom: 6px solid ${hocolor2};\n      }\n      .floor.basement {\n          justify-content: space-between;\n          flex-wrap: nowrap;\n      }\n\n      .device {\n        border: 3px solid #cccccc;\n        border-radius: 3px;\n      }\n\n      .device.round {\n        border-radius: 50%;\n      }\n      .device.roundish {\n        border-radius: 25%;\n      }\n\n\n      .device.active {\n        border-color: ${activeColor};\n\n      }\n      .device.off {\n        border-color: ${offColor};\n\n      }\n      .device.inactive {\n        border-color: ${normalTextColor};\n      }\n\n      .fault{\n        background-color: ${faultColor} !important;\n        color: ${faultTextColor} !important;\n\n      }\n      .alarm {\n        background-color: ${alarmColor} !important;\n        color: ${alarmTextColor} !important;\n      }\n\n      .warning {\n        background-color: ${warningColor} !important;\n        color: ${warningTextColor} !important;\n\n      }\n\n      .normal {\n        background-color: transparent !important;\n        color: #333333;\n      }\n\n\n      .item {\n        flex: 100%;\n        text-align: center;\n        color: ${currentTheme.valueColor};\n      }\n      .item.withbackground {\n        flex: 0 1;\n\n        background-color: #00000055;\n        border-radius: 50%;\n        padding: 2px;\n      }\n      .itemb {\n        text-align: center;\n\n      }\n      .item.twoCol {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        align-content: space-between;\n        flex 10%;\n      }\n      .itemb.twoCol {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        align-content: space-between;\n        flex 10%;\n      }\n      .item.half {\n        flex: 0 0 50%;\n        text-align: center;\n        font-size: 13px;\n      }\n      .item.left {\n        text-align: left;\n\n      }\n      .item.right {\n        text-align: right;\n\n      }\n      .item-line {\n        flex: 50%;\n        text-align: center;\n      }\n      .item-ground {\n        text-align: center;\n        flex: 50%;\n      }\n      .item-ground.left {\n        text-align: right;\n        flex: 0 0 55%;\n        padding-right: 6px;\n      }\n      .item-ground.right {\n        text-align: left;\n        padding-left: 6px;\n        flex: 0 0 35%;\n      }\n\n      .ground {\n        padding: 3px;\n        display: flex;\n        flex-wrap: wrap;\n        width: 75%;\n        margin: 0 auto;\n      }\n\n      .ground-lines {\n        /*height: 80px;*/\n        width: 100%;\n        border: 0px solid #3333ff;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: transparent;\n        padding: 3px;\n        margin: 3px;\n      }\n\n      .supply-return-line {\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        border: 1px dashed #999999;\n\n      }\n\n\n      .room {\n        min-height: 5vh;\n        padding: 3px;\n        margin: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: space-between;\n      }\n      .room.left {\n        border-top: 3px solid ${hocolor};\n        border-right: 3px solid ${hocolor};\n      }\n      .room.right {\n        border-top: 3px solid ${hocolor};\n        border-left: 3px solid ${hocolor};\n      }\n\n      .room.left:first-child {\n        border-top: 0px solid ${hocolor};\n        border-right: 3px solid ${hocolor};\n      }\n      .room.left:last-child {\n        border-top: 3px solid ${hocolor};\n        border-bottom: 3px solid ${hocolor};\n\n        border-right: 3px solid ${hocolor};\n      }\n      .room.right:first-child {\n        border-top: 0px solid ${hocolor};\n        border-left: 3px solid ${hocolor};\n      }\n      .room.right:last-child {\n        border-top: 3px solid ${hocolor};\n        border-bottom: 3px solid ${hocolor};\n        border-left: 3px solid ${hocolor};\n      }\n\n      .room.left.b:last-child {\n        border-bottom: 3px solid ${hocolor};\n        border-right: 3px solid ${hocolor};\n      }\n\n      .room.right.b:last-child {\n        border-bottom: 3px solid ${hocolor};\n        border-left: 3px solid ${hocolor};\n      }\n\n      .sensor {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        font-weight: bold;\n        width: 50%\n        text-align: right;\n        border-radius: 6px;\n        padding: 1px;\n        flex: 0 1 20%;\n      }\n      .plain-unit {\n        font-size: 1.2em;\n        width: auto;\n      }\n      .sensor-unit {\n          text-align: center;\n          border-radius: 50%;\n          width: auto;\n          height: 20px;\n          color: ${currentTheme.unitColor};\n      }\n      .sensor-value {\n        text-align: center;\n        font-size: 1.3em;\n        color: ${currentTheme.valueColor};\n        padding-left: 2px;\n        padding-right: 2px;\n        border-radius: 3px;\n\n      }\n      .sensor-value.dark {\n        color: ${currentTheme.valueDarkColor};\n        font-weight: 500;\n\n      }\n\n      .sensor-name {\n        display: inline-block;\n        font-weight: bold;\n        width: 25%;\n        color: ${currentTheme.titleColor};\n\n      }\n      .arrow {\n        font-size: 32px;\n        flex: 50%;\n      }\n      .arrow.red {\n        color: red;\n      }\n      .arrow.blue {\n        color: blue;\n      }\n\n      .arrowv {\n        font-size: 32px;\n      }\n      .arrowv.red {\n        color: red;\n        text-align: right;\n        flex: 60%;\n      }\n      .arrowv.blue {\n        color: blue;\n        text-align: left;\n        flex: 40%;\n      }\n\n      .boiler-room {\n        width: 60%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: space-around;\n        padding-left: 3px;\n        padding-top: 6px;\n      }\n      .column {\n        flex: 0 0 30%;\n\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        padding-top: 3px\n\n      }\n      .column-pump {\n        flex: 0 0 60px;\n\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        padding-top: 3px\n        color: ${currentTheme.valueColor};\n\n\n      }\n      .column-boiler {\n        flex: 0 0 45px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n\n      }\n      .column.narrow {\n        flex: 0 0 7%;\n      }\n      .column.value {\n        height: 48px;\n        color: ${currentTheme.titleColor};\n      }\n      .pump {\n        cursor: pointer;\n        height: 95px;\n        width: 60px;\n        font-size: 14px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        border-radius: 3px;\n        /*flex: 0 0 25%;*/\n        padding: 3px;\n      }\n      .pump-power-target {\n        height: 95px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n      }\n\n      .buffer-arrow {\n        height: 45px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        /*border-top: 1px solid #999999;\n        border-bottom: 1px solid #999999;*/\n      }\n      .boiler-arrow {\n        height: 50px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-end;\n       /* border-top: 1px solid #999999;\n        border-bottom: 1px solid #999999;*/\n\n      }\n      .buffer {\n        height: 45px;\n        width: 50px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        padding: 3px;\n        border-radius: 50%;\n      }\n      .buffer-lines {\n        height: 70px;\n        width: 70px;\n        border: 0px solid #3333ff;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        background-color: #transparent;\n        padding: 3px;\n        margin: 0;\n      }\n\n      .boiler {\n        height: 100%;\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n\n      .pumpLines {\n        height: auto;\n        width: 66px;\n        border: 1px dashed #999999;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: start;\n        align-items: center;\n        background-color: transparent;\n        padding: 0px;\n        margin-top: 3px;\n        margin-bottom: 3px;\n\n        border-radius: 3px;\n      }\n\n      .radiator-line {\n        padding: 0px;\n        flex: 0 0 40%;\n        margin: 0px;\n      }\n      .radiator-lines{\n        display: flex;\n        justify-content: space-between;\n        width: 100%;\n      }\n      .radiator-lines.basement{\n        display: flex;\n        justify-content: space-between;\n        width: 40%;\n      }\n      .radiator-line.basement{\n        padding: 0px;\n        flex: 0 0 100%;\n        margin: 0px;\n      }\n      .alarm-status {\n        position: absolute;\n        width: 150px;\n        top: 24px;\n        left: calc(50% - 75px);\n        display: flex;\n        justify-content: center;\n        flex-wrap: wrap;\n      }\n      .alarm-text{\n        text-align: center;\n        width: 140px;\n\n      }\n     alarm-icon {\n        transform: scale(2);\n      }\n    `
+        ];
     }
 }
 
-},{"lit":"gTuKD","@mdi/js":"6BEWz","@jamescoyle/svg-icon":"8yTUH","bundle-text:./card.css":"bKSp1","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"gTuKD":[function(require,module,exports) {
+},{"lit":"gTuKD","@mdi/js":"6BEWz","@jamescoyle/svg-icon":"8yTUH","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc","./panel.styles":"8Doqd"}],"gTuKD":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _reactiveElement = require("@lit/reactive-element");
@@ -23624,10 +23743,13 @@ class SvgIcon extends HTMLElement {
 }
 customElements.define('svg-icon', SvgIcon);
 
-},{}],"bKSp1":[function(require,module,exports) {
-module.exports = "\n";
+},{}],"8Doqd":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _lit = require("lit");
+exports.default = _lit.css`\n    .error {\n        color: red;\n    }\n\n`;
 
-},{}],"5L07b":[function(require,module,exports) {
+},{"lit":"gTuKD","@parcel/transformer-js/src/esmodule-helpers.js":"JacNc"}],"5L07b":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "JhomePanelEditor", ()=>JhomePanelEditor
