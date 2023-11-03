@@ -8,7 +8,6 @@ import {
 } from 'lit';
 
 import {
-  mdiAccount,
   mdiShieldLock,
   mdiShieldOff,
   mdiShieldHome,
@@ -20,13 +19,14 @@ import {
   mdiArrowUpThick,
   mdiArrowDownThin,
   mdiArrowUpThin,
+  mdiArrowLeftThin,
+  mdiArrowRightThin,
   mdiArrowRightThick,
   mdiArrowLeftThick,
   mdiArrowRightBold,
   mdiArrowLeftBold,
   mdiArrowRight,
     mdiArrowleft,
-  mdiApproximatelyEqualBox,
   mdiHeatingCoil,
   mdiRadiator,
   mdiRadiatorDisabled,
@@ -55,11 +55,9 @@ const alarmTextColor = css`#eeeeee`; // #ff0033
 const warningColor = css`#FFBF00df`;
 const warningTextColor = css`#666666`;
 
-const normalColor = css`#eeeeee`;
 const normalTextColor = css`#bbbbbb`;
-const houseOutlineColor = "#90909066";
-const hocolor = css`#a0a0a099`;
-const hocolor2 = css`#90909066`;
+const houseOutlineColor = "transparent";
+
 const activeColor = css`#00BFFF`;
 const inActiveColor = css`#FFFFFF22`;
 const offColor = css`#cccccc`;
@@ -72,7 +70,6 @@ const boilerColorHH = "#f9423a";
 
 const pumpLineInColor = "#ffcccc";
 const pumpLineOutColor = "#b3d9ff";
-
 
 const powerColorLL = "#6892db";
 const powerColorL = "#c1d3f0";
@@ -112,11 +109,8 @@ const theme = {
     unitColor: css`#dddddd`,
     valueColor: css`#efefef`,
     valueDarkColor: css`#333333`,
-
     titleColor: css`#efefef`
-
   }
-
 }
 
 const currentTheme = theme[currentThemeName];
@@ -195,29 +189,10 @@ export class JhomePanel extends LitElement {
     const svgWidth = 1000;
     const svgHeight = 500;
 
-    const centerX = svgWidth / 2;
-    const upY = 150;
-    const topMargin = 10;
-    const houseWidth = svgWidth * 0.70;
-    const wallHeight = 650;
-    const roofHeight = houseWidth * 0.3;
-    const bottomFloorHeight = 0.33 * wallHeight;
-    const firstFloorHeight = 0.33 * wallHeight;
-    const secondFloorHeight = 0.33 * wallHeight;
-
     const faultColorClass = "fault";
     const alarmColorClass = "alarm";
     const warningColorClass = "warning";
     const normalColorClass = "normal";
-
-
-    const secondFloorLine1Count = this.panel.config.rooms.filter(a => a.line === 1 && a.floor === 2).length;
-    const secondFloorLine2Count = this.panel.config.rooms.filter(a => a.line === 2 && a.floor === 2).length;
-    const firstFloorLine1Count = this.panel.config.rooms.filter(a => a.line === 1 && a.floor === 1).length;
-    const firstFloorLine2Count = this.panel.config.rooms.filter(a => a.line === 2 && a.floor === 1).length;
-    const basementLine1Count = this.panel.config.rooms.filter(a => a.line === 1 && a.floor === 0).length;
-    const basementLine2Count = this.panel.config.rooms.filter(a => a.line === 2 && a.floor === 0).length;
-
 
     const doors = [
       { floor: 0, side: "left" },
@@ -249,14 +224,10 @@ export class JhomePanel extends LitElement {
       else {
         return normalColorClass;
       }
-      ;
-
     }
 
-
-
     const showValue = (val, step, dec, limitTarget) => html`
-      <div class="sensor-value ${getColor(Math.round(val/0.5)*0.5, limitTarget)}">
+      <div class="sensor-value ${getColor(Math.round(val/0.5)*0.5, limitTarget)}" >
         ${(Math.round(val/step)*step).toFixed(dec)}
       </div>
     `;
@@ -282,7 +253,7 @@ export class JhomePanel extends LitElement {
       else if (unit === "%") {
         return showValueWithUnit(val, mdiWaterPercent, 1, 0, "percentage");
       }
-      else if (unit === CO2) {
+      else if (unit === "CO2") {
         return showValueWithUnit(val, mdiMoleculeCo2, 1, 0, "co2");
       }
       else {
@@ -293,8 +264,7 @@ export class JhomePanel extends LitElement {
     const getState = (state) => this.hass.states[state.entityId].state;
     const getStateFromId = (id) => this.hass.states[id].state;
 
-    const sensorValue2 = (val) => html`<div class="sensor-value">${this.hass.states[val.entityId].state}</div>`;
-    const sensorValueBoiler = (val) => html`<div class="sensor-value dark">${this.hass.states[val.entityId].state}</div>`;
+    const sensorValueBoiler = (val) => html`<div class="sensor horizontal"><div class="sensor-value">${this.hass.states[val.entityId].state}</div></div>`;
 
     const showSensor = (sensor) => {
       return html`
@@ -302,9 +272,9 @@ export class JhomePanel extends LitElement {
       `;
     }
 
-    const showRoom = (room, side) => {
+    const showRoom = (room) => {
       return html`
-        <div class="room ${side}">
+        <div class="room">
           <div class="sensor-name">${room.name}</div>
           ${room.entities.map(s => showSensor(s))}
         </div>
@@ -321,76 +291,67 @@ export class JhomePanel extends LitElement {
       </div>
     `;
 
-    const radiatorLine = (floor, line, pfix, extra) => html`
-      <div class="radiator-line ${extra}">
-        ${this.panel.config.rooms.filter(a => a.line === line && a.floor === floor).map(room => showRoom(room, (line === 1 ? "left" : "right") + pfix))}
-      </div>
-  `;
+    const radiatorLine = (floor, line) => html`
+      ${this.panel.config.rooms.filter(a => a.line === line && a.floor === floor).map(room => showRoom(room))}
+    `;
 
     const radiatorLines = (floor) => {
 
-      const pfix = floor === 0 ? " b" : "";
-      const extra = floor === 0 ? " basement" : "";
-
       return html`
-        <div class="radiator-lines${extra}">
-          ${floor !== 0 ? radiatorLine(floor, 1, pfix, extra) : null}
-          ${radiatorLine(floor, 2, pfix, extra)}
-        </div>
+        ${floor !== 0 ? radiatorLine(floor, 1) : null}
+        ${radiatorLine(floor, 2)}
       `;
     }
 
-
-    const supplyAndReturnLine = (c) => {
+    const SupplyReturnLines = () => {
 
       const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [10, 20]);
       const iconColor = (deviceOn === "active" ? activeColor : normalTextColor);
 
       return html`
-          <div class="supply-return-line" >
-            <div class="column" >
+        <div class="supply-return-lines" style="border-color: ${iconColor}">
+
+          <div class="type-line">
+          <div class="item empty">
+            <font color=${iconColor}>
+              <svg-icon type="mdi" size="20" path=${mdiTemperatureCelsius}} ></svg-icon>
+            </font>
+          </div>
+            ${this.panel.config.heatingCircuits.map(c => {
+              return html`
+                <font color=${iconColor}>
+                  <svg-icon type="mdi" size="20" path=${c.type === "radiator" ? mdiRadiator : mdiHeatingCoil} ></svg-icon>
+                </font>
+              `;
+            })}
+
+          </div>
+          <div class="supply-line">
             <font color=${boilerColorH}>
-              <svg-icon type="mdi" size="24" path=${mdiArrowRightThick} ></svg-icon>
+              <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${mdiArrowRightThin} ></svg-icon>
             </font>
-            <font color=${boilerColorL}>
-              <svg-icon type="mdi" size="24" path=${mdiArrowLeftThick} ></svg-icon>
+            ${this.panel.config.heatingCircuits.map(c => {
+              return html`
+
+              <div class="sensor horizontal"> <div class="sensor-value">${getStateFromId(c.supplyId)} </div></div>
+              `;
+            })}
+          </div>
+          <div class="return-line">
+             <font color=${boilerColorL}>
+              <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${mdiArrowLeftThin} ></svg-icon>
             </font>
+            ${this.panel.config.heatingCircuits.map(c => {
+              return html`
+              <div class="sensor"> <div class="sensor-value">${getStateFromId(c.returnId)}</div></div>
+
+              `;
+            })}
           </div>
 
-          <div class="column value" >
-            <div> ${getStateFromId(c.supplyId)}</div>
-            <div> ${getStateFromId(c.returnId)}</div>
-          </div>
-
-          <div class="column" >
-            <div class="item" >
-              <font color=${iconColor}>
-                <svg-icon type="mdi" size="24" path=${c.type === "radiator" ? mdiRadiator : mdiHeatingCoil} ></svg-icon>
-              </font>
-            </div>
-          </div>
         </div>
       `;
-    }
-
-
-    const SupplyReturnLines = () => {
-
-      return html`
-        ${this.panel.config.heatingCircuits.map(c => supplyAndReturnLine(c))}
-      `;
     };
-
-    const bufferLines = () => html`
-      <div class="buffer-lines">
-        <div class="item-line" >${sensorValue2(this.panel.config.entities.supplyLine)} C</div>
-        <div class="arrow red">&larr;</div>
-        <div class="item-line" >${sensorValue2(this.panel.config.entities.returnLine)} C</div>
-        <div class="arrow blue">&rarr;</div>
-      </div>
-    `;
-
-
 
     // NIBE # 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
     const getDeviceStatus = (currentValue, inActiveValues) => {
@@ -401,8 +362,6 @@ export class JhomePanel extends LitElement {
       }
       return status;
     }
-
-
 
     const pumpLines = () => html`
     <div class="pumpLines">
@@ -418,10 +377,9 @@ export class JhomePanel extends LitElement {
         </font>
       </div>
 
-      <div class="item half" > <div> ${showValue(getState(this.panel.config.entities.brineInLine), 0.5, 1, "")}</div>
 
-</div>
-      <div class="item half" ><div> ${showValue(getState(this.panel.config.entities.brineOutLine), 0.5, 1, "")}</div></div>
+      <div class="item half"><div class="sensor horizontal">${showValue(getState(this.panel.config.entities.brineInLine), 0.5, 1, "")}</div></div>
+      <div class="item half"><div class="sensor horizontal">${showValue(getState(this.panel.config.entities.brineOutLine), 0.5, 1, "")}</div></div>
 
     </div>
   `;
@@ -438,30 +396,13 @@ export class JhomePanel extends LitElement {
 
       <div class="device ${deviceOn}" >
         <div class="pump" @click="${this._handlePumpClick}">
-        <div class="item" style="color: ${iconColor}">
-            <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>
-        </div>
-        <div class="item" >${showValueWithUnit(power, "kWh", 0.1, 1, "power")}</div>
+          <div class="item" style="color: ${iconColor}">
+              <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>
+          </div>
+          ${showValueWithUnit(power, "kW", 0.1, 1, "power")}
         </div>
       </div>
     `;
-    }
-
-    const buffer = () => {
-
-      const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [10, 20]);
-      const icon = (deviceOn === "active" ? mdiWaterBoiler : mdiWaterBoilerOff);
-      const iconColor = (deviceOn === "active" ? activeColor : normalTextColor);
-
-      return html`
-        <div class="device ${deviceOn} round" >
-          <div class="buffer">
-            <div class="item" style="color: ${iconColor}">
-              <svg-icon type="mdi" size="24" path=${mdiApproximatelyEqualBox} ></svg-icon>
-            </div>
-          </div>
-        </div>
-      `;
     }
 
     const boiler = () => {
@@ -473,16 +414,21 @@ export class JhomePanel extends LitElement {
 
       const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [10, 30]);
       const icon = (deviceOn === "active" ? mdiWaterBoiler : mdiWaterBoilerOff);
-      const iconColor = (deviceOn === "active" ? activeColor : inActiveColor);
+      const iconColor = (deviceOn === "active" ? activeColor : normalTextColor);
 
       return html`
-      <div class="device ${deviceOn} roundish" style="background-image: linear-gradient(${topColor}, ${bottomColor});">
+      <div class="device ${deviceOn} roundish" >
         <div class="boiler">
-          <div class="item" >${sensorValueBoiler(this.panel.config.entities.waterTop)}</div>
-          <div class="item withbackground" style="color: ${iconColor}">
-            <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>
+          <div class="column">
+            <div class="temp-bar" style="background-image: linear-gradient(${topColor}, ${bottomColor});"></div>
           </div>
-          <div class="item" >${sensorValueBoiler(this.panel.config.entities.waterCharge)}</div>
+          <div class="column wide center">
+            ${sensorValueBoiler(this.panel.config.entities.waterTop)}
+            <div class="item" style="color: ${iconColor}">
+              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>
+            </div>
+            ${sensorValueBoiler(this.panel.config.entities.waterCharge)}
+          </div>
         </div>
       </div>
     `;
@@ -503,47 +449,40 @@ export class JhomePanel extends LitElement {
 
     const drawHouse = () => html`
       <div class="house">
-        <div class="floors">
 
-          <div class="floor second">
-            ${radiatorLines(2)}
+        <div class="floor second">
+          ${radiatorLines(2)}
+        </div>
+
+        <div class="floor first">
+          ${radiatorLines(1)}
+        </div>
+
+        <div class="floor basement">
+          <div class="boiler-room">
+
+            <div class="column">
+              ${pump()}
+              ${pumpLines()}
+            </div>
+
+            <div class="column">
+              ${pumpPowerTargetIndicator()}
+            </div>
+
+            <div class="column wide">
+              ${SupplyReturnLines()}
+              ${boiler()}
+            </div>
+
+          </div> <!-- BOILER ROOM -->
+
+          <div>
+          ${radiatorLines(0)}
           </div>
 
-          <div class="floor first">
-            ${radiatorLines(1)}
-          </div>
+        </div> <!-- BASEMENT -->
 
-          <div class="floor basement">
-            <div class="boiler-room">
-              <div class="column-pump">
-                ${pump()}
-                ${pumpLines()}
-              </div>
-
-              <div class="column narrow">
-                ${pumpPowerTargetIndicator()}
-              </div>
-
-              <div class="column-boiler">
-                ${buffer()}
-                ${boiler()}
-              </div>
-
-              <div class="column">
-                ${SupplyReturnLines()}
-              </div>
-
-            </div> <!-- BOILER ROOM -->
-
-            ${radiatorLines(0)}
-
-            <!-- div class="radiator-lines basement">
-              ${radiatorLine(0, 2, " b", "basement")}
-            </div -->
-
-          </div> <!-- BASEMENT -->
-
-        </div> <!-- FLOORS -->
 
       </div> <!-- HOUSE -->
     `;
@@ -651,13 +590,8 @@ export class JhomePanel extends LitElement {
         padding: 0;
         width: 96%;
         margin: 0 auto;
-        background-color: ${currentTheme.houseColor};
       }
 
-      .floors {
-        padding: 0;
-        border: 6px solid ${hocolor2};
-      }
       .roof {
         width: 100%;
         height: 100%;
@@ -673,35 +607,37 @@ export class JhomePanel extends LitElement {
         padding: 0px;
         display: flex;
         flex-wrap: wrap;
+        justify-content: center;
         background-color: transparent;
+        align-items: flex-start;
 
       }
       .floor.first {
-        border-bottom: 6px solid ${hocolor2};
+        margin-top: 6px;
+        background-color: ${currentTheme.houseColor};
       }
       .floor.second {
-        border-bottom: 6px solid ${hocolor2};
-      }
-      .floor.virtual {
-        border-bottom: 6px solid ${hocolor2};
+        margin-top: 6px;
+        background-color: ${currentTheme.houseColor};
       }
       .floor.basement {
+        flex 0 1 30%;
+          margin-top: 6px;
           justify-content: space-between;
           flex-wrap: nowrap;
+          background-color: ${currentTheme.houseColor};
+          padding-bottom: 6px;
       }
 
       .device {
-        border: 3px solid #cccccc;
+        border: 2px solid #cccccc;
         border-radius: 3px;
       }
 
-      .device.round {
-        border-radius: 50%;
-      }
       .device.roundish {
-        border-radius: 25%;
+        border-radius: 15%;
+        margin-top: 6px;
       }
-
 
       .device.active {
         border-color: ${activeColor};
@@ -738,146 +674,63 @@ export class JhomePanel extends LitElement {
 
 
       .item {
-        flex: 100%;
+        flex: 0 1 100%;
         text-align: center;
         color: ${currentTheme.valueColor};
       }
-      .item.withbackground {
-        flex: 0 1;
-
-        background-color: #00000055;
-        border-radius: 50%;
-        padding: 2px;
-      }
-      .itemb {
+      .item.empty {
+        flex: 0 1 20px;
         text-align: center;
+        color: ${currentTheme.valueColor};
+      }
 
-      }
-      .item.twoCol {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        align-content: space-between;
-        flex 10%;
-      }
-      .itemb.twoCol {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        align-content: space-between;
-        flex 10%;
-      }
       .item.half {
         flex: 0 0 50%;
         text-align: center;
-        font-size: 13px;
-      }
-      .item.left {
-        text-align: left;
-
-      }
-      .item.right {
-        text-align: right;
-
-      }
-      .item-line {
-        flex: 50%;
-        text-align: center;
-      }
-      .item-ground {
-        text-align: center;
-        flex: 50%;
-      }
-      .item-ground.left {
-        text-align: right;
-        flex: 0 0 55%;
-        padding-right: 6px;
-      }
-      .item-ground.right {
-        text-align: left;
-        padding-left: 6px;
-        flex: 0 0 35%;
+        font-size: 12px;
       }
 
-      .ground {
-        padding: 3px;
+      .supply-return-lines {
+        flex: 70%;
         display: flex;
         flex-wrap: wrap;
-        width: 75%;
-        margin: 0 auto;
-      }
-
-      .ground-lines {
-        /*height: 80px;*/
-        width: 100%;
-        border: 0px solid #3333ff;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        background-color: transparent;
-        padding: 3px;
-        margin: 3px;
-      }
-
-      .supply-return-line {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: center;
         border: 1px dashed #999999;
 
       }
-
 
       .room {
         min-height: 5vh;
         padding: 3px;
         margin: 0px;
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: space-between;
-      }
-      .room.left {
-        border-top: 3px solid ${hocolor};
-        border-right: 3px solid ${hocolor};
-      }
-      .room.right {
-        border-top: 3px solid ${hocolor};
-        border-left: 3px solid ${hocolor};
+        /*background-color: #00000033;*/
+        border: 1px dashed #999999;
+        margin: 6px;
+        border-radius: 3px;
+        flex: 0 1;
       }
 
-      .room.left:first-child {
-        border-top: 0px solid ${hocolor};
-        border-right: 3px solid ${hocolor};
-      }
-      .room.left:last-child {
-        border-top: 3px solid ${hocolor};
-        border-bottom: 3px solid ${hocolor};
 
-        border-right: 3px solid ${hocolor};
-      }
-      .room.right:first-child {
-        border-top: 0px solid ${hocolor};
-        border-left: 3px solid ${hocolor};
-      }
-      .room.right:last-child {
-        border-top: 3px solid ${hocolor};
-        border-bottom: 3px solid ${hocolor};
-        border-left: 3px solid ${hocolor};
-      }
+      .sensor.horizontal {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        font-weight: bold;
+        text-align: right;
+        border-radius: 6px;
+        padding: 1px;
+        flex: 0 1 20%;
+        border: 1px solid #999999;
+        background-color: #00000033;
 
-      .room.left.b:last-child {
-        border-bottom: 3px solid ${hocolor};
-        border-right: 3px solid ${hocolor};
-      }
+        margin-right: 3px;
+        margin-left: 3px;
 
-      .room.right.b:last-child {
-        border-bottom: 3px solid ${hocolor};
-        border-left: 3px solid ${hocolor};
+
       }
 
       .sensor {
@@ -890,9 +743,15 @@ export class JhomePanel extends LitElement {
         border-radius: 6px;
         padding: 1px;
         flex: 0 1 20%;
+        border: 1px solid #999999;
+        background-color: #00000033;
+
+        margin-right: 3px;
+        margin-left: 3px;
+
       }
       .plain-unit {
-        font-size: 1.2em;
+        font-size: 1.0em;
         width: auto;
       }
       .sensor-unit {
@@ -904,100 +763,82 @@ export class JhomePanel extends LitElement {
       }
       .sensor-value {
         text-align: center;
-        font-size: 1.3em;
+        font-size: 1.2em;
         color: ${currentTheme.valueColor};
         padding-left: 2px;
         padding-right: 2px;
         border-radius: 3px;
-
       }
-      .sensor-value.dark {
-        color: ${currentTheme.valueDarkColor};
-        font-weight: 500;
 
-      }
 
       .sensor-name {
         display: inline-block;
         font-weight: bold;
         width: 25%;
+        margin-right: 12px;
         color: ${currentTheme.titleColor};
 
       }
-      .arrow {
-        font-size: 32px;
-        flex: 50%;
-      }
-      .arrow.red {
-        color: red;
-      }
-      .arrow.blue {
-        color: blue;
-      }
-
-      .arrowv {
-        font-size: 32px;
-      }
-      .arrowv.red {
-        color: red;
-        text-align: right;
-        flex: 60%;
-      }
-      .arrowv.blue {
-        color: blue;
-        text-align: left;
-        flex: 40%;
-      }
 
       .boiler-room {
-        width: 60%;
+        flex:  1 0 60%;
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-around;
+        justify-content: flex-start;
         padding-left: 3px;
         padding-top: 6px;
       }
       .column {
-        flex: 0 0 30%;
-
+        flex: 0 1;
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
-        align-items: flex-start;
-        padding-top: 3px
-
-      }
-      .column-pump {
-        flex: 0 0 60px;
-
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: flex-start;
-        padding-top: 3px
-        color: ${currentTheme.valueColor};
-
-
-      }
-      .column-boiler {
-        flex: 0 0 45px;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: flex-start;
 
       }
+
+      .column.wide {
+        flex: 1 0;
+      }
+      .column.wide.center {
+        justify-content: center;
+
+        flex: 1 0;
+      }
+
+      .type-line {
+          display: flex;
+          flex: 100%;
+          justify-content: space-around;
+
+      }
+
+      .supply-line {
+        display: flex;
+        flex: 100%;
+        align-items: center;
+        justify-content: space-around;
+        margin-bottom: 3px;
+
+      }
+
+      .return-line {
+        display: flex;
+        flex: 100%;
+        align-items: center;
+        justify-content: space-around;
+        margin-bottom: 3px;
+
+
+      }
+
       .column.narrow {
-        flex: 0 0 7%;
-      }
-      .column.value {
-        height: 48px;
-        color: ${currentTheme.titleColor};
+        flex: 0 1;
       }
       .pump {
         cursor: pointer;
-        height: 95px;
-        width: 60px;
+        height: 110px;
+        width: 70px;
         font-size: 14px;
         display: flex;
         flex-wrap: wrap;
@@ -1008,69 +849,53 @@ export class JhomePanel extends LitElement {
         padding: 3px;
       }
       .pump-power-target {
-        height: 95px;
+        height: 110px;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: flex-start;
+        flex: 0 1;
       }
 
       .buffer-arrow {
-        height: 45px;
+        flex: 0 1;
+        height: 65px;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        /*border-top: 1px solid #999999;
-        border-bottom: 1px solid #999999;*/
       }
+
       .boiler-arrow {
         height: 50px;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         align-items: flex-end;
-       /* border-top: 1px solid #999999;
-        border-bottom: 1px solid #999999;*/
 
-      }
-      .buffer {
-        height: 45px;
-        width: 50px;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        padding: 3px;
-        border-radius: 50%;
-      }
-      .buffer-lines {
-        height: 70px;
-        width: 70px;
-        border: 0px solid #3333ff;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        background-color: #transparent;
-        padding: 3px;
-        margin: 0;
       }
 
       .boiler {
-        height: 100%;
-        width: 100%;
+        height: 90px;
+        width: 55px;
         display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
         align-items: center;
       }
-
+      .temp-bar {
+        height: 70px;
+        flex: 0 0 8px;
+        margin: 3px;
+        margin-left: 6px;
+        border: 1px solid #eeeeee;
+        border-right: 1px solid #000000;
+        border-top: 1px solid #000000;
+      }
 
       .pumpLines {
         height: auto;
-        width: 66px;
-        border: 1px dashed #999999;
+        width: 70px;
         display: flex;
         flex-wrap: wrap;
         justify-content: start;
@@ -1079,30 +904,9 @@ export class JhomePanel extends LitElement {
         padding: 0px;
         margin-top: 3px;
         margin-bottom: 3px;
-
         border-radius: 3px;
       }
 
-      .radiator-line {
-        padding: 0px;
-        flex: 0 0 40%;
-        margin: 0px;
-      }
-      .radiator-lines{
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-      }
-      .radiator-lines.basement{
-        display: flex;
-        justify-content: space-between;
-        width: 40%;
-      }
-      .radiator-line.basement{
-        padding: 0px;
-        flex: 0 0 100%;
-        margin: 0px;
-      }
       .alarm-status {
         position: absolute;
         width: 150px;
@@ -1123,7 +927,3 @@ export class JhomePanel extends LitElement {
     `];
   }
 }
-
-
-
-
