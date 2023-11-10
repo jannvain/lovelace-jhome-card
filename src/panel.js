@@ -1,14 +1,13 @@
 
 import styles from './panel.styles';
 import ApexCharts from 'apexcharts'
+import * as ss from 'simple-statistics'
 
 import {
   LitElement,
   html,
   css
 } from 'lit';
-import {query} from 'lit/decorators/query.js';
-
 
 import {
   mdiShieldLock,
@@ -43,7 +42,8 @@ import {
   mdiMoleculeCo2,
   mdiNumeric,
   mdiPump,
-  mdiArrowRightBoldBoxOutline
+  mdiArrowRightBoldBoxOutline,
+  mdiTransmissionTowerImport
 } from '@mdi/js';
 
 import '@jamescoyle/svg-icon';
@@ -64,14 +64,17 @@ const activeColor = css`#00BFFF`;
 const inActiveColor = css`#FFFFFF22`;
 const offColor = css`#cccccc`;
 
-const boilerColorLL = "#6892db";
+/*const boilerColorLL = "#6892db";
 const boilerColorL = "#c1d3f0";
 const boilerColor = "#ef9490";
 const boilerColorH = "#fb8984";
-const boilerColorHH = "#f9423a";
+const boilerColorHH = "#f9423a";*/
 
-const pumpLineInColor = "#ffcccc";
-const pumpLineOutColor = "#b3d9ff";
+const boilerColorLL = "#97dfff";
+const boilerColorL = "#c2f9ff";
+const boilerColor = "#aad688";
+const boilerColorH = "#8bbd78";
+const boilerColorHH = "#5ea758";
 
 const powerColorLL = "#6892db";
 const powerColorL = "#c1d3f0";
@@ -88,6 +91,13 @@ const powerLL = -50;
 const powerL = -1;
 const powerH = 1500;
 const powerHH = 2000;
+
+const supplyColor = css`#8bbd78`;
+const returnColor = css`#97dfff`;
+
+const pumpLineInColor = css`#aad688`;
+const pumpLineOutColor = returnColor;
+
 
 const boilerLimits = [boilerLL, boilerL, boilerH, boilerHH];
 const boilerColors = [boilerColorLL, boilerColorL, boilerColor, boilerColorH, boilerColorHH]
@@ -108,10 +118,12 @@ const theme = {
   dark: {
     backgroundColor: css`#113366`,
     houseColor: css`#ffffff22`,
-    unitColor: css`#dddddd`,
+    unitColor: css`#cccccc`,
     valueColor: css`#efefef`,
     valueDarkColor: css`#333333`,
-    titleColor: css`#efefef`,
+    titleColor: css`#dddddd`,
+    textColor: css`#efefef`,
+
     roomBorderColor:  css`#ffffff44`
   }
 }
@@ -136,17 +148,12 @@ const getLimitedColor = (val, limits, colors) => {
   return colors[index];
 };
 
-const tempLL =19;
-const tempL = 20;
-const tempH = 23;
-const tempHH = 24;
-
 const valueLimits = {
   temperature: {
-    LL: tempLL,
-    L: tempL,
-    H: tempH,
-    HH: tempHH
+    LL: 19,
+    L: 20,
+    H: 23,
+    HH: 24
   },
   percentage: {
     LL: 10,
@@ -155,10 +162,10 @@ const valueLimits = {
     HH: 60
   },
   co2: {
-    LL: tempLL,
-    L: tempL,
-    H: tempH,
-    HH: tempHH
+    LL: 400,
+    L: 4000,
+    H: 12000,
+    HH: 20000
   },
   power: {
     LL: -10,
@@ -175,6 +182,9 @@ const valueLimits = {
 };
 
 export class JhomePanel extends LitElement {
+
+  static test = 8;
+
   static get properties() {
     return {
       hass: { type: Object },
@@ -182,6 +192,8 @@ export class JhomePanel extends LitElement {
       route: { type: Object },
       panel: { type: Object },
       faceplateOpen: { type: Boolean },
+      activeTab: { type: Boolean },
+      statistics: { type: Object },
       faceplateE: { type: Object },
       chart: { type: Object }
 
@@ -193,6 +205,11 @@ export class JhomePanel extends LitElement {
     this.faceplateOpen = false;
     this.faceplateE = {};
     this.chart = {};
+    this.activeTab = "graphTab";
+    this.statistics = {
+      min: 0,
+      max: 0
+    }
 
   }
 
@@ -215,18 +232,103 @@ export class JhomePanel extends LitElement {
       },
       series: [{
         name: 'sales',
-        data: [30,40,35,50,49,60,70,91,125]
+        data: []
       }],
+      chart: {
+        id: 'area-datetime',
+        type: 'area',
+        height: 200,
+        zoom: {
+          autoScaleYaxis: true
+        }
+      },
+    /*  annotations: {
+        yaxis: [{
+          y: 30,
+          borderColor: '#999',
+          label: {
+            show: true,
+            text: 'Support',
+            style: {
+              color: "#fff",
+              background: '#00E396'
+            }
+          }
+        }],
+        xaxis: [{
+          x: new Date('14 Nov 2012').getTime(),
+          borderColor: '#999',
+          yAxisIndex: 0,
+          label: {
+            show: true,
+            text: 'Rally',
+            style: {
+              color: "#fff",
+              background: '#775DD0'
+            }
+          }
+        }]
+      },
+      */
+      yaxis: {
+
+        show: true,
+        tickAmount: 4,
+
+        labels: {
+          show: true,
+          style: {
+            colors: ["#ffffff"],
+            fontSize: '12px',
+            fontFamily: 'Helvetica, Arial, sans-serif',
+            fontWeight: 400,
+            cssClass: 'apexcharts-yaxis-label',
+          },
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
       xaxis: {
-        categories: [1991,1992,1993,1994,1995,1996,1997, 1998,1999]
+
+        type: "datetime",
+        //categories: [1991,1992,1993,1994,1995,1996,1997, 1998,1999]
+        //min: new Date().getTime() - (24 * 60 * 60 * 1000),
+        tickAmount: 5,
+        labels: {
+          show: true,
+          style: {
+            colors: ["#ffffff", "#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff"],
+            fontSize: '12px',
+            fontFamily: 'Helvetica, Arial, sans-serif',
+            fontWeight: 400,
+            cssClass: 'apexcharts-yaxis-label',
+        },
+        }
+      },
+      grid: {
+        show: true,
+        borderColor: '#fff',
+        strokeDashArray: 3,
+        yaxis: {
+
+          lines: {
+            show: true,
+          }
+        },
+        xaxis: {
+          lines: {
+            show: true,
+          }
+        }
+      },
+      stroke: {
+        width: 2
       }
+
     }
 
-
-
     this.chart = new ApexCharts(this.shadowRoot.querySelector('#graph'), options);
-
-
 
     this.chart.render();
 
@@ -234,7 +336,6 @@ export class JhomePanel extends LitElement {
 
   updated(changedProps) {
     super.updated()
-
 
   }
 
@@ -263,45 +364,61 @@ export class JhomePanel extends LitElement {
       false,
     );
 
-    console.log("newStateHistory");
-
-    console.log(newStateHistory);
-
-    if (newStateHistory[0] && newStateHistory[0].length > 0) {
-
-      console.log("FILTERED DATA")
-      console.log(newStateHistory[0])
-
-      console.log(newStateHistory[0].map(a => a.state))
-      this.chart.updateSeries([{
-        name: 'sales',
-        data: newStateHistory[0].map(a => a.state).slice(0,20)
-      }])
-    }
-
     return newStateHistory[0];
-
   }
 
-  async updateData({ config } = this) {
+  decimate(newArr, cur) {
+    console.log(newArr);
+    console.log(cur);
+    newArr.push(cur)
+    return newArr;
+  }
+
+  decimateData(data, samplesInHour) {
+
+    const outData = [];
+
+    const msStep = 60 * 60 * 1000 / samplesInHour;
+    let sum = 0;
+    let count = 0;
+    let first = Date.parse(data[0].last_changed);
+    for (let i = 0; i < data.length; i++){
+      const timeStamp = Date.parse(data[i].last_changed);
+      const value = parseFloat(data[i].state);
+
+      if (timeStamp < first + msStep) {
+        sum = sum + value;
+        count++;
+
+      }
+      else {
+        console.log("PUSH ", sum / count);
+        outData.push([first, Math.round(sum / count * 10)/10]);
+        sum = value;
+        count = 1;
+        first = first + msStep;
+      }
+    }
+    console.log(data);
+    console.log("SOURCE ", data.length, outData.length)
+
+    return outData;
+  }
+  async updateData(entities, dataInHours, samplesInHour) {
     this.updating = true;
-    console.log("UPDATE DATA")
 
-    console.log(config)
     const getMilli = hours => hours * 60 ** 2 * 10 ** 3;
-
     const date = new Date();
     date.setHours(date.getHours() + 1);
     date.setMinutes(0, 0);
-
     const end = date;
     const start = new Date(end);
-    start.setMilliseconds(start.getMilliseconds() - getMilli(12));
+    start.setMilliseconds(start.getMilliseconds() - getMilli(dataInHours));
 
     try {
-      const promise = [this.updateEntity(this.panel.config.entities.pumpPower, 0, start, end)];
+      const promise = entities.map(entity => this.updateEntity(entity, 0, start, end));
       const data = await Promise.all(promise);
-      return data[0];
+      return this.decimateData(data[0], samplesInHour);
 
     } catch (err) {
       console.log(err);
@@ -321,22 +438,62 @@ export class JhomePanel extends LitElement {
     return this.hass.callApi('GET', url);
   }
 
+  calculateStatistics(data) {
+
+
+    console.log(data);
+    const stat = {
+      min: ss.min(data),
+      max: ss.max(data),
+      mean: ss.mean(data),
+      mode: ss.mode(data),
+      median: ss.median(data)
+
+    };
+
+    console.log(stat)
+    return stat;
+  }
+  _handleSensorClick(e, sensor) {
+    console.log(e);
+    let width = screen.width;
+    let height = screen.height;
+    console.log(width,height );
+
+    const topOffset = screen.height * 0.2;
+    const houseHeight = screen.height * 0.8
+    this.faceplateOpen = true;
+    this.faceplateE = { clientY: e.clientY  > height * 0.5 ? e.clientY - houseHeight * 0.5 - topOffset + 12: e.clientY - topOffset , title: sensor.name };
+
+    const promise = this.updateData([sensor], 12, 1);
+
+    promise.then((data) => {
+      console.log("PROMISE")
+
+      if (data && data.length > 0) {
+
+        console.log("UPDATE CHART");
+        console.log(data)
+
+        this.statistics = this.calculateStatistics(data.map(d => parseFloat(d[1])));
+
+
+        this.chart.updateSeries([{
+          name: 'sales',
+          //data: data.map(a => [Date.parse(a.last_changed), a.state])
+
+          data: data
+        }])
+      }
+
+    });
+
+  }
 
   _handlePumpClick(e) {
     console.log(e);
     this.faceplateOpen = true;
     this.faceplateE = { clientY: e.clientY, title: "Pump" };
-
-
-
-
-
-    const promise = this.updateData();
-
-    promise.then((data) => {
-      console.log("PROMISE")
-      console.log(data)
-    });
 
 
   }
@@ -345,14 +502,34 @@ export class JhomePanel extends LitElement {
     this.faceplateOpen = false;
   }
 
+
+  openTab(evt,tabName) {
+    console.log(tabName);
+    this.activeTab = tabName;
+    // Declare all variables
+    var i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+   // tabcontent = document.getElementsByClassName("tabcontent");
+    // for (i = 0; i < tabcontent.length; i++) {
+   //   tabcontent[i].style.display = "none";
+    //}
+
+    // Get all elements with class="tablinks" and remove the class "active"
+   //  tablinks = document.getElementsByClassName("tablinks");
+    // for (i = 0; i < tablinks.length; i++) {
+   //   tablinks[i].className = tablinks[i].className.replace(" active", "");
+    //}
+
+
+  }
+
+  getColor(val, limitTarget) {
+
+  }
   render() {
 
     console.log(this.panel);
-    console.log(this.hass);
-
-    const x = 200;
-    const svgWidth = 1000;
-    const svgHeight = 500;
 
     const faultColorClass = "fault";
     const alarmColorClass = "alarm";
@@ -397,10 +574,10 @@ export class JhomePanel extends LitElement {
       </div>
     `;
 
-    const showValueWithUnit = (val, unit, step, dec, limitTarget, horizontal) => {
+    const showValueWithUnit = (val, unit, step, dec, limitTarget, horizontal, sensor, eventInParent) => {
 
       return html`
-      <div class="sensor ${horizontal}">
+      <div class="sensor ${horizontal}" @click="${(e) => this._handleSensorClick(e, sensor)}">
         ${showValue(val, step, dec, limitTarget)}
         <div class="sensor-unit">
           ${ unit.length > 6
@@ -437,7 +614,7 @@ export class JhomePanel extends LitElement {
         limits = valueLimits["co2"];
       }
 
-      return showValueWithUnit(value, unit, accuracy, decimals, sensor.limits ?? limits, horizontal)
+      return showValueWithUnit(value, unit, accuracy, decimals, sensor.limits ?? limits, horizontal, sensor)
     }
 
     const showRoom = (room) => {
@@ -453,7 +630,7 @@ export class JhomePanel extends LitElement {
       ${showAlarmStatus(1)}
 
       <div class="roof">
-        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">
+        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 1000 500" preserveAspectRatio="none">
           <polyline points="0,500 500,8, 1000,500" style="fill:${currentTheme.houseColor};stroke:${houseOutlineColor};stroke-width:14" />
         </svg>
       </div>
@@ -486,13 +663,13 @@ export class JhomePanel extends LitElement {
 
           </div>
           <div class="supply-line">
-            <font color=${boilerColorH}>
+            <font color=${supplyColor}>
               <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${mdiArrowRightThin} ></svg-icon>
             </font>
             ${this.panel.config.heatingCircuits.map(c => showSensor(c.supply))}
           </div>
           <div class="return-line">
-            <font color=${boilerColorL}>
+            <font color=${returnColor}>
               <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${mdiArrowLeftThin} ></svg-icon>
             </font>
             ${this.panel.config.heatingCircuits.map(c => showSensor(c.return))}
@@ -513,7 +690,11 @@ export class JhomePanel extends LitElement {
     }
 
     const pumpLines = () => html`
+
     <div class="pumpLines">
+
+      <div class="item half">${showSensor(this.panel.config.entities.brineInLine)}</div>
+      <div class="item half">${showSensor(this.panel.config.entities.brineOutLine)}</div>
 
       <div class="item half" >
         <font color=${pumpLineInColor}>
@@ -526,8 +707,6 @@ export class JhomePanel extends LitElement {
         </font>
       </div>
 
-      <div class="item half">${showSensor(this.panel.config.entities.brineInLine)}</div>
-      <div class="item half">${showSensor(this.panel.config.entities.brineOutLine)}</div>
 
     </div>
   `;
@@ -554,7 +733,7 @@ export class JhomePanel extends LitElement {
           </div>
           <div class="column wide center">
             ${showSensor(this.panel.config.entities.waterTop)}
-            <div class="item" style="color: ${iconColor}">
+            <div class="item icon" style="color: ${iconColor}">
               <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>
             </div>
             ${showSensor(this.panel.config.entities.waterCharge)}
@@ -567,10 +746,10 @@ export class JhomePanel extends LitElement {
     const pumpPowerTargetIndicator = () => {
       return html`
         <div class="pump-power-target" >
-          <div class="buffer-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? activeColor : inActiveColor}">
+          <div class="buffer-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? activeColor : inActiveColor}">
             <svg-icon type="mdi" size="28" path=${mdiArrowRightBold} ></svg-icon>
           </div>
-          <div class="boiler-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? activeColor : inActiveColor}">
+          <div class="boiler-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? activeColor : inActiveColor}">
             <svg-icon type="mdi" size="28" path=${mdiArrowRightBold} ></svg-icon>
           </div>
         </div>
@@ -579,15 +758,49 @@ export class JhomePanel extends LitElement {
 
     /* READY */
 
+
+
     const showFaceplate = () => {
 
 
       const y = this.faceplateE.clientY;
 
       return html`
-        <div class="faceplate" style="display:${this.faceplateOpen ? "block" : "none"};top=${y}px">
-          <div class="faceplate-title">${this.faceplateE.title}<div class="faceplate-close" @click="${this._closeFaceplate}">X</div></div>
-          <div id="graph"></div>
+        <div class="faceplate" style="display:${this.faceplateOpen ? "block" : "none"};top:${y}px">
+
+
+          <div class="faceplate-title">
+            ${this.faceplateE.title}
+
+            <!-- Tab links -->
+            <div class="tab">
+              <button class="tablinks ${this.activeTab === "graphTab" ? "active" : ""}" @click="${(e) => this.openTab(e, 'graphTab')}">Graph</button>
+              <button class="tablinks ${this.activeTab === "statTab" ? "active" : ""}" @click="${(e) => this.openTab(e, 'statTab')}">Stat</button>
+              <button class="tablinks ${this.activeTab === "operateTab" ? "active" : ""}" @click="${(e) => this.openTab(e, 'operateTab')}">Operate</button>
+            </div>
+            <div class="faceplate-close" @click="${this._closeFaceplate}">
+              X
+            </div>
+          </div>
+
+          <!-- Tab content -->
+          <div id="graphTab" class="tabcontent" style="display: ${this.activeTab === "graphTab" ? "block" : "none"}">
+            <div id="graph"></div>
+          </div>
+
+          <div id="statTab" class="tabcontent" style="display: ${this.activeTab === "statTab" ? "block" : "none"}">
+            <h3>Statistics</h3>
+            <p>min: ${this.statistics.min}</p>
+            <p>max: ${this.statistics.max}</p>
+            <p>mean: ${this.statistics.mean}</p>
+            <p>mode: ${this.statistics.mode}</p>
+            <p>median: ${this.statistics.median}</p>
+
+
+          </div>
+          <div id="graphTab" class="tabcontent" style="display: ${this.activeTab === "operateTab" ? "block" : "none"}">
+            <p>Operations</p>
+          </div>
         </div>
       `;
     }
@@ -607,6 +820,33 @@ export class JhomePanel extends LitElement {
           </div>
         </div>
       `;
+    }
+
+    const electricity = () => {
+
+      const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
+      const valc = this.hass.states[this.panel.config.entities.waterCharge.entityId].state
+      const topColor = getLimitedColor(valt, boilerLimits, boilerColors)
+      const bottomColor = getLimitedColor(valc, boilerLimits, boilerColors)
+
+      const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [10, 30]);
+      const icon = (deviceOn === "active" ? mdiTransmissionTowerImport : mdiTransmissionTowerImport);
+      const iconColor = (deviceOn === "active" ? activeColor : normalTextColor);
+
+      return html`
+      <div class="device ${deviceOn}" >
+        <div class="electricity">
+
+          <div class="columnx">
+            ${showSensor(this.panel.config.entities.waterTop)}
+            <div class="item icon" style="color: ${iconColor}">
+              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>
+            </div>
+            ${showSensor(this.panel.config.entities.waterCharge)}
+          </div>
+        </div>
+      </div>
+    `;
     }
 
     const radiatorLine = (floor, line) => html`
@@ -640,16 +880,18 @@ export class JhomePanel extends LitElement {
             </div>
 
             <div class="column wide">
-              ${SupplyReturnLines()}
               ${boiler()}
+              ${SupplyReturnLines()}
             </div>
 
           </div> <!-- BOILER ROOM -->
 
-          <div>
-            ${radiatorLine(0, 2)}
+          <div class="other-basement">
+            <div class="column">
+              ${radiatorLine(0, 2)}
+            </div>
+            ${electricity()}
           </div>
-
         </div> <!-- BASEMENT -->
 
       ${showFaceplate()}
@@ -724,6 +966,8 @@ export class JhomePanel extends LitElement {
       :host {
         background-color: transparent;
         display: block;
+        color: ${currentTheme.textColor};
+        font-size: 3vw;
       }
 
       .main{
@@ -748,11 +992,50 @@ export class JhomePanel extends LitElement {
       }
 
       .mcen, .msid {
-        height: 65vh;
+        height: 80vh;
       }
 
       .bcor, .bcen {
         height: 15vh;
+        display: none;
+      }
+
+      /* Style the tab */
+      .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f133;
+      }
+
+      /* Style the buttons that are used to open the tab content */
+      .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 2px 6px;
+        transition: 0.3s;
+      }
+
+      /* Change background color of buttons on hover */
+      .tab button:hover {
+        background-color: #ddd;
+      }
+
+      /* Create an active/current tablink class */
+      .tab button.active {
+        background-color: #ccc;
+      }
+
+      /* Style the tab content */
+      .tabcontent {
+        display: block;
+        padding: 3px 6px;
+
+      }
+      .tabcontent.hidden{
+        display: none;
       }
 
       .house {
@@ -785,11 +1068,14 @@ export class JhomePanel extends LitElement {
         align-items: flex-start;
         margin-top: 6px;
         padding: 5px;
+        min-height: 20vh;
 
       }
       .floor.first {
+        align-items: center;
       }
       .floor.second {
+        align-items: center;
       }
       .floor.basement {
         justify-content: space-between;
@@ -813,6 +1099,12 @@ export class JhomePanel extends LitElement {
         font-weight: bold;
         margin-right: 12px;
         color: ${currentTheme.titleColor};
+      }
+
+      .other-basement {
+        flex: 1 0 40%;
+        padding: 0px;
+        margin-left: 6px;
       }
 
       .sensor {
@@ -843,7 +1135,8 @@ export class JhomePanel extends LitElement {
 
       .device.roundish {
         border-radius: 15%;
-        margin-top: 6px;
+        margin-top: 0px;
+        margin-right: 6px;
       }
 
       .device.active {
@@ -882,7 +1175,7 @@ export class JhomePanel extends LitElement {
       .pump {
         cursor: pointer;
         height: 110px;
-        width: 70px;
+        width: 17vw;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -891,13 +1184,12 @@ export class JhomePanel extends LitElement {
 
       .faceplate {
         position: absolute;
-        background-color: white;
+        background-color: ${currentTheme.valueDarkColor};
         width: 96%;
         height: 50%;
         left: 2%;
         top: 50%;
-        padding: 3px;
-        border: 1px solid #666666;
+        border: 2px solid #efefef;
       }
 
       .faceplate-title {
@@ -905,27 +1197,40 @@ export class JhomePanel extends LitElement {
         flex-wrap: nowrap;
         justify-content: space-between;
         align-items: center;
-        background-color: #666666;
+        background-color: transparent;
+        padding-left: 6px;
+        padding-top:6px;
         color: #ffffff;
         width: 100%;
         height: 24px;
       }
       .faceplate-close {
-        height: 24px;
-        width: 24px;
-        background-color: #fefefe;
-        color: #333333;
+        padding-left: 6px;
+        padding-right: 6px;
+
+        height: 16px;
+        width: 28px;
+        color: #ffffff;
 
       }
 
       .boiler {
-        height: 90px;
-        width: 55px;
+        height: 85px;
+        width: 45px;
         display: flex;
         flex-wrap: nowrap;
         justify-content: flex-start;
         align-items: center;
       }
+
+      .electricity {
+        height: auto;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: center;
+        }
 
       .item {
         flex: 0 1 100%;
@@ -933,6 +1238,9 @@ export class JhomePanel extends LitElement {
         color: ${currentTheme.valueColor};
       }
 
+      .item.icon {
+        padding-top: 3px;
+      }
 
       /* JANNE */
 
@@ -947,7 +1255,7 @@ export class JhomePanel extends LitElement {
       .item.half {
         flex: 0 0 50%;
         text-align: center;
-        font-size: 12px;
+        font-size: 3vw;
       }
 
       .supply-return-lines {
@@ -957,6 +1265,7 @@ export class JhomePanel extends LitElement {
         justify-content: flex-start;
         align-items: center;
         border: 1px dashed #999999;
+        margin-top: 6px;
 
       }
 
@@ -967,7 +1276,7 @@ export class JhomePanel extends LitElement {
 
 
       .plain-unit {
-        font-size: 1.0em;
+        font-size: 3vw;
         width: auto;
       }
       .sensor-unit {
@@ -979,7 +1288,7 @@ export class JhomePanel extends LitElement {
       }
       .sensor-value {
         text-align: center;
-        font-size: 1.2em;
+        font-size: 4vw;
         color: ${currentTheme.valueColor};
         padding-left: 2px;
         padding-right: 2px;
@@ -1022,7 +1331,7 @@ export class JhomePanel extends LitElement {
       .type-line {
           display: flex;
           flex: 100%;
-          justify-content: space-around;
+          justify-content: space-evenly;
 
       }
 
@@ -1030,7 +1339,7 @@ export class JhomePanel extends LitElement {
         display: flex;
         flex: 100%;
         align-items: center;
-        justify-content: space-around;
+        justify-content: space-evenly;
         margin-bottom: 3px;
 
       }
@@ -1039,7 +1348,7 @@ export class JhomePanel extends LitElement {
         display: flex;
         flex: 100%;
         align-items: center;
-        justify-content: space-around;
+        justify-content: space-evenly;
         margin-bottom: 3px;
 
 
@@ -1060,7 +1369,7 @@ export class JhomePanel extends LitElement {
 
       .buffer-arrow {
         flex: 0 1;
-        height: 65px;
+        height: 75px;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -1078,18 +1387,19 @@ export class JhomePanel extends LitElement {
 
 
       .temp-bar {
-        height: 70px;
+        height: 77px;
         flex: 0 0 8px;
-        margin: 3px;
         margin-left: 3px;
-        border: 1px solid #eeeeee;
-        border-right: 1px solid #000000;
-        border-top: 1px solid #000000;
+        margin-right: 6px;
+        border: 1px solid #999999;
+        border-radius: 2px;
+        border-right: 2px solid #666666;
+        border-bottom: 1px solid #666666;
       }
 
       .pumpLines {
         height: auto;
-        width: 70px;
+        width: 100%;
         display: flex;
         flex-wrap: wrap;
         justify-content: start;

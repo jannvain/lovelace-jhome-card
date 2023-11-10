@@ -17810,53 +17810,1220 @@ var $6f3b91cc0baf9804$var$_t = function() {
 $6f3b91cc0baf9804$exports = $6f3b91cc0baf9804$var$_t;
 
 
-
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */ const $c0dca511eaae54d5$export$751000bd0403e3a3 = (e, t, c)=>(c.configurable = !0, c.enumerable = !0, Reflect.decorate && "object" != typeof t && Object.defineProperty(e, t, c), c)
-;
-
-
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */ function $8f26b937abf73443$export$7c233b474a5eb12b(e2, r) {
-    return (n, s, i)=>{
-        const o = (t)=>t.renderRoot?.querySelector(e2) ?? null
-        ;
-        if (r) {
-            const { get: e1 , set: u  } = "object" == typeof s ? n : i ?? (()=>{
-                const t = Symbol();
-                return {
-                    get () {
-                        return this[t];
-                    },
-                    set (e) {
-                        this[t] = e;
-                    }
-                };
-            })();
-            return $c0dca511eaae54d5$export$751000bd0403e3a3(n, s, {
-                get () {
-                    if (r) {
-                        let t = e1.call(this);
-                        return (void 0) === t && (t = o(this), u.call(this, t)), t;
-                    }
-                    return o(this);
-                }
-            });
+var $4e2726d586ab239c$exports = {};
+!function(r, t) {
+    "object" == typeof $4e2726d586ab239c$exports && "undefined" != "object" ? t($4e2726d586ab239c$exports) : "function" == typeof define && define.amd ? define([
+        "exports"
+    ], t) : t((r = "undefined" != typeof globalThis ? globalThis : r || self).ss = {
+    });
+}($4e2726d586ab239c$exports, function(r) {
+    "use strict";
+    function t(r1) {
+        if (0 === r1.length) return 0;
+        var t1, n = r1[0], e = 0;
+        if ("number" != typeof n) return NaN;
+        for(var a = 1; a < r1.length; a++){
+            if ("number" != typeof r1[a]) return NaN;
+            t1 = n + r1[a], Math.abs(n) >= Math.abs(r1[a]) ? e += n - t1 + r1[a] : e += r1[a] - t1 + n, n = t1;
         }
-        return $c0dca511eaae54d5$export$751000bd0403e3a3(n, s, {
-            get () {
-                return o(this);
-            }
+        return n + e;
+    }
+    function n(r1) {
+        if (0 === r1.length) throw new Error("mean requires at least one data point");
+        return t(r1) / r1.length;
+    }
+    function e(r1, t1) {
+        var e1, a, o = n(r1), i = 0;
+        if (2 === t1) for(a = 0; a < r1.length; a++)i += (e1 = r1[a] - o) * e1;
+        else for(a = 0; a < r1.length; a++)i += Math.pow(r1[a] - o, t1);
+        return i;
+    }
+    function a(r1) {
+        if (0 === r1.length) throw new Error("variance requires at least one data point");
+        return e(r1, 2) / r1.length;
+    }
+    function o(r1) {
+        if (1 === r1.length) return 0;
+        var t1 = a(r1);
+        return Math.sqrt(t1);
+    }
+    function i8(r1) {
+        if (0 === r1.length) throw new Error("mode requires at least one data point");
+        if (1 === r1.length) return r1[0];
+        for(var t1 = r1[0], n1 = NaN, e1 = 0, a1 = 1, o1 = 1; o1 < r1.length + 1; o1++)r1[o1] !== t1 ? (a1 > e1 && (e1 = a1, n1 = t1), a1 = 1, t1 = r1[o1]) : a1++;
+        return n1;
+    }
+    function u(r1) {
+        return r1.slice().sort(function(r2, t1) {
+            return r2 - t1;
         });
+    }
+    function h(r1) {
+        if (0 === r1.length) throw new Error("min requires at least one data point");
+        for(var t1 = r1[0], n1 = 1; n1 < r1.length; n1++)r1[n1] < t1 && (t1 = r1[n1]);
+        return t1;
+    }
+    function f(r1) {
+        if (0 === r1.length) throw new Error("max requires at least one data point");
+        for(var t1 = r1[0], n1 = 1; n1 < r1.length; n1++)r1[n1] > t1 && (t1 = r1[n1]);
+        return t1;
+    }
+    function l(r1) {
+        for(var t1 = 0, n1 = 0; n1 < r1.length; n1++){
+            if ("number" != typeof r1[n1]) return NaN;
+            t1 += r1[n1];
+        }
+        return t1;
+    }
+    function s(r1, t1) {
+        var n1 = r1.length * t1;
+        if (0 === r1.length) throw new Error("quantile requires at least one data point.");
+        if (t1 < 0 || t1 > 1) throw new Error("quantiles must be between 0 and 1");
+        return 1 === t1 ? r1[r1.length - 1] : 0 === t1 ? r1[0] : n1 % 1 != 0 ? r1[Math.ceil(n1) - 1] : r1.length % 2 == 0 ? (r1[n1 - 1] + r1[n1]) / 2 : r1[n1];
+    }
+    function c(r1, t1, n1, e1) {
+        for(n1 = n1 || 0, e1 = e1 || r1.length - 1; e1 > n1;){
+            if (e1 - n1 > 600) {
+                var a1 = e1 - n1 + 1, o1 = t1 - n1 + 1, i1 = Math.log(a1), u1 = 0.5 * Math.exp(2 * i1 / 3), h1 = 0.5 * Math.sqrt(i1 * u1 * (a1 - u1) / a1);
+                o1 - a1 / 2 < 0 && (h1 *= -1), c(r1, t1, Math.max(n1, Math.floor(t1 - o1 * u1 / a1 + h1)), Math.min(e1, Math.floor(t1 + (a1 - o1) * u1 / a1 + h1)));
+            }
+            var f1 = r1[t1], l1 = n1, s1 = e1;
+            for(g(r1, n1, t1), r1[e1] > f1 && g(r1, n1, e1); l1 < s1;){
+                for(g(r1, l1, s1), l1++, s1--; r1[l1] < f1;)l1++;
+                for(; r1[s1] > f1;)s1--;
+            }
+            r1[n1] === f1 ? g(r1, n1, s1) : g(r1, ++s1, e1), s1 <= t1 && (n1 = s1 + 1), t1 <= s1 && (e1 = s1 - 1);
+        }
+    }
+    function g(r1, t1, n1) {
+        var e1 = r1[t1];
+        r1[t1] = r1[n1], r1[n1] = e1;
+    }
+    function v(r1, t1) {
+        var n1 = r1.slice();
+        if (Array.isArray(t1)) {
+            !function(r2, t2) {
+                for(var n2 = [
+                    0
+                ], e1 = 0; e1 < t2.length; e1++)n2.push(w(r2.length, t2[e1]));
+                n2.push(r2.length - 1), n2.sort(m);
+                var a2 = [
+                    0,
+                    n2.length - 1
+                ];
+                for(; a2.length;){
+                    var o2 = Math.ceil(a2.pop()), i2 = Math.floor(a2.pop());
+                    if (!(o2 - i2 <= 1)) {
+                        var u2 = Math.floor((i2 + o2) / 2);
+                        p(r2, n2[u2], Math.floor(n2[i2]), Math.ceil(n2[o2])), a2.push(i2, u2, u2, o2);
+                    }
+                }
+            }(n1, t1);
+            for(var e1 = [], a2 = 0; a2 < t1.length; a2++)e1[a2] = s(n1, t1[a2]);
+            return e1;
+        }
+        return p(n1, w(n1.length, t1), 0, n1.length - 1), s(n1, t1);
+    }
+    function p(r1, t1, n1, e2) {
+        t1 % 1 == 0 ? c(r1, t1, n1, e2) : (c(r1, t1 = Math.floor(t1), n1, e2), c(r1, t1 + 1, t1 + 1, e2));
+    }
+    function m(r1, t1) {
+        return r1 - t1;
+    }
+    function w(r1, t1) {
+        var n1 = r1 * t1;
+        return 1 === t1 ? r1 - 1 : 0 === t1 ? 0 : n1 % 1 != 0 ? Math.ceil(n1) - 1 : r1 % 2 == 0 ? n1 - 0.5 : n1;
+    }
+    function M(r1, t1) {
+        if (t1 < r1[0]) return 0;
+        if (t1 > r1[r1.length - 1]) return 1;
+        var n1 = function(r2, t2) {
+            var n2 = 0, e2 = 0, a3 = r2.length;
+            for(; e2 < a3;)t2 <= r2[n2 = e2 + a3 >>> 1] ? a3 = n2 : e2 = -~n2;
+            return e2;
+        }(r1, t1);
+        if (r1[n1] !== t1) return n1 / r1.length;
+        n1++;
+        var e2 = function(r2, t2) {
+            var n2 = 0, e3 = 0, a3 = r2.length;
+            for(; e3 < a3;)t2 >= r2[n2 = e3 + a3 >>> 1] ? e3 = -~n2 : a3 = n2;
+            return e3;
+        }(r1, t1);
+        if (e2 === n1) return n1 / r1.length;
+        var a3 = e2 - n1 + 1;
+        return a3 * (e2 + n1) / 2 / a3 / r1.length;
+    }
+    function d(r1) {
+        var t1 = v(r1, 0.75), n1 = v(r1, 0.25);
+        if ("number" == typeof t1 && "number" == typeof n1) return t1 - n1;
+    }
+    function b(r1) {
+        return +v(r1, 0.5);
+    }
+    function q(r1) {
+        for(var t1 = b(r1), n1 = [], e2 = 0; e2 < r1.length; e2++)n1.push(Math.abs(r1[e2] - t1));
+        return b(n1);
+    }
+    function y(r1, t1) {
+        t1 = t1 || Math.random;
+        for(var n1, e2, a3 = r1.length; a3 > 0;)e2 = Math.floor(t1() * a3--), n1 = r1[a3], r1[a3] = r1[e2], r1[e2] = n1;
+        return r1;
+    }
+    function E(r1, t1) {
+        return y(r1.slice(), t1);
+    }
+    function x(r1, t1, n1) {
+        return E(r1, n1).slice(0, t1);
+    }
+    function S(r1, t1) {
+        for(var n1 = [], e2 = 0; e2 < r1; e2++){
+            for(var a3 = [], o3 = 0; o3 < t1; o3++)a3.push(0);
+            n1.push(a3);
+        }
+        return n1;
+    }
+    function k(r1) {
+        for(var t1, n1 = 0, e2 = 0; e2 < r1.length; e2++)0 !== e2 && r1[e2] === t1 || (t1 = r1[e2], n1++);
+        return n1;
+    }
+    function A(r1, t1, n1, e2) {
+        var a4;
+        if (r1 > 0) {
+            var o4 = (n1[t1] - n1[r1 - 1]) / (t1 - r1 + 1);
+            a4 = e2[t1] - e2[r1 - 1] - (t1 - r1 + 1) * o4 * o4;
+        } else a4 = e2[t1] - n1[t1] * n1[t1] / (t1 + 1);
+        return a4 < 0 ? 0 : a4;
+    }
+    function N(r1, t1, n1, e2, a4, o5, i3) {
+        if (!(r1 > t1)) {
+            var u3 = Math.floor((r1 + t1) / 2);
+            e2[n1][u3] = e2[n1 - 1][u3 - 1], a4[n1][u3] = u3;
+            var h2 = n1;
+            r1 > n1 && (h2 = Math.max(h2, a4[n1][r1 - 1] || 0)), h2 = Math.max(h2, a4[n1 - 1][u3] || 0);
+            var f2, l2, s2, c1 = u3 - 1;
+            t1 < e2[0].length - 1 && (c1 = Math.min(c1, a4[n1][t1 + 1] || 0));
+            for(var g1 = c1; g1 >= h2 && !((f2 = A(g1, u3, o5, i3)) + e2[n1 - 1][h2 - 1] >= e2[n1][u3]); --g1)(l2 = A(h2, u3, o5, i3) + e2[n1 - 1][h2 - 1]) < e2[n1][u3] && (e2[n1][u3] = l2, a4[n1][u3] = h2), h2++, (s2 = f2 + e2[n1 - 1][g1 - 1]) < e2[n1][u3] && (e2[n1][u3] = s2, a4[n1][u3] = g1);
+            N(r1, u3 - 1, n1, e2, a4, o5, i3), N(u3 + 1, t1, n1, e2, a4, o5, i3);
+        }
+    }
+    function P(r1, t1) {
+        if (r1.length !== t1.length) throw new Error("sampleCovariance requires samples with equal lengths");
+        if (r1.length < 2) throw new Error("sampleCovariance requires at least two data points in each sample");
+        for(var e2 = n(r1), a4 = n(t1), o5 = 0, i3 = 0; i3 < r1.length; i3++)o5 += (r1[i3] - e2) * (t1[i3] - a4);
+        return o5 / (r1.length - 1);
+    }
+    function C(r1) {
+        if (r1.length < 2) throw new Error("sampleVariance requires at least two data points");
+        return e(r1, 2) / (r1.length - 1);
+    }
+    function I(r1) {
+        var t1 = C(r1);
+        return Math.sqrt(t1);
+    }
+    function T(r1, t1) {
+        return P(r1, t1) / I(r1) / I(t1);
+    }
+    function D(r1, t1, n1, e2) {
+        return (r1 * t1 + n1 * e2) / (t1 + e2);
+    }
+    function R(r1) {
+        if (0 === r1.length) throw new Error("meanSimple requires at least one data point");
+        return l(r1) / r1.length;
+    }
+    function _(r1) {
+        if (0 === r1.length) throw new Error("rootMeanSquare requires at least one data point");
+        for(var t1 = 0, n1 = 0; n1 < r1.length; n1++)t1 += Math.pow(r1[n1], 2);
+        return Math.sqrt(t1 / r1.length);
+    }
+    var L = function() {
+        this.totalCount = 0, this.data = {
+        };
     };
-}
-
+    L.prototype.train = function(r1, t1) {
+        for(var n1 in this.data[t1] || (this.data[t1] = {
+        }), r1){
+            var e2 = r1[n1];
+            (void 0) === this.data[t1][n1] && (this.data[t1][n1] = {
+            }), (void 0) === this.data[t1][n1][e2] && (this.data[t1][n1][e2] = 0), this.data[t1][n1][e2]++;
+        }
+        this.totalCount++;
+    }, L.prototype.score = function(r1) {
+        var t1, n1 = {
+        };
+        for(var e3 in r1){
+            var a4 = r1[e3];
+            for(t1 in this.data)n1[t1] = {
+            }, this.data[t1][e3] ? n1[t1][e3 + "_" + a4] = (this.data[t1][e3][a4] || 0) / this.totalCount : n1[t1][e3 + "_" + a4] = 0;
+        }
+        var o5 = {
+        };
+        for(t1 in n1)for(var i3 in o5[t1] = 0, n1[t1])o5[t1] += n1[t1][i3];
+        return o5;
+    };
+    var V = function() {
+        this.weights = [], this.bias = 0;
+    };
+    V.prototype.predict = function(r1) {
+        if (r1.length !== this.weights.length) return null;
+        for(var t1 = 0, n1 = 0; n1 < this.weights.length; n1++)t1 += this.weights[n1] * r1[n1];
+        return (t1 += this.bias) > 0 ? 1 : 0;
+    }, V.prototype.train = function(r1, t1) {
+        if (0 !== t1 && 1 !== t1) return null;
+        r1.length !== this.weights.length && (this.weights = r1, this.bias = 1);
+        var n1 = this.predict(r1);
+        if ("number" == typeof n1 && n1 !== t1) {
+            for(var e3 = t1 - n1, a5 = 0; a5 < this.weights.length; a5++)this.weights[a5] += e3 * r1[a5];
+            this.bias += e3;
+        }
+        return this;
+    };
+    var F = 0.0001;
+    function U(r1) {
+        if (r1 < 0) throw new Error("factorial requires a non-negative value");
+        if (Math.floor(r1) !== r1) throw new Error("factorial requires an integer input");
+        for(var t1 = 1, n1 = 2; n1 <= r1; n1++)t1 *= n1;
+        return t1;
+    }
+    var z = [
+        0.9999999999999971,
+        57.15623566586292,
+        -59.59796035547549,
+        14.136097974741746,
+        -0.4919138160976202,
+        0.00003399464998481189,
+        0.00004652362892704858,
+        -0.00009837447530487956,
+        0.0001580887032249125,
+        -0.00021026444172410488,
+        0.00021743961811521265,
+        -0.0001643181065367639,
+        0.00008441822398385275,
+        -0.000026190838401581408,
+        0.0000036899182659531625
+    ], X = Math.log(Math.sqrt(2 * Math.PI));
+    var j = {
+        1: {
+            0.995: 0,
+            0.99: 0,
+            0.975: 0,
+            0.95: 0,
+            0.9: 0.02,
+            0.5: 0.45,
+            0.1: 2.71,
+            0.05: 3.84,
+            0.025: 5.02,
+            0.01: 6.63,
+            0.005: 7.88
+        },
+        2: {
+            0.995: 0.01,
+            0.99: 0.02,
+            0.975: 0.05,
+            0.95: 0.1,
+            0.9: 0.21,
+            0.5: 1.39,
+            0.1: 4.61,
+            0.05: 5.99,
+            0.025: 7.38,
+            0.01: 9.21,
+            0.005: 10.6
+        },
+        3: {
+            0.995: 0.07,
+            0.99: 0.11,
+            0.975: 0.22,
+            0.95: 0.35,
+            0.9: 0.58,
+            0.5: 2.37,
+            0.1: 6.25,
+            0.05: 7.81,
+            0.025: 9.35,
+            0.01: 11.34,
+            0.005: 12.84
+        },
+        4: {
+            0.995: 0.21,
+            0.99: 0.3,
+            0.975: 0.48,
+            0.95: 0.71,
+            0.9: 1.06,
+            0.5: 3.36,
+            0.1: 7.78,
+            0.05: 9.49,
+            0.025: 11.14,
+            0.01: 13.28,
+            0.005: 14.86
+        },
+        5: {
+            0.995: 0.41,
+            0.99: 0.55,
+            0.975: 0.83,
+            0.95: 1.15,
+            0.9: 1.61,
+            0.5: 4.35,
+            0.1: 9.24,
+            0.05: 11.07,
+            0.025: 12.83,
+            0.01: 15.09,
+            0.005: 16.75
+        },
+        6: {
+            0.995: 0.68,
+            0.99: 0.87,
+            0.975: 1.24,
+            0.95: 1.64,
+            0.9: 2.2,
+            0.5: 5.35,
+            0.1: 10.65,
+            0.05: 12.59,
+            0.025: 14.45,
+            0.01: 16.81,
+            0.005: 18.55
+        },
+        7: {
+            0.995: 0.99,
+            0.99: 1.25,
+            0.975: 1.69,
+            0.95: 2.17,
+            0.9: 2.83,
+            0.5: 6.35,
+            0.1: 12.02,
+            0.05: 14.07,
+            0.025: 16.01,
+            0.01: 18.48,
+            0.005: 20.28
+        },
+        8: {
+            0.995: 1.34,
+            0.99: 1.65,
+            0.975: 2.18,
+            0.95: 2.73,
+            0.9: 3.49,
+            0.5: 7.34,
+            0.1: 13.36,
+            0.05: 15.51,
+            0.025: 17.53,
+            0.01: 20.09,
+            0.005: 21.96
+        },
+        9: {
+            0.995: 1.73,
+            0.99: 2.09,
+            0.975: 2.7,
+            0.95: 3.33,
+            0.9: 4.17,
+            0.5: 8.34,
+            0.1: 14.68,
+            0.05: 16.92,
+            0.025: 19.02,
+            0.01: 21.67,
+            0.005: 23.59
+        },
+        10: {
+            0.995: 2.16,
+            0.99: 2.56,
+            0.975: 3.25,
+            0.95: 3.94,
+            0.9: 4.87,
+            0.5: 9.34,
+            0.1: 15.99,
+            0.05: 18.31,
+            0.025: 20.48,
+            0.01: 23.21,
+            0.005: 25.19
+        },
+        11: {
+            0.995: 2.6,
+            0.99: 3.05,
+            0.975: 3.82,
+            0.95: 4.57,
+            0.9: 5.58,
+            0.5: 10.34,
+            0.1: 17.28,
+            0.05: 19.68,
+            0.025: 21.92,
+            0.01: 24.72,
+            0.005: 26.76
+        },
+        12: {
+            0.995: 3.07,
+            0.99: 3.57,
+            0.975: 4.4,
+            0.95: 5.23,
+            0.9: 6.3,
+            0.5: 11.34,
+            0.1: 18.55,
+            0.05: 21.03,
+            0.025: 23.34,
+            0.01: 26.22,
+            0.005: 28.3
+        },
+        13: {
+            0.995: 3.57,
+            0.99: 4.11,
+            0.975: 5.01,
+            0.95: 5.89,
+            0.9: 7.04,
+            0.5: 12.34,
+            0.1: 19.81,
+            0.05: 22.36,
+            0.025: 24.74,
+            0.01: 27.69,
+            0.005: 29.82
+        },
+        14: {
+            0.995: 4.07,
+            0.99: 4.66,
+            0.975: 5.63,
+            0.95: 6.57,
+            0.9: 7.79,
+            0.5: 13.34,
+            0.1: 21.06,
+            0.05: 23.68,
+            0.025: 26.12,
+            0.01: 29.14,
+            0.005: 31.32
+        },
+        15: {
+            0.995: 4.6,
+            0.99: 5.23,
+            0.975: 6.27,
+            0.95: 7.26,
+            0.9: 8.55,
+            0.5: 14.34,
+            0.1: 22.31,
+            0.05: 25,
+            0.025: 27.49,
+            0.01: 30.58,
+            0.005: 32.8
+        },
+        16: {
+            0.995: 5.14,
+            0.99: 5.81,
+            0.975: 6.91,
+            0.95: 7.96,
+            0.9: 9.31,
+            0.5: 15.34,
+            0.1: 23.54,
+            0.05: 26.3,
+            0.025: 28.85,
+            0.01: 32,
+            0.005: 34.27
+        },
+        17: {
+            0.995: 5.7,
+            0.99: 6.41,
+            0.975: 7.56,
+            0.95: 8.67,
+            0.9: 10.09,
+            0.5: 16.34,
+            0.1: 24.77,
+            0.05: 27.59,
+            0.025: 30.19,
+            0.01: 33.41,
+            0.005: 35.72
+        },
+        18: {
+            0.995: 6.26,
+            0.99: 7.01,
+            0.975: 8.23,
+            0.95: 9.39,
+            0.9: 10.87,
+            0.5: 17.34,
+            0.1: 25.99,
+            0.05: 28.87,
+            0.025: 31.53,
+            0.01: 34.81,
+            0.005: 37.16
+        },
+        19: {
+            0.995: 6.84,
+            0.99: 7.63,
+            0.975: 8.91,
+            0.95: 10.12,
+            0.9: 11.65,
+            0.5: 18.34,
+            0.1: 27.2,
+            0.05: 30.14,
+            0.025: 32.85,
+            0.01: 36.19,
+            0.005: 38.58
+        },
+        20: {
+            0.995: 7.43,
+            0.99: 8.26,
+            0.975: 9.59,
+            0.95: 10.85,
+            0.9: 12.44,
+            0.5: 19.34,
+            0.1: 28.41,
+            0.05: 31.41,
+            0.025: 34.17,
+            0.01: 37.57,
+            0.005: 40
+        },
+        21: {
+            0.995: 8.03,
+            0.99: 8.9,
+            0.975: 10.28,
+            0.95: 11.59,
+            0.9: 13.24,
+            0.5: 20.34,
+            0.1: 29.62,
+            0.05: 32.67,
+            0.025: 35.48,
+            0.01: 38.93,
+            0.005: 41.4
+        },
+        22: {
+            0.995: 8.64,
+            0.99: 9.54,
+            0.975: 10.98,
+            0.95: 12.34,
+            0.9: 14.04,
+            0.5: 21.34,
+            0.1: 30.81,
+            0.05: 33.92,
+            0.025: 36.78,
+            0.01: 40.29,
+            0.005: 42.8
+        },
+        23: {
+            0.995: 9.26,
+            0.99: 10.2,
+            0.975: 11.69,
+            0.95: 13.09,
+            0.9: 14.85,
+            0.5: 22.34,
+            0.1: 32.01,
+            0.05: 35.17,
+            0.025: 38.08,
+            0.01: 41.64,
+            0.005: 44.18
+        },
+        24: {
+            0.995: 9.89,
+            0.99: 10.86,
+            0.975: 12.4,
+            0.95: 13.85,
+            0.9: 15.66,
+            0.5: 23.34,
+            0.1: 33.2,
+            0.05: 36.42,
+            0.025: 39.36,
+            0.01: 42.98,
+            0.005: 45.56
+        },
+        25: {
+            0.995: 10.52,
+            0.99: 11.52,
+            0.975: 13.12,
+            0.95: 14.61,
+            0.9: 16.47,
+            0.5: 24.34,
+            0.1: 34.28,
+            0.05: 37.65,
+            0.025: 40.65,
+            0.01: 44.31,
+            0.005: 46.93
+        },
+        26: {
+            0.995: 11.16,
+            0.99: 12.2,
+            0.975: 13.84,
+            0.95: 15.38,
+            0.9: 17.29,
+            0.5: 25.34,
+            0.1: 35.56,
+            0.05: 38.89,
+            0.025: 41.92,
+            0.01: 45.64,
+            0.005: 48.29
+        },
+        27: {
+            0.995: 11.81,
+            0.99: 12.88,
+            0.975: 14.57,
+            0.95: 16.15,
+            0.9: 18.11,
+            0.5: 26.34,
+            0.1: 36.74,
+            0.05: 40.11,
+            0.025: 43.19,
+            0.01: 46.96,
+            0.005: 49.65
+        },
+        28: {
+            0.995: 12.46,
+            0.99: 13.57,
+            0.975: 15.31,
+            0.95: 16.93,
+            0.9: 18.94,
+            0.5: 27.34,
+            0.1: 37.92,
+            0.05: 41.34,
+            0.025: 44.46,
+            0.01: 48.28,
+            0.005: 50.99
+        },
+        29: {
+            0.995: 13.12,
+            0.99: 14.26,
+            0.975: 16.05,
+            0.95: 17.71,
+            0.9: 19.77,
+            0.5: 28.34,
+            0.1: 39.09,
+            0.05: 42.56,
+            0.025: 45.72,
+            0.01: 49.59,
+            0.005: 52.34
+        },
+        30: {
+            0.995: 13.79,
+            0.99: 14.95,
+            0.975: 16.79,
+            0.95: 18.49,
+            0.9: 20.6,
+            0.5: 29.34,
+            0.1: 40.26,
+            0.05: 43.77,
+            0.025: 46.98,
+            0.01: 50.89,
+            0.005: 53.67
+        },
+        40: {
+            0.995: 20.71,
+            0.99: 22.16,
+            0.975: 24.43,
+            0.95: 26.51,
+            0.9: 29.05,
+            0.5: 39.34,
+            0.1: 51.81,
+            0.05: 55.76,
+            0.025: 59.34,
+            0.01: 63.69,
+            0.005: 66.77
+        },
+        50: {
+            0.995: 27.99,
+            0.99: 29.71,
+            0.975: 32.36,
+            0.95: 34.76,
+            0.9: 37.69,
+            0.5: 49.33,
+            0.1: 63.17,
+            0.05: 67.5,
+            0.025: 71.42,
+            0.01: 76.15,
+            0.005: 79.49
+        },
+        60: {
+            0.995: 35.53,
+            0.99: 37.48,
+            0.975: 40.48,
+            0.95: 43.19,
+            0.9: 46.46,
+            0.5: 59.33,
+            0.1: 74.4,
+            0.05: 79.08,
+            0.025: 83.3,
+            0.01: 88.38,
+            0.005: 91.95
+        },
+        70: {
+            0.995: 43.28,
+            0.99: 45.44,
+            0.975: 48.76,
+            0.95: 51.74,
+            0.9: 55.33,
+            0.5: 69.33,
+            0.1: 85.53,
+            0.05: 90.53,
+            0.025: 95.02,
+            0.01: 100.42,
+            0.005: 104.22
+        },
+        80: {
+            0.995: 51.17,
+            0.99: 53.54,
+            0.975: 57.15,
+            0.95: 60.39,
+            0.9: 64.28,
+            0.5: 79.33,
+            0.1: 96.58,
+            0.05: 101.88,
+            0.025: 106.63,
+            0.01: 112.33,
+            0.005: 116.32
+        },
+        90: {
+            0.995: 59.2,
+            0.99: 61.75,
+            0.975: 65.65,
+            0.95: 69.13,
+            0.9: 73.29,
+            0.5: 89.33,
+            0.1: 107.57,
+            0.05: 113.14,
+            0.025: 118.14,
+            0.01: 124.12,
+            0.005: 128.3
+        },
+        100: {
+            0.995: 67.33,
+            0.99: 70.06,
+            0.975: 74.22,
+            0.95: 77.93,
+            0.9: 82.36,
+            0.5: 99.33,
+            0.1: 118.5,
+            0.05: 124.34,
+            0.025: 129.56,
+            0.01: 135.81,
+            0.005: 140.17
+        }
+    };
+    var B = Math.sqrt(2 * Math.PI), K = {
+        gaussian: function(r1) {
+            return Math.exp(-0.5 * r1 * r1) / B;
+        }
+    }, O = {
+        nrd: function(r1) {
+            var t1 = I(r1), n1 = d(r1);
+            return "number" == typeof n1 && (t1 = Math.min(t1, n1 / 1.34)), 1.06 * t1 * Math.pow(r1.length, -0.2);
+        }
+    };
+    function G(r1, t1, n1) {
+        var e4, a6;
+        if ((void 0) === t1) e4 = K.gaussian;
+        else if ("string" == typeof t1) {
+            if (!K[t1]) throw new Error('Unknown kernel "' + t1 + '"');
+            e4 = K[t1];
+        } else e4 = t1;
+        if ((void 0) === n1) a6 = O.nrd(r1);
+        else if ("string" == typeof n1) {
+            if (!O[n1]) throw new Error('Unknown bandwidth method "' + n1 + '"');
+            a6 = O[n1](r1);
+        } else a6 = n1;
+        return function(t2) {
+            var n2 = 0, o5 = 0;
+            for(n2 = 0; n2 < r1.length; n2++)o5 += e4((t2 - r1[n2]) / a6);
+            return o5 / a6 / r1.length;
+        };
+    }
+    var H = Math.sqrt(2 * Math.PI);
+    function W(r1) {
+        for(var t1 = r1, n1 = r1, e4 = 1; e4 < 15; e4++)t1 += n1 *= r1 * r1 / (2 * e4 + 1);
+        return Math.round(10000 * (0.5 + t1 / H * Math.exp(-r1 * r1 / 2))) / 10000;
+    }
+    for(var J = [], Q = 0; Q <= 3.09; Q += 0.01)J.push(W(Q));
+    function Y(r1) {
+        var t1 = 1 / (1 + 0.5 * Math.abs(r1)), n1 = t1 * Math.exp(-r1 * r1 + ((((((((0.17087277 * t1 - 0.82215223) * t1 + 1.48851587) * t1 - 1.13520398) * t1 + 0.27886807) * t1 - 0.18628806) * t1 + 0.09678418) * t1 + 0.37409196) * t1 + 1.00002368) * t1 - 1.26551223);
+        return r1 >= 0 ? 1 - n1 : n1 - 1;
+    }
+    function Z(r1) {
+        var t1 = 8 * (Math.PI - 3) / (3 * Math.PI * (4 - Math.PI)), n1 = Math.sqrt(Math.sqrt(Math.pow(2 / (Math.PI * t1) + Math.log(1 - r1 * r1) / 2, 2) - Math.log(1 - r1 * r1) / t1) - (2 / (Math.PI * t1) + Math.log(1 - r1 * r1) / 2));
+        return r1 >= 0 ? n1 : -n1;
+    }
+    function $(r1) {
+        if ("number" == typeof r1) return r1 < 0 ? -1 : 0 === r1 ? 0 : 1;
+        throw new TypeError("not a number");
+    }
+    function rr(r1, t1) {
+        for(var n1 = 0, e4 = 0; e4 < r1.length; e4++){
+            var a6 = r1[e4] - t1[e4];
+            n1 += a6 * a6;
+        }
+        return Math.sqrt(n1);
+    }
+    function tr(r1, t1) {
+        return r1.map(function(r2) {
+            for(var n1 = Number.MAX_VALUE, e4 = -1, a7 = 0; a7 < t1.length; a7++){
+                var o5 = rr(r2, t1[a7]);
+                o5 < n1 && (n1 = o5, e4 = a7);
+            }
+            return e4;
+        });
+    }
+    function nr(r1, t1, n1) {
+        for(var e4 = r1[0].length, a7 = S(n1, e4), o6 = Array(n1).fill(0), i3 = r1.length, u4 = 0; u4 < i3; u4++){
+            for(var h3 = r1[u4], f3 = t1[u4], l3 = a7[f3], s3 = 0; s3 < e4; s3++)l3[s3] += h3[s3];
+            o6[f3] += 1;
+        }
+        for(var c2 = 0; c2 < n1; c2++){
+            if (0 === o6[c2]) throw new Error("Centroid " + c2 + " has no friends");
+            for(var g2 = a7[c2], v1 = 0; v1 < e4; v1++)g2[v1] /= o6[c2];
+        }
+        return a7;
+    }
+    function er(r1, t1) {
+        for(var n1 = 0, e4 = 0; e4 < r1.length; e4++)n1 += rr(r1[e4], t1[e4]);
+        return n1;
+    }
+    function ar(r1, t1) {
+        if (r1.length !== t1.length) throw new Error("must have exactly as many labels as points");
+        for(var n1 = function(r2) {
+            for(var t2 = 1 + f(r2), n2 = Array(t2), e4 = 0; e4 < r2.length; e4++){
+                var a7 = r2[e4];
+                (void 0) === n2[a7] && (n2[a7] = []), n2[a7].push(e4);
+            }
+            return n2;
+        }(t1), e4 = function(r2) {
+            for(var t2 = r2.length, n2 = S(t2, t2), e5 = 0; e5 < t2; e5++)for(var a8 = 0; a8 < e5; a8++)n2[e5][a8] = rr(r2[e5], r2[a8]), n2[a8][e5] = n2[e5][a8];
+            return n2;
+        }(r1), a8 = [], o6 = 0; o6 < r1.length; o6++){
+            var i3 = 0;
+            if (n1[t1[o6]].length > 1) {
+                var u4 = ir(o6, n1[t1[o6]], e4), h4 = or(o6, t1, n1, e4);
+                i3 = (h4 - u4) / Math.max(u4, h4);
+            }
+            a8.push(i3);
+        }
+        return a8;
+    }
+    function or(r1, t1, n1, e4) {
+        for(var a8 = t1[r1], o6 = Number.MAX_VALUE, i4 = 0; i4 < n1.length; i4++)if (i4 !== a8) {
+            var u5 = ir(r1, n1[i4], e4);
+            u5 < o6 && (o6 = u5);
+        }
+        return o6;
+    }
+    function ir(r1, t1, n1) {
+        for(var e4 = 0, a8 = 0; a8 < t1.length; a8++)e4 += n1[r1][t1[a8]];
+        return e4 / t1.length;
+    }
+    function ur(r1, t1) {
+        return 0 === r1 && 0 === t1 ? 0 : Math.abs((r1 - t1) / t1);
+    }
+    r.BayesianClassifier = L, r.PerceptronModel = V, r.addToMean = function(r1, t1, n1) {
+        return r1 + (n1 - r1) / (t1 + 1);
+    }, r.approxEqual = function(r1, t1, n1) {
+        return (void 0) === n1 && (n1 = F), ur(r1, t1) <= n1;
+    }, r.average = n, r.averageSimple = R, r.bayesian = L, r.bernoulliDistribution = function(r1) {
+        if (r1 < 0 || r1 > 1) throw new Error("bernoulliDistribution requires probability to be between 0 and 1 inclusive");
+        return [
+            1 - r1,
+            r1
+        ];
+    }, r.binomialDistribution = function(r1, t1) {
+        if (!(t1 < 0 || t1 > 1 || r1 <= 0 || r1 % 1 != 0)) {
+            var n1 = 0, e4 = 0, a8 = [], o6 = 1;
+            do a8[n1] = o6 * Math.pow(t1, n1) * Math.pow(1 - t1, r1 - n1), e4 += a8[n1], o6 = o6 * (r1 - ++n1 + 1) / n1;
+            while (e4 < 0.9999)
+            return a8;
+        }
+    }, r.bisect = function(r1, t1, n2, e5, a9) {
+        if ("function" != typeof r1) throw new TypeError("func must be a function");
+        for(var o7 = 0; o7 < e5; o7++){
+            var i4 = (t1 + n2) / 2;
+            if (0 === r1(i4) || Math.abs((n2 - t1) / 2) < a9) return i4;
+            $(r1(i4)) === $(r1(t1)) ? t1 = i4 : n2 = i4;
+        }
+        throw new Error("maximum number of iterations exceeded");
+    }, r.chiSquaredDistributionTable = j, r.chiSquaredGoodnessOfFit = function(r1, t1, e5) {
+        for(var a9 = 0, o7 = t1(n(r1)), i5 = [], u6 = [], h5 = 0; h5 < r1.length; h5++)(void 0) === i5[r1[h5]] && (i5[r1[h5]] = 0), i5[r1[h5]]++;
+        for(var f4 = 0; f4 < i5.length; f4++)(void 0) === i5[f4] && (i5[f4] = 0);
+        for(var l4 in o7)l4 in i5 && (u6[+l4] = o7[l4] * r1.length);
+        for(var s4 = u6.length - 1; s4 >= 0; s4--)u6[s4] < 3 && (u6[s4 - 1] += u6[s4], u6.pop(), i5[s4 - 1] += i5[s4], i5.pop());
+        for(var c2 = 0; c2 < i5.length; c2++)a9 += Math.pow(i5[c2] - u6[c2], 2) / u6[c2];
+        var g3 = i5.length - 1 - 1;
+        return j[g3][e5] < a9;
+    }, r.chunk = function(r1, t1) {
+        var n2 = [];
+        if (t1 < 1) throw new Error("chunk size must be a positive number");
+        if (Math.floor(t1) !== t1) throw new Error("chunk size must be an integer");
+        for(var e5 = 0; e5 < r1.length; e5 += t1)n2.push(r1.slice(e5, e5 + t1));
+        return n2;
+    }, r.ckmeans = function(r1, t1) {
+        if (t1 > r1.length) throw new Error("cannot generate more classes than there are data values");
+        var n2 = u(r1);
+        if (1 === k(n2)) return [
+            n2
+        ];
+        var e5 = S(t1, n2.length), a9 = S(t1, n2.length);
+        !function(r2, t2, n3) {
+            for(var e6 = t2[0].length, a10 = r2[Math.floor(e6 / 2)], o7 = [], i5 = [], u6 = 0, h5 = void 0; u6 < e6; ++u6)h5 = r2[u6] - a10, 0 === u6 ? (o7.push(h5), i5.push(h5 * h5)) : (o7.push(o7[u6 - 1] + h5), i5.push(i5[u6 - 1] + h5 * h5)), t2[0][u6] = A(0, u6, o7, i5), n3[0][u6] = 0;
+            for(var f4 = 1; f4 < t2.length; ++f4)N(f4 < t2.length - 1 ? f4 : e6 - 1, e6 - 1, f4, t2, n3, o7, i5);
+        }(n2, e5, a9);
+        for(var o7 = [], i5 = a9[0].length - 1, h5 = a9.length - 1; h5 >= 0; h5--){
+            var f4 = a9[h5][i5];
+            o7[h5] = n2.slice(f4, i5 + 1), h5 > 0 && (i5 = f4 - 1);
+        }
+        return o7;
+    }, r.coefficientOfVariation = function(r1) {
+        return I(r1) / n(r1);
+    }, r.combinations = function r1(t1, n2) {
+        var e5, a9, o7, i5, u6 = [];
+        for(e5 = 0; e5 < t1.length; e5++)if (1 === n2) u6.push([
+            t1[e5]
+        ]);
+        else for(o7 = r1(t1.slice(e5 + 1, t1.length), n2 - 1), a9 = 0; a9 < o7.length; a9++)(i5 = o7[a9]).unshift(t1[e5]), u6.push(i5);
+        return u6;
+    }, r.combinationsReplacement = function r2(t1, n2) {
+        for(var e5 = [], a9 = 0; a9 < t1.length; a9++)if (1 === n2) e5.push([
+            t1[a9]
+        ]);
+        else for(var o7 = r2(t1.slice(a9, t1.length), n2 - 1), i5 = 0; i5 < o7.length; i5++)e5.push([
+            t1[a9]
+        ].concat(o7[i5]));
+        return e5;
+    }, r.combineMeans = D, r.combineVariances = function(r3, t1, n2, e5, a9, o7) {
+        var i5 = D(t1, n2, a9, o7);
+        return (n2 * (r3 + Math.pow(t1 - i5, 2)) + o7 * (e5 + Math.pow(a9 - i5, 2))) / (n2 + o7);
+    }, r.cumulativeStdLogisticProbability = function(r3) {
+        return 1 / (Math.exp(-r3) + 1);
+    }, r.cumulativeStdNormalProbability = function(r3) {
+        var t1 = Math.abs(r3), n2 = Math.min(Math.round(100 * t1), J.length - 1);
+        return r3 >= 0 ? J[n2] : +(1 - J[n2]).toFixed(4);
+    }, r.epsilon = F, r.equalIntervalBreaks = function(r3, t1) {
+        if (r3.length < 2) return r3;
+        for(var n2 = h(r3), e5 = f(r3), a9 = [
+            n2
+        ], o7 = (e5 - n2) / t1, i5 = 1; i5 < t1; i5++)a9.push(a9[0] + o7 * i5);
+        return a9.push(e5), a9;
+    }, r.erf = Y, r.errorFunction = Y, r.extent = function(r3) {
+        if (0 === r3.length) throw new Error("extent requires at least one data point");
+        for(var t1 = r3[0], n2 = r3[0], e5 = 1; e5 < r3.length; e5++)r3[e5] > n2 && (n2 = r3[e5]), r3[e5] < t1 && (t1 = r3[e5]);
+        return [
+            t1,
+            n2
+        ];
+    }, r.extentSorted = function(r3) {
+        return [
+            r3[0],
+            r3[r3.length - 1]
+        ];
+    }, r.factorial = U, r.gamma = function r3(t1) {
+        if (Number.isInteger(t1)) return t1 <= 0 ? NaN : U(t1 - 1);
+        if ((--t1) < 0) return Math.PI / (Math.sin(Math.PI * -t1) * r3(-t1));
+        var n2 = t1 + 1 / 4;
+        return Math.pow(t1 / Math.E, t1) * Math.sqrt(2 * Math.PI * (t1 + 1 / 6)) * (1 + 1 / 144 / Math.pow(n2, 2) - 1 / 12960 / Math.pow(n2, 3) - 257 / 207360 / Math.pow(n2, 4) - 52 / 2612736 / Math.pow(n2, 5) + 5741173 / 9405849600 / Math.pow(n2, 6) + 37529 / 18811699200 / Math.pow(n2, 7));
+    }, r.gammaln = function(r4) {
+        if (r4 <= 0) return 1 / 0;
+        r4--;
+        for(var t1 = z[0], n2 = 1; n2 < 15; n2++)t1 += z[n2] / (r4 + n2);
+        var e5 = 5.2421875 + r4;
+        return X + Math.log(t1) - e5 + (r4 + 0.5) * Math.log(e5);
+    }, r.geometricMean = function(r4) {
+        if (0 === r4.length) throw new Error("geometricMean requires at least one data point");
+        for(var t1 = 1, n2 = 0; n2 < r4.length; n2++){
+            if (r4[n2] < 0) throw new Error("geometricMean requires only non-negative numbers as input");
+            t1 *= r4[n2];
+        }
+        return Math.pow(t1, 1 / r4.length);
+    }, r.harmonicMean = function(r4) {
+        if (0 === r4.length) throw new Error("harmonicMean requires at least one data point");
+        for(var t1 = 0, n2 = 0; n2 < r4.length; n2++){
+            if (r4[n2] <= 0) throw new Error("harmonicMean requires only positive numbers as input");
+            t1 += 1 / r4[n2];
+        }
+        return r4.length / t1;
+    }, r.interquartileRange = d, r.inverseErrorFunction = Z, r.iqr = d, r.jenks = function(r4, t1) {
+        if (t1 > r4.length) return null;
+        var n2 = function(r5, t2) {
+            var n3, e5, a9 = [], o7 = [], i5 = 0;
+            for(n3 = 0; n3 < r5.length + 1; n3++){
+                var u6 = [], h5 = [];
+                for(e5 = 0; e5 < t2 + 1; e5++)u6.push(0), h5.push(0);
+                a9.push(u6), o7.push(h5);
+            }
+            for(n3 = 1; n3 < t2 + 1; n3++)for(a9[1][n3] = 1, o7[1][n3] = 0, e5 = 2; e5 < r5.length + 1; e5++)o7[e5][n3] = 1 / 0;
+            for(var f5 = 2; f5 < r5.length + 1; f5++){
+                for(var l4 = 0, s4 = 0, c2 = 0, g3 = 0, v2 = 1; v2 < f5 + 1; v2++){
+                    var p1 = f5 - v2 + 1, m1 = r5[p1 - 1];
+                    if (i5 = (s4 += m1 * m1) - (l4 += m1) * l4 / ++c2, 0 != (g3 = p1 - 1)) for(e5 = 2; e5 < t2 + 1; e5++)o7[f5][e5] >= i5 + o7[g3][e5 - 1] && (a9[f5][e5] = p1, o7[f5][e5] = i5 + o7[g3][e5 - 1]);
+                }
+                a9[f5][1] = 1, o7[f5][1] = i5;
+            }
+            return {
+                lowerClassLimits: a9,
+                varianceCombinations: o7
+            };
+        }(r4 = r4.slice().sort(function(r5, t2) {
+            return r5 - t2;
+        }), t1);
+        return (function(r5, t2, n3) {
+            var e5 = r5.length, a9 = [], o7 = n3;
+            for(a9[n3] = r5[r5.length - 1]; o7 > 0;)a9[o7 - 1] = r5[t2[e5][o7] - 1], e5 = t2[e5][o7] - 1, o7--;
+            return a9;
+        })(r4, n2.lowerClassLimits, t1);
+    }, r.kMeansCluster = function(r4, t1, n2) {
+        (void 0) === n2 && (n2 = Math.random);
+        for(var e5 = null, a9 = x(r4, t1, n2), o7 = null, i5 = Number.MAX_VALUE; 0 !== i5;)e5 = a9, i5 = er(a9 = nr(r4, o7 = tr(r4, a9), t1), e5);
+        return {
+            labels: o7,
+            centroids: a9
+        };
+    }, r.kde = G, r.kernelDensityEstimation = G, r.linearRegression = function(r4) {
+        var t1, n2, e5 = r4.length;
+        if (1 === e5) t1 = 0, n2 = r4[0][1];
+        else {
+            for(var a9, o7, i5, u7 = 0, h6 = 0, f5 = 0, l5 = 0, s5 = 0; s5 < e5; s5++)u7 += o7 = (a9 = r4[s5])[0], h6 += i5 = a9[1], f5 += o7 * o7, l5 += o7 * i5;
+            n2 = h6 / e5 - (t1 = (e5 * l5 - u7 * h6) / (e5 * f5 - u7 * u7)) * u7 / e5;
+        }
+        return {
+            m: t1,
+            b: n2
+        };
+    }, r.linearRegressionLine = function(r4) {
+        return function(t1) {
+            return r4.b + r4.m * t1;
+        };
+    }, r.logAverage = function(r4) {
+        if (0 === r4.length) throw new Error("logAverage requires at least one data point");
+        for(var t1 = 0, n2 = 0; n2 < r4.length; n2++){
+            if (r4[n2] < 0) throw new Error("logAverage requires only non-negative numbers as input");
+            t1 += Math.log(r4[n2]);
+        }
+        return Math.exp(t1 / r4.length);
+    }, r.logit = function(r4) {
+        if (r4 <= 0 || r4 >= 1) throw new Error("p must be strictly between zero and one");
+        return Math.log(r4 / (1 - r4));
+    }, r.mad = q, r.max = f, r.maxSorted = function(r4) {
+        return r4[r4.length - 1];
+    }, r.mean = n, r.meanSimple = R, r.median = b, r.medianAbsoluteDeviation = q, r.medianSorted = function(r4) {
+        return s(r4, 0.5);
+    }, r.min = h, r.minSorted = function(r4) {
+        return r4[0];
+    }, r.mode = function(r4) {
+        return i8(u(r4));
+    }, r.modeFast = function(r4) {
+        for(var t1, n2 = new Map, e5 = 0, a10 = 0; a10 < r4.length; a10++){
+            var o8 = n2.get(r4[a10]);
+            (void 0) === o8 ? o8 = 1 : o8++, o8 > e5 && (t1 = r4[a10], e5 = o8), n2.set(r4[a10], o8);
+        }
+        if (0 === e5) throw new Error("mode requires at last one data point");
+        return t1;
+    }, r.modeSorted = i8, r.numericSort = u, r.perceptron = V, r.permutationTest = function(r4, t1, e5, a10, o9) {
+        if ((void 0) === a10 && (a10 = 10000), (void 0) === e5 && (e5 = "two_side"), "two_side" !== e5 && "greater" !== e5 && "less" !== e5) throw new Error("`alternative` must be either 'two_side', 'greater', or 'less'.");
+        for(var i6 = n(r4) - n(t1), u8 = new Array(a10), h7 = r4.concat(t1), f6 = Math.floor(h7.length / 2), l6 = 0; l6 < a10; l6++){
+            y(h7, o9);
+            var s6 = h7.slice(0, f6), c3 = h7.slice(f6, h7.length), g4 = n(s6) - n(c3);
+            u8[l6] = g4;
+        }
+        var v3 = 0;
+        if ("two_side" === e5) for(var p2 = 0; p2 <= a10; p2++)Math.abs(u8[p2]) >= Math.abs(i6) && (v3 += 1);
+        else if ("greater" === e5) for(var m2 = 0; m2 <= a10; m2++)u8[m2] >= i6 && (v3 += 1);
+        else for(var w1 = 0; w1 <= a10; w1++)u8[w1] <= i6 && (v3 += 1);
+        return v3 / a10;
+    }, r.permutationsHeap = function(r4) {
+        for(var t1 = new Array(r4.length), n2 = [
+            r4.slice()
+        ], e5 = 0; e5 < r4.length; e5++)t1[e5] = 0;
+        for(var a10 = 0; a10 < r4.length;)if (t1[a10] < a10) {
+            var o9 = 0;
+            a10 % 2 != 0 && (o9 = t1[a10]);
+            var i6 = r4[o9];
+            r4[o9] = r4[a10], r4[a10] = i6, n2.push(r4.slice()), t1[a10]++, a10 = 0;
+        } else t1[a10] = 0, a10++;
+        return n2;
+    }, r.poissonDistribution = function(r4) {
+        if (!(r4 <= 0)) {
+            var t1 = 0, n2 = 0, e5 = [], a10 = 1;
+            do e5[t1] = Math.exp(-r4) * Math.pow(r4, t1) / a10, n2 += e5[t1], a10 *= ++t1;
+            while (n2 < 0.9999)
+            return e5;
+        }
+    }, r.probit = function(r4) {
+        return 0 === r4 ? r4 = F : r4 >= 1 && (r4 = 0.9999), Math.sqrt(2) * Z(2 * r4 - 1);
+    }, r.product = function(r4) {
+        for(var t2 = 1, n3 = 0; n3 < r4.length; n3++)t2 *= r4[n3];
+        return t2;
+    }, r.quantile = v, r.quantileRank = function(r4, t2) {
+        return M(u(r4), t2);
+    }, r.quantileRankSorted = M, r.quantileSorted = s, r.quickselect = c, r.rSquared = function(r4, t2) {
+        if (r4.length < 2) return 1;
+        for(var n3 = 0, e6 = 0; e6 < r4.length; e6++)n3 += r4[e6][1];
+        for(var a11 = n3 / r4.length, o10 = 0, i7 = 0; i7 < r4.length; i7++)o10 += Math.pow(a11 - r4[i7][1], 2);
+        for(var u8 = 0, h7 = 0; h7 < r4.length; h7++)u8 += Math.pow(r4[h7][1] - t2(r4[h7][0]), 2);
+        return 1 - u8 / o10;
+    }, r.relativeError = ur, r.rms = _, r.rootMeanSquare = _, r.sample = x, r.sampleCorrelation = T, r.sampleCovariance = P, r.sampleKurtosis = function(r4) {
+        var t2 = r4.length;
+        if (t2 < 4) throw new Error("sampleKurtosis requires at least four data points");
+        for(var e6, a11 = n(r4), o10 = 0, i7 = 0, u8 = 0; u8 < t2; u8++)o10 += (e6 = r4[u8] - a11) * e6, i7 += e6 * e6 * e6 * e6;
+        return (t2 - 1) / ((t2 - 2) * (t2 - 3)) * (t2 * (t2 + 1) * i7 / (o10 * o10) - 3 * (t2 - 1));
+    }, r.sampleRankCorrelation = function(r4, t2) {
+        for(var n3 = r4.map(function(r5, t3) {
+            return [
+                r5,
+                t3
+            ];
+        }).sort(function(r5, t3) {
+            return r5[0] - t3[0];
+        }).map(function(r5) {
+            return r5[1];
+        }), e6 = t2.map(function(r5, t3) {
+            return [
+                r5,
+                t3
+            ];
+        }).sort(function(r5, t3) {
+            return r5[0] - t3[0];
+        }).map(function(r5) {
+            return r5[1];
+        }), a11 = Array(n3.length), o10 = Array(n3.length), i7 = 0; i7 < n3.length; i7++)a11[n3[i7]] = i7, o10[e6[i7]] = i7;
+        return T(a11, o10);
+    }, r.sampleSkewness = function(r4) {
+        if (r4.length < 3) throw new Error("sampleSkewness requires at least three data points");
+        for(var t2, e6 = n(r4), a11 = 0, o10 = 0, i7 = 0; i7 < r4.length; i7++)a11 += (t2 = r4[i7] - e6) * t2, o10 += t2 * t2 * t2;
+        var u8 = r4.length - 1, h7 = Math.sqrt(a11 / u8), f6 = r4.length;
+        return f6 * o10 / ((f6 - 1) * (f6 - 2) * Math.pow(h7, 3));
+    }, r.sampleStandardDeviation = I, r.sampleVariance = C, r.sampleWithReplacement = function(r4, t2, n3) {
+        if (0 === r4.length) return [];
+        n3 = n3 || Math.random;
+        for(var e6 = r4.length, a11 = [], o10 = 0; o10 < t2; o10++){
+            var i7 = Math.floor(n3() * e6);
+            a11.push(r4[i7]);
+        }
+        return a11;
+    }, r.shuffle = E, r.shuffleInPlace = y, r.sign = $, r.silhouette = ar, r.silhouetteMetric = function(r4, t2) {
+        return f(ar(r4, t2));
+    }, r.standardDeviation = o, r.standardNormalTable = J, r.subtractFromMean = function(r4, t2, n3) {
+        return (r4 * t2 - n3) / (t2 - 1);
+    }, r.sum = t, r.sumNthPowerDeviations = e, r.sumSimple = l, r.tTest = function(r4, t2) {
+        return (n(r4) - t2) / (o(r4) / Math.sqrt(r4.length));
+    }, r.tTestTwoSample = function(r4, t2, e6) {
+        var a11 = r4.length, o10 = t2.length;
+        if (!a11 || !o10) return null;
+        e6 || (e6 = 0);
+        var i8 = n(r4), u8 = n(t2), h7 = C(r4), f6 = C(t2);
+        if ("number" == typeof i8 && "number" == typeof u8 && "number" == typeof h7 && "number" == typeof f6) {
+            var l6 = ((a11 - 1) * h7 + (o10 - 1) * f6) / (a11 + o10 - 2);
+            return (i8 - u8 - e6) / Math.sqrt(l6 * (1 / a11 + 1 / o10));
+        }
+    }, r.uniqueCountSorted = k, r.variance = a, r.wilcoxonRankSum = function(r4, t2) {
+        if (!r4.length || !t2.length) throw new Error("Neither sample can be empty");
+        for(var n3 = r4.map(function(r5) {
+            return {
+                label: "x",
+                value: r5
+            };
+        }).concat(t2.map(function(r5) {
+            return {
+                label: "y",
+                value: r5
+            };
+        })).sort(function(r5, t3) {
+            return r5.value - t3.value;
+        }), e6 = 0; e6 < n3.length; e6++)n3[e6].rank = e6;
+        for(var a11 = [
+            n3[0].rank
+        ], o10 = 1; o10 < n3.length; o10++)n3[o10].value === n3[o10 - 1].value ? (a11.push(n3[o10].rank), o10 === n3.length - 1 && i9(n3, a11)) : a11.length > 1 ? i9(n3, a11) : a11 = [
+            n3[o10].rank
+        ];
+        function i9(r5, t3) {
+            for(var n4 = (t3[0] + t3[t3.length - 1]) / 2, e7 = 0; e7 < t3.length; e7++)r5[t3[e7]].rank = n4;
+        }
+        for(var u8 = 0, h7 = 0; h7 < n3.length; h7++){
+            var f6 = n3[h7];
+            "x" === f6.label && (u8 += f6.rank + 1);
+        }
+        return u8;
+    }, r.zScore = function(r4, t2, n3) {
+        return (r4 - t2) / n3;
+    };
+});
 
 
 
@@ -25349,13 +26516,15 @@ const $d038626f16c01c34$var$houseOutlineColor = "transparent";
 const $d038626f16c01c34$var$activeColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#00BFFF`;
 const $d038626f16c01c34$var$inActiveColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#FFFFFF22`;
 const $d038626f16c01c34$var$offColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#cccccc`;
-const $d038626f16c01c34$var$boilerColorLL = "#6892db";
-const $d038626f16c01c34$var$boilerColorL = "#c1d3f0";
-const $d038626f16c01c34$var$boilerColor = "#ef9490";
-const $d038626f16c01c34$var$boilerColorH = "#fb8984";
-const $d038626f16c01c34$var$boilerColorHH = "#f9423a";
-const $d038626f16c01c34$var$pumpLineInColor = "#ffcccc";
-const $d038626f16c01c34$var$pumpLineOutColor = "#b3d9ff";
+/*const boilerColorLL = "#6892db";
+const boilerColorL = "#c1d3f0";
+const boilerColor = "#ef9490";
+const boilerColorH = "#fb8984";
+const boilerColorHH = "#f9423a";*/ const $d038626f16c01c34$var$boilerColorLL = "#97dfff";
+const $d038626f16c01c34$var$boilerColorL = "#c2f9ff";
+const $d038626f16c01c34$var$boilerColor = "#aad688";
+const $d038626f16c01c34$var$boilerColorH = "#8bbd78";
+const $d038626f16c01c34$var$boilerColorHH = "#5ea758";
 const $d038626f16c01c34$var$powerColorLL = "#6892db";
 const $d038626f16c01c34$var$powerColorL = "#c1d3f0";
 const $d038626f16c01c34$var$powerColor = "#ef9490";
@@ -25369,6 +26538,10 @@ const $d038626f16c01c34$var$powerLL = -50;
 const $d038626f16c01c34$var$powerL = -1;
 const $d038626f16c01c34$var$powerH = 1500;
 const $d038626f16c01c34$var$powerHH = 2000;
+const $d038626f16c01c34$var$supplyColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#8bbd78`;
+const $d038626f16c01c34$var$returnColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#97dfff`;
+const $d038626f16c01c34$var$pumpLineInColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#aad688`;
+const $d038626f16c01c34$var$pumpLineOutColor = $d038626f16c01c34$var$returnColor;
 const $d038626f16c01c34$var$boilerLimits = [
     $d038626f16c01c34$var$boilerLL,
     $d038626f16c01c34$var$boilerL,
@@ -25407,10 +26580,11 @@ const $d038626f16c01c34$var$theme = {
     dark: {
         backgroundColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#113366`,
         houseColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#ffffff22`,
-        unitColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#dddddd`,
+        unitColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#cccccc`,
         valueColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#efefef`,
         valueDarkColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#333333`,
-        titleColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#efefef`,
+        titleColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#dddddd`,
+        textColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#efefef`,
         roomBorderColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#ffffff44`
     }
 };
@@ -25423,16 +26597,12 @@ const $d038626f16c01c34$var$getLimitedColor = (val, limits, colors)=>{
     else if (val > limits[2]) index = 3;
     return colors[index];
 };
-const $d038626f16c01c34$var$tempLL = 19;
-const $d038626f16c01c34$var$tempL = 20;
-const $d038626f16c01c34$var$tempH = 23;
-const $d038626f16c01c34$var$tempHH = 24;
 const $d038626f16c01c34$var$valueLimits = {
     temperature: {
-        LL: $d038626f16c01c34$var$tempLL,
-        L: $d038626f16c01c34$var$tempL,
-        H: $d038626f16c01c34$var$tempH,
-        HH: $d038626f16c01c34$var$tempHH
+        LL: 19,
+        L: 20,
+        H: 23,
+        HH: 24
     },
     percentage: {
         LL: 10,
@@ -25441,10 +26611,10 @@ const $d038626f16c01c34$var$valueLimits = {
         HH: 60
     },
     co2: {
-        LL: $d038626f16c01c34$var$tempLL,
-        L: $d038626f16c01c34$var$tempL,
-        H: $d038626f16c01c34$var$tempH,
-        HH: $d038626f16c01c34$var$tempHH
+        LL: 400,
+        L: 4000,
+        H: 12000,
+        HH: 20000
     },
     power: {
         LL: -10,
@@ -25460,6 +26630,7 @@ const $d038626f16c01c34$var$valueLimits = {
     }
 };
 class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export$cf8e90db1f38da15 {
+    static test = 8;
     static get properties() {
         return {
             hass: {
@@ -25477,6 +26648,12 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             faceplateOpen: {
                 type: Boolean
             },
+            activeTab: {
+                type: Boolean
+            },
+            statistics: {
+                type: Object
+            },
             faceplateE: {
                 type: Object
             },
@@ -25491,6 +26668,11 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
         this.faceplateE = {
         };
         this.chart = {
+        };
+        this.activeTab = "graphTab";
+        this.statistics = {
+            min: 0,
+            max: 0
         };
     }
     _initialize() {
@@ -25509,31 +26691,107 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             series: [
                 {
                     name: 'sales',
-                    data: [
-                        30,
-                        40,
-                        35,
-                        50,
-                        49,
-                        60,
-                        70,
-                        91,
-                        125
-                    ]
+                    data: []
                 }
             ],
+            chart: {
+                id: 'area-datetime',
+                type: 'area',
+                height: 200,
+                zoom: {
+                    autoScaleYaxis: true
+                }
+            },
+            /*  annotations: {
+        yaxis: [{
+          y: 30,
+          borderColor: '#999',
+          label: {
+            show: true,
+            text: 'Support',
+            style: {
+              color: "#fff",
+              background: '#00E396'
+            }
+          }
+        }],
+        xaxis: [{
+          x: new Date('14 Nov 2012').getTime(),
+          borderColor: '#999',
+          yAxisIndex: 0,
+          label: {
+            show: true,
+            text: 'Rally',
+            style: {
+              color: "#fff",
+              background: '#775DD0'
+            }
+          }
+        }]
+      },
+      */ yaxis: {
+                show: true,
+                tickAmount: 4,
+                labels: {
+                    show: true,
+                    style: {
+                        colors: [
+                            "#ffffff"
+                        ],
+                        fontSize: '12px',
+                        fontFamily: 'Helvetica, Arial, sans-serif',
+                        fontWeight: 400,
+                        cssClass: 'apexcharts-yaxis-label'
+                    }
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
             xaxis: {
-                categories: [
-                    1991,
-                    1992,
-                    1993,
-                    1994,
-                    1995,
-                    1996,
-                    1997,
-                    1998,
-                    1999
-                ]
+                type: "datetime",
+                //categories: [1991,1992,1993,1994,1995,1996,1997, 1998,1999]
+                //min: new Date().getTime() - (24 * 60 * 60 * 1000),
+                tickAmount: 5,
+                labels: {
+                    show: true,
+                    style: {
+                        colors: [
+                            "#ffffff",
+                            "#ffffff",
+                            "#ffffff",
+                            "#ffffff",
+                            "#ffffff",
+                            "#ffffff",
+                            "#ffffff",
+                            "#ffffff",
+                            "#ffffff",
+                            "#ffffff"
+                        ],
+                        fontSize: '12px',
+                        fontFamily: 'Helvetica, Arial, sans-serif',
+                        fontWeight: 400,
+                        cssClass: 'apexcharts-yaxis-label'
+                    }
+                }
+            },
+            grid: {
+                show: true,
+                borderColor: '#fff',
+                strokeDashArray: 3,
+                yaxis: {
+                    lines: {
+                        show: true
+                    }
+                },
+                xaxis: {
+                    lines: {
+                        show: true
+                    }
+                }
+            },
+            stroke: {
+                width: 2
             }
         };
         this.chart = new (/*@__PURE__*/$parcel$interopDefault($6f3b91cc0baf9804$exports))(this.shadowRoot.querySelector('#graph'), options);
@@ -25555,27 +26813,43 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
     }
     async updateEntity(entity, index, initStart, end) {
         let newStateHistory = await this.fetchRecent(entity.entityId, initStart, end, false);
-        console.log("newStateHistory");
-        console.log(newStateHistory);
-        if (newStateHistory[0] && newStateHistory[0].length > 0) {
-            console.log("FILTERED DATA");
-            console.log(newStateHistory[0]);
-            console.log(newStateHistory[0].map((a)=>a.state
-            ));
-            this.chart.updateSeries([
-                {
-                    name: 'sales',
-                    data: newStateHistory[0].map((a)=>a.state
-                    ).slice(0, 20)
-                }
-            ]);
-        }
         return newStateHistory[0];
     }
-    async updateData({ config: config  } = this) {
+    decimate(newArr, cur) {
+        console.log(newArr);
+        console.log(cur);
+        newArr.push(cur);
+        return newArr;
+    }
+    decimateData(data, samplesInHour) {
+        const outData = [];
+        const msStep = 3600000 / samplesInHour;
+        let sum = 0;
+        let count = 0;
+        let first = Date.parse(data[0].last_changed);
+        for(let i = 0; i < data.length; i++){
+            const timeStamp = Date.parse(data[i].last_changed);
+            const value = parseFloat(data[i].state);
+            if (timeStamp < first + msStep) {
+                sum = sum + value;
+                count++;
+            } else {
+                console.log("PUSH ", sum / count);
+                outData.push([
+                    first,
+                    Math.round(sum / count * 10) / 10
+                ]);
+                sum = value;
+                count = 1;
+                first = first + msStep;
+            }
+        }
+        console.log(data);
+        console.log("SOURCE ", data.length, outData.length);
+        return outData;
+    }
+    async updateData(entities, dataInHours, samplesInHour) {
         this.updating = true;
-        console.log("UPDATE DATA");
-        console.log(config);
         const getMilli = (hours)=>hours * 3600000
         ;
         const date = new Date();
@@ -25583,13 +26857,12 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
         date.setMinutes(0, 0);
         const end = date;
         const start = new Date(end);
-        start.setMilliseconds(start.getMilliseconds() - getMilli(12));
+        start.setMilliseconds(start.getMilliseconds() - getMilli(dataInHours));
         try {
-            const promise = [
-                this.updateEntity(this.panel.config.entities.pumpPower, 0, start, end)
-            ];
+            const promise = entities.map((entity)=>this.updateEntity(entity, 0, start, end)
+            );
             const data = await Promise.all(promise);
-            return data[0];
+            return this.decimateData(data[0], samplesInHour);
         } catch (err) {
             console.log(err);
         }
@@ -25604,6 +26877,50 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
         if (withAttributes) url += '&significant_changes_only=0';
         return this.hass.callApi('GET', url);
     }
+    calculateStatistics(data) {
+        console.log(data);
+        const stat = {
+            min: $4e2726d586ab239c$exports.min(data),
+            max: $4e2726d586ab239c$exports.max(data),
+            mean: $4e2726d586ab239c$exports.mean(data),
+            mode: $4e2726d586ab239c$exports.mode(data),
+            median: $4e2726d586ab239c$exports.median(data)
+        };
+        console.log(stat);
+        return stat;
+    }
+    _handleSensorClick(e, sensor) {
+        console.log(e);
+        let width = screen.width;
+        let height = screen.height;
+        console.log(width, height);
+        const topOffset = screen.height * 0.2;
+        const houseHeight = screen.height * 0.8;
+        this.faceplateOpen = true;
+        this.faceplateE = {
+            clientY: e.clientY > height * 0.5 ? e.clientY - houseHeight * 0.5 - topOffset + 12 : e.clientY - topOffset,
+            title: sensor.name
+        };
+        const promise = this.updateData([
+            sensor
+        ], 12, 1);
+        promise.then((data)=>{
+            console.log("PROMISE");
+            if (data && data.length > 0) {
+                console.log("UPDATE CHART");
+                console.log(data);
+                this.statistics = this.calculateStatistics(data.map((d)=>parseFloat(d[1])
+                ));
+                this.chart.updateSeries([
+                    {
+                        name: 'sales',
+                        //data: data.map(a => [Date.parse(a.last_changed), a.state])
+                        data: data
+                    }
+                ]);
+            }
+        });
+    }
     _handlePumpClick(e) {
         console.log(e);
         this.faceplateOpen = true;
@@ -25611,21 +26928,30 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             clientY: e.clientY,
             title: "Pump"
         };
-        const promise = this.updateData();
-        promise.then((data)=>{
-            console.log("PROMISE");
-            console.log(data);
-        });
     }
     _closeFaceplate(e) {
         this.faceplateOpen = false;
     }
+    openTab(evt, tabName) {
+        console.log(tabName);
+        this.activeTab = tabName;
+        // Declare all variables
+        var i, tabcontent, tablinks;
+    // Get all elements with class="tabcontent" and hide them
+    // tabcontent = document.getElementsByClassName("tabcontent");
+    // for (i = 0; i < tabcontent.length; i++) {
+    //   tabcontent[i].style.display = "none";
+    //}
+    // Get all elements with class="tablinks" and remove the class "active"
+    //  tablinks = document.getElementsByClassName("tablinks");
+    // for (i = 0; i < tablinks.length; i++) {
+    //   tablinks[i].className = tablinks[i].className.replace(" active", "");
+    //}
+    }
+    getColor(val, limitTarget) {
+    }
     render() {
         console.log(this.panel);
-        console.log(this.hass);
-        const x = 200;
-        const svgWidth = 1000;
-        const svgHeight = 500;
         const faultColorClass = "fault";
         const alarmColorClass = "alarm";
         const warningColorClass = "warning";
@@ -25656,8 +26982,9 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
         };
         const showValue = (val, step, dec, limitTarget)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="sensor-value ${getColor(Math.round(val / 0.5) * 0.5, limitTarget)}" >\n        ${(Math.round(val / step) * step).toFixed(dec)}\n      </div>\n    `
         ;
-        const showValueWithUnit = (val, unit, step, dec, limitTarget, horizontal)=>{
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="sensor ${horizontal}">\n        ${showValue(val, step, dec, limitTarget)}\n        <div class="sensor-unit">\n          ${unit.length > 6 ? $1f59074a6657ecd6$export$91100b3ec196ccd`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>` : $1f59074a6657ecd6$export$91100b3ec196ccd`<div class="plain-unit">${unit}</div>`}\n        </div>\n      </div>`;
+        const showValueWithUnit = (val, unit, step, dec, limitTarget, horizontal, sensor, eventInParent)=>{
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="sensor ${horizontal}" @click="${(e)=>this._handleSensorClick(e, sensor)
+            }">\n        ${showValue(val, step, dec, limitTarget)}\n        <div class="sensor-unit">\n          ${unit.length > 6 ? $1f59074a6657ecd6$export$91100b3ec196ccd`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>` : $1f59074a6657ecd6$export$91100b3ec196ccd`<div class="plain-unit">${unit}</div>`}\n        </div>\n      </div>`;
         };
         const getState = (state)=>this.hass.states[state.entityId].state
         ;
@@ -25679,13 +27006,13 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
                 unit = $54ad27cb74fefc69$export$5827eb8b56d1812f;
                 limits = $d038626f16c01c34$var$valueLimits["co2"];
             }
-            return showValueWithUnit(value, unit, accuracy, decimals, sensor.limits ?? limits, horizontal);
+            return showValueWithUnit(value, unit, accuracy, decimals, sensor.limits ?? limits, horizontal, sensor);
         };
         const showRoom = (room)=>{
             return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="room">\n          <div class="room-name">${room.name}</div>\n          ${room.entities.map((s)=>showSensor(s)
             )}\n        </div>\n      `;
         };
-        const drawRoofOutline = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      ${showAlarmStatus(1)}\n\n      <div class="roof">\n        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="none">\n          <polyline points="0,500 500,8, 1000,500" style="fill:${$d038626f16c01c34$var$currentTheme.houseColor};stroke:${$d038626f16c01c34$var$houseOutlineColor};stroke-width:14" />\n        </svg>\n      </div>\n    `
+        const drawRoofOutline = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      ${showAlarmStatus(1)}\n\n      <div class="roof">\n        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 1000 500" preserveAspectRatio="none">\n          <polyline points="0,500 500,8, 1000,500" style="fill:${$d038626f16c01c34$var$currentTheme.houseColor};stroke:${$d038626f16c01c34$var$houseOutlineColor};stroke-width:14" />\n        </svg>\n      </div>\n    `
         ;
         const SupplyReturnLines = ()=>{
             const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
@@ -25695,8 +27022,8 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             const iconColor = deviceOn === "active" ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
             return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="supply-return-lines" style="border-color: ${iconColor}">\n\n          <div class="type-line">\n          <div class="item empty">\n            <font color=${iconColor}>\n              <svg-icon type="mdi" size="20" path=${$54ad27cb74fefc69$export$5e469a98da2b19d5}} ></svg-icon>\n            </font>\n          </div>\n            ${this.panel.config.heatingCircuits.map((c)=>{
                 return $1f59074a6657ecd6$export$91100b3ec196ccd`\n                <font color=${iconColor}>\n                  <svg-icon type="mdi" size="20" path=${c.type === "radiator" ? $54ad27cb74fefc69$export$e6181a0a553014e8 : $54ad27cb74fefc69$export$850067d4c9dddf98} ></svg-icon>\n                </font>\n              `;
-            })}\n\n          </div>\n          <div class="supply-line">\n            <font color=${$d038626f16c01c34$var$boilerColorH}>\n              <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${$54ad27cb74fefc69$export$c64f0b0e24bc898e} ></svg-icon>\n            </font>\n            ${this.panel.config.heatingCircuits.map((c)=>showSensor(c.supply)
-            )}\n          </div>\n          <div class="return-line">\n            <font color=${$d038626f16c01c34$var$boilerColorL}>\n              <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${$54ad27cb74fefc69$export$602472a590ec13c2} ></svg-icon>\n            </font>\n            ${this.panel.config.heatingCircuits.map((c)=>showSensor(c.return)
+            })}\n\n          </div>\n          <div class="supply-line">\n            <font color=${$d038626f16c01c34$var$supplyColor}>\n              <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${$54ad27cb74fefc69$export$c64f0b0e24bc898e} ></svg-icon>\n            </font>\n            ${this.panel.config.heatingCircuits.map((c)=>showSensor(c.supply)
+            )}\n          </div>\n          <div class="return-line">\n            <font color=${$d038626f16c01c34$var$returnColor}>\n              <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${$54ad27cb74fefc69$export$602472a590ec13c2} ></svg-icon>\n            </font>\n            ${this.panel.config.heatingCircuits.map((c)=>showSensor(c.return)
             )}\n          </div>\n\n        </div>\n      `;
         };
         // NIBE # 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
@@ -25705,7 +27032,7 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             if (!inActiveValues.includes(parseInt(currentValue))) status = "active";
             return status;
         };
-        const pumpLines = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n    <div class="pumpLines">\n\n      <div class="item half" >\n        <font color=${$d038626f16c01c34$var$pumpLineInColor}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$f26a5da0d014a809} ></svg-icon>\n        </font>\n      </div>\n      <div class="item half" >\n        <font color=${$d038626f16c01c34$var$pumpLineOutColor}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$590db322906ccae6} ></svg-icon>\n        </font>\n      </div>\n\n      <div class="item half">${showSensor(this.panel.config.entities.brineInLine)}</div>\n      <div class="item half">${showSensor(this.panel.config.entities.brineOutLine)}</div>\n\n    </div>\n  `
+        const pumpLines = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n\n    <div class="pumpLines">\n\n      <div class="item half">${showSensor(this.panel.config.entities.brineInLine)}</div>\n      <div class="item half">${showSensor(this.panel.config.entities.brineOutLine)}</div>\n\n      <div class="item half" >\n        <font color=${$d038626f16c01c34$var$pumpLineInColor}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$f26a5da0d014a809} ></svg-icon>\n        </font>\n      </div>\n      <div class="item half" >\n        <font color=${$d038626f16c01c34$var$pumpLineOutColor}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$590db322906ccae6} ></svg-icon>\n        </font>\n      </div>\n\n\n    </div>\n  `
         ;
         const boiler = ()=>{
             const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
@@ -25718,14 +27045,17 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             ]);
             const icon = deviceOn === "active" ? $54ad27cb74fefc69$export$8e24d9e2e2f2a445 : $54ad27cb74fefc69$export$cee9805ceed4213f;
             const iconColor = deviceOn === "active" ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="device ${deviceOn} roundish" >\n        <div class="boiler">\n          <div class="column">\n            <div class="temp-bar" style="background-image: linear-gradient(${topColor}, ${bottomColor});"></div>\n          </div>\n          <div class="column wide center">\n            ${showSensor(this.panel.config.entities.waterTop)}\n            <div class="item" style="color: ${iconColor}">\n              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n            </div>\n            ${showSensor(this.panel.config.entities.waterCharge)}\n          </div>\n        </div>\n      </div>\n    `;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="device ${deviceOn} roundish" >\n        <div class="boiler">\n          <div class="column">\n            <div class="temp-bar" style="background-image: linear-gradient(${topColor}, ${bottomColor});"></div>\n          </div>\n          <div class="column wide center">\n            ${showSensor(this.panel.config.entities.waterTop)}\n            <div class="item icon" style="color: ${iconColor}">\n              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n            </div>\n            ${showSensor(this.panel.config.entities.waterCharge)}\n          </div>\n        </div>\n      </div>\n    `;
         };
         const pumpPowerTargetIndicator = ()=>{
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="pump-power-target" >\n          <div class="buffer-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$inActiveColor}">\n            <svg-icon type="mdi" size="28" path=${$54ad27cb74fefc69$export$dfb62c3c71f081d7} ></svg-icon>\n          </div>\n          <div class="boiler-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$inActiveColor}">\n            <svg-icon type="mdi" size="28" path=${$54ad27cb74fefc69$export$dfb62c3c71f081d7} ></svg-icon>\n          </div>\n        </div>\n      `;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="pump-power-target" >\n          <div class="buffer-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$inActiveColor}">\n            <svg-icon type="mdi" size="28" path=${$54ad27cb74fefc69$export$dfb62c3c71f081d7} ></svg-icon>\n          </div>\n          <div class="boiler-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$inActiveColor}">\n            <svg-icon type="mdi" size="28" path=${$54ad27cb74fefc69$export$dfb62c3c71f081d7} ></svg-icon>\n          </div>\n        </div>\n      `;
         };
         /* READY */ const showFaceplate = ()=>{
             const y = this.faceplateE.clientY;
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="faceplate" style="display:${this.faceplateOpen ? "block" : "none"};top=${y}px">\n          <div class="faceplate-title">${this.faceplateE.title}<div class="faceplate-close" @click="${this._closeFaceplate}">X</div></div>\n          <div id="graph"></div>\n        </div>\n      `;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="faceplate" style="display:${this.faceplateOpen ? "block" : "none"};top:${y}px">\n\n\n          <div class="faceplate-title">\n            ${this.faceplateE.title}\n\n            <!-- Tab links -->\n            <div class="tab">\n              <button class="tablinks ${this.activeTab === "graphTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'graphTab')
+            }">Graph</button>\n              <button class="tablinks ${this.activeTab === "statTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'statTab')
+            }">Stat</button>\n              <button class="tablinks ${this.activeTab === "operateTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'operateTab')
+            }">Operate</button>\n            </div>\n            <div class="faceplate-close" @click="${this._closeFaceplate}">\n              X\n            </div>\n          </div>\n\n          <!-- Tab content -->\n          <div id="graphTab" class="tabcontent" style="display: ${this.activeTab === "graphTab" ? "block" : "none"}">\n            <div id="graph"></div>\n          </div>\n\n          <div id="statTab" class="tabcontent" style="display: ${this.activeTab === "statTab" ? "block" : "none"}">\n            <h3>Statistics</h3>\n            <p>min: ${this.statistics.min}</p>\n            <p>max: ${this.statistics.max}</p>\n            <p>mean: ${this.statistics.mean}</p>\n            <p>mode: ${this.statistics.mode}</p>\n            <p>median: ${this.statistics.median}</p>\n\n\n          </div>\n          <div id="graphTab" class="tabcontent" style="display: ${this.activeTab === "operateTab" ? "block" : "none"}">\n            <p>Operations</p>\n          </div>\n        </div>\n      `;
         };
         const pump = ()=>{
             const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
@@ -25736,11 +27066,24 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             const powerValue = deviceOn === "active" ? getState(this.panel.config.entities.pumpPower) * 0.001 : 0;
             return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="device ${deviceOn}" >\n          <div class="pump" @click="${this._handlePumpClick}">\n            <div class="item" style="color: ${iconColor}"><svg-icon type="mdi" size="28" path=${icon} ></svg-icon></div>\n            ${showValueWithUnit(powerValue, "kW", 0.1, 1, "")}\n          </div>\n        </div>\n      `;
         };
+        const electricity = ()=>{
+            const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
+            const valc = this.hass.states[this.panel.config.entities.waterCharge.entityId].state;
+            const topColor = $d038626f16c01c34$var$getLimitedColor(valt, $d038626f16c01c34$var$boilerLimits, $d038626f16c01c34$var$boilerColors);
+            const bottomColor = $d038626f16c01c34$var$getLimitedColor(valc, $d038626f16c01c34$var$boilerLimits, $d038626f16c01c34$var$boilerColors);
+            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
+                10,
+                30
+            ]);
+            const icon = deviceOn === "active" ? $54ad27cb74fefc69$export$9bf72b4e4112a898 : $54ad27cb74fefc69$export$9bf72b4e4112a898;
+            const iconColor = deviceOn === "active" ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="device ${deviceOn}" >\n        <div class="electricity">\n\n          <div class="columnx">\n            ${showSensor(this.panel.config.entities.waterTop)}\n            <div class="item icon" style="color: ${iconColor}">\n              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n            </div>\n            ${showSensor(this.panel.config.entities.waterCharge)}\n          </div>\n        </div>\n      </div>\n    `;
+        };
         const radiatorLine = (floor, line)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      ${this.panel.config.rooms.filter((a)=>a.line === line && a.floor === floor
             ).map((room)=>showRoom(room)
             )}\n    `
         ;
-        const drawHouse = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="house">\n\n\n        <div class="floor second">\n          ${radiatorLine(2, 1)}\n          ${radiatorLine(2, 2)}\n        </div>\n\n        <div class="floor first">\n          ${radiatorLine(1, 1)}\n          ${radiatorLine(1, 2)}\n        </div>\n\n        <div class="floor basement">\n          <div class="boiler-room">\n\n            <div class="column">\n              ${pump()}\n              ${pumpLines()}\n            </div>\n\n            <div class="column">\n              ${pumpPowerTargetIndicator()}\n            </div>\n\n            <div class="column wide">\n              ${SupplyReturnLines()}\n              ${boiler()}\n            </div>\n\n          </div> <!-- BOILER ROOM -->\n\n          <div>\n            ${radiatorLine(0, 2)}\n          </div>\n\n        </div> <!-- BASEMENT -->\n\n      ${showFaceplate()}\n      </div> <!-- HOUSE -->\n    `
+        const drawHouse = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="house">\n\n\n        <div class="floor second">\n          ${radiatorLine(2, 1)}\n          ${radiatorLine(2, 2)}\n        </div>\n\n        <div class="floor first">\n          ${radiatorLine(1, 1)}\n          ${radiatorLine(1, 2)}\n        </div>\n\n        <div class="floor basement">\n          <div class="boiler-room">\n\n            <div class="column">\n              ${pump()}\n              ${pumpLines()}\n            </div>\n\n            <div class="column">\n              ${pumpPowerTargetIndicator()}\n            </div>\n\n            <div class="column wide">\n              ${boiler()}\n              ${SupplyReturnLines()}\n            </div>\n\n          </div> <!-- BOILER ROOM -->\n\n          <div class="other-basement">\n            <div class="column">\n              ${radiatorLine(0, 2)}\n            </div>\n            ${electricity()}\n          </div>\n        </div> <!-- BASEMENT -->\n\n      ${showFaceplate()}\n      </div> <!-- HOUSE -->\n    `
         ;
         const drawDoors = (doors1)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="doors">\n        ${doors1.map((d)=>"Door"
             )}\n      </div>\n    `
@@ -25777,7 +27120,7 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
     static get styles() {
         return [
             $04cda63463cffae4$export$9099ad97b570f7c,
-            $bf8c91c99931eb07$export$ce8efb75507ffb31`\n\n      * {\n       box-sizing: border-box;\n      }\n      :host {\n        background-color: transparent;\n        display: block;\n      }\n\n      .main{\n        width: 100%;\n        height: 100vh;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: ${$d038626f16c01c34$var$currentTheme.backgroundColor};\n        padding-top: 12px;\n      }\n\n      .tcor, .bcor, .msid {\n        flex: 15%;\n      }\n      .tcen, .mcen, .bcen {\n        flex: 70%;\n        position: relative;\n      }\n\n      .tcor, .tcen {\n        height: 20vh;\n      }\n\n      .mcen, .msid {\n        height: 65vh;\n      }\n\n      .bcor, .bcen {\n        height: 15vh;\n      }\n\n      .house {\n        position: relative;\n        padding: 0;\n        width: 100%;\n        padding-left: 10px;\n        padding-right: 10px;\n        padding-bottom: 10px;\n      }\n\n      .roof {\n        width: 100%;\n        height: 100%;\n        padding: 0;\n        margin:0;\n        border: 0;\n        background-color: transparent;\n      }\n      #svg-roof {\n        vertical-align:top;\n      }\n\n      .floor {\n        padding: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        background-color: ${$d038626f16c01c34$var$currentTheme.houseColor};\n        align-items: flex-start;\n        margin-top: 6px;\n        padding: 5px;\n\n      }\n      .floor.first {\n      }\n      .floor.second {\n      }\n      .floor.basement {\n        justify-content: space-between;\n        flex-wrap: nowrap;\n        padding-bottom: 6px;\n      }\n\n      .room {\n        min-height: 5vh;\n        padding: 3px;\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        border: 1px solid ${$d038626f16c01c34$var$currentTheme.roomBorderColor};\n        margin: 5px;\n        border-radius: 3px;\n        flex: 0 1;\n      }\n\n      .room-name {\n        font-weight: bold;\n        margin-right: 12px;\n        color: ${$d038626f16c01c34$var$currentTheme.titleColor};\n      }\n\n      .sensor {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        font-weight: bold;\n        border-radius: 6px;\n        padding: 1px;\n        flex: 0 1;\n        border: 1px solid #999999;\n        background-color: #00000033;\n        margin-right: 3px;\n        margin-left: 3px;\n      }\n\n      .sensor.horizontal {\n        flex-wrap: nowrap;\n      }\n\n\n      .device {\n        border: 2px solid #cccccc;\n        border-radius: 3px;\n        padding: 3px;\n\n      }\n\n      .device.roundish {\n        border-radius: 15%;\n        margin-top: 6px;\n      }\n\n      .device.active {\n        border-color: ${$d038626f16c01c34$var$activeColor};\n\n      }\n      .device.off {\n        border-color: ${$d038626f16c01c34$var$offColor};\n\n      }\n      .device.inactive {\n        border-color: ${$d038626f16c01c34$var$normalTextColor};\n      }\n\n      .fault{\n        background-color: ${$d038626f16c01c34$var$faultColor} !important;\n        color: ${$d038626f16c01c34$var$faultTextColor} !important;\n\n      }\n      .alarm {\n        background-color: ${$d038626f16c01c34$var$alarmColor} !important;\n        color: ${$d038626f16c01c34$var$alarmTextColor} !important;\n      }\n\n      .warning {\n        background-color: ${$d038626f16c01c34$var$warningColor} !important;\n        color: ${$d038626f16c01c34$var$warningTextColor} !important;\n\n      }\n\n      .normal {\n        background-color: transparent !important;\n        color: #333333;\n      }\n\n      .pump {\n        cursor: pointer;\n        height: 110px;\n        width: 70px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n      .faceplate {\n        position: absolute;\n        background-color: white;\n        width: 96%;\n        height: 50%;\n        left: 2%;\n        top: 50%;\n        padding: 3px;\n        border: 1px solid #666666;\n      }\n\n      .faceplate-title {\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        align-items: center;\n        background-color: #666666;\n        color: #ffffff;\n        width: 100%;\n        height: 24px;\n      }\n      .faceplate-close {\n        height: 24px;\n        width: 24px;\n        background-color: #fefefe;\n        color: #333333;\n\n      }\n\n      .boiler {\n        height: 90px;\n        width: 55px;\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: flex-start;\n        align-items: center;\n      }\n\n      .item {\n        flex: 0 1 100%;\n        text-align: center;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n      }\n\n\n      /* JANNE */\n\n\n\n      .item.empty {\n        flex: 0 1 20px;\n        text-align: center;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n      }\n\n      .item.half {\n        flex: 0 0 50%;\n        text-align: center;\n        font-size: 12px;\n      }\n\n      .supply-return-lines {\n        flex: 70%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        align-items: center;\n        border: 1px dashed #999999;\n\n      }\n\n\n\n\n\n\n\n      .plain-unit {\n        font-size: 1.0em;\n        width: auto;\n      }\n      .sensor-unit {\n          text-align: center;\n          border-radius: 50%;\n          width: auto;\n          height: 20px;\n          color: ${$d038626f16c01c34$var$currentTheme.unitColor};\n      }\n      .sensor-value {\n        text-align: center;\n        font-size: 1.2em;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n        padding-left: 2px;\n        padding-right: 2px;\n        border-radius: 3px;\n      }\n\n\n\n\n\n\n\n\n      .boiler-room {\n        flex:  1 0 60%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        padding-left: 3px;\n        padding-top: 6px;\n      }\n      .column {\n        flex: 0 1;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        align-items: flex-start;\n\n      }\n\n      .column.wide {\n        flex: 1 0;\n      }\n      .column.wide.center {\n        justify-content: center;\n\n        flex: 1 0;\n      }\n\n      .type-line {\n          display: flex;\n          flex: 100%;\n          justify-content: space-around;\n\n      }\n\n      .supply-line {\n        display: flex;\n        flex: 100%;\n        align-items: center;\n        justify-content: space-around;\n        margin-bottom: 3px;\n\n      }\n\n      .return-line {\n        display: flex;\n        flex: 100%;\n        align-items: center;\n        justify-content: space-around;\n        margin-bottom: 3px;\n\n\n      }\n\n      .column.narrow {\n        flex: 0 1;\n      }\n\n      .pump-power-target {\n        height: 110px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        flex: 0 1;\n      }\n\n      .buffer-arrow {\n        flex: 0 1;\n        height: 65px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n      .boiler-arrow {\n        height: 50px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-end;\n\n      }\n\n\n      .temp-bar {\n        height: 70px;\n        flex: 0 0 8px;\n        margin: 3px;\n        margin-left: 3px;\n        border: 1px solid #eeeeee;\n        border-right: 1px solid #000000;\n        border-top: 1px solid #000000;\n      }\n\n      .pumpLines {\n        height: auto;\n        width: 70px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: start;\n        align-items: center;\n        background-color: transparent;\n        padding: 0px;\n        margin-top: 3px;\n        margin-bottom: 3px;\n        border-radius: 3px;\n      }\n\n      .alarm-status {\n        position: absolute;\n        width: 150px;\n        top: 16px;\n        left: calc(50% - 75px);\n        display: flex;\n        justify-content: center;\n        flex-wrap: wrap;\n      }\n      .alarm-text{\n        text-align: center;\n        width: 140px;\n\n      }\n     alarm-icon {\n        transform: scale(2);\n      }\n    `
+            $bf8c91c99931eb07$export$ce8efb75507ffb31`\n\n      * {\n       box-sizing: border-box;\n      }\n      :host {\n        background-color: transparent;\n        display: block;\n        color: ${$d038626f16c01c34$var$currentTheme.textColor};\n        font-size: 3vw;\n      }\n\n      .main{\n        width: 100%;\n        height: 100vh;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: ${$d038626f16c01c34$var$currentTheme.backgroundColor};\n        padding-top: 12px;\n      }\n\n      .tcor, .bcor, .msid {\n        flex: 15%;\n      }\n      .tcen, .mcen, .bcen {\n        flex: 70%;\n        position: relative;\n      }\n\n      .tcor, .tcen {\n        height: 20vh;\n      }\n\n      .mcen, .msid {\n        height: 80vh;\n      }\n\n      .bcor, .bcen {\n        height: 15vh;\n        display: none;\n      }\n\n      /* Style the tab */\n      .tab {\n        overflow: hidden;\n        border: 1px solid #ccc;\n        background-color: #f1f1f133;\n      }\n\n      /* Style the buttons that are used to open the tab content */\n      .tab button {\n        background-color: inherit;\n        float: left;\n        border: none;\n        outline: none;\n        cursor: pointer;\n        padding: 2px 6px;\n        transition: 0.3s;\n      }\n\n      /* Change background color of buttons on hover */\n      .tab button:hover {\n        background-color: #ddd;\n      }\n\n      /* Create an active/current tablink class */\n      .tab button.active {\n        background-color: #ccc;\n      }\n\n      /* Style the tab content */\n      .tabcontent {\n        display: block;\n        padding: 3px 6px;\n\n      }\n      .tabcontent.hidden{\n        display: none;\n      }\n\n      .house {\n        position: relative;\n        padding: 0;\n        width: 100%;\n        padding-left: 10px;\n        padding-right: 10px;\n        padding-bottom: 10px;\n      }\n\n      .roof {\n        width: 100%;\n        height: 100%;\n        padding: 0;\n        margin:0;\n        border: 0;\n        background-color: transparent;\n      }\n      #svg-roof {\n        vertical-align:top;\n      }\n\n      .floor {\n        padding: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        background-color: ${$d038626f16c01c34$var$currentTheme.houseColor};\n        align-items: flex-start;\n        margin-top: 6px;\n        padding: 5px;\n        min-height: 20vh;\n\n      }\n      .floor.first {\n        align-items: center;\n      }\n      .floor.second {\n        align-items: center;\n      }\n      .floor.basement {\n        justify-content: space-between;\n        flex-wrap: nowrap;\n        padding-bottom: 6px;\n      }\n\n      .room {\n        min-height: 5vh;\n        padding: 3px;\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        border: 1px solid ${$d038626f16c01c34$var$currentTheme.roomBorderColor};\n        margin: 5px;\n        border-radius: 3px;\n        flex: 0 1;\n      }\n\n      .room-name {\n        font-weight: bold;\n        margin-right: 12px;\n        color: ${$d038626f16c01c34$var$currentTheme.titleColor};\n      }\n\n      .other-basement {\n        flex: 1 0 40%;\n        padding: 0px;\n        margin-left: 6px;\n      }\n\n      .sensor {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        font-weight: bold;\n        border-radius: 6px;\n        padding: 1px;\n        flex: 0 1;\n        border: 1px solid #999999;\n        background-color: #00000033;\n        margin-right: 3px;\n        margin-left: 3px;\n      }\n\n      .sensor.horizontal {\n        flex-wrap: nowrap;\n      }\n\n\n      .device {\n        border: 2px solid #cccccc;\n        border-radius: 3px;\n        padding: 3px;\n\n      }\n\n      .device.roundish {\n        border-radius: 15%;\n        margin-top: 0px;\n        margin-right: 6px;\n      }\n\n      .device.active {\n        border-color: ${$d038626f16c01c34$var$activeColor};\n\n      }\n      .device.off {\n        border-color: ${$d038626f16c01c34$var$offColor};\n\n      }\n      .device.inactive {\n        border-color: ${$d038626f16c01c34$var$normalTextColor};\n      }\n\n      .fault{\n        background-color: ${$d038626f16c01c34$var$faultColor} !important;\n        color: ${$d038626f16c01c34$var$faultTextColor} !important;\n\n      }\n      .alarm {\n        background-color: ${$d038626f16c01c34$var$alarmColor} !important;\n        color: ${$d038626f16c01c34$var$alarmTextColor} !important;\n      }\n\n      .warning {\n        background-color: ${$d038626f16c01c34$var$warningColor} !important;\n        color: ${$d038626f16c01c34$var$warningTextColor} !important;\n\n      }\n\n      .normal {\n        background-color: transparent !important;\n        color: #333333;\n      }\n\n      .pump {\n        cursor: pointer;\n        height: 110px;\n        width: 17vw;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n      .faceplate {\n        position: absolute;\n        background-color: ${$d038626f16c01c34$var$currentTheme.valueDarkColor};\n        width: 96%;\n        height: 50%;\n        left: 2%;\n        top: 50%;\n        border: 2px solid #efefef;\n      }\n\n      .faceplate-title {\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        align-items: center;\n        background-color: transparent;\n        padding-left: 6px;\n        padding-top:6px;\n        color: #ffffff;\n        width: 100%;\n        height: 24px;\n      }\n      .faceplate-close {\n        padding-left: 6px;\n        padding-right: 6px;\n\n        height: 16px;\n        width: 28px;\n        color: #ffffff;\n\n      }\n\n      .boiler {\n        height: 85px;\n        width: 45px;\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: flex-start;\n        align-items: center;\n      }\n\n      .electricity {\n        height: auto;\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        align-items: center;\n        }\n\n      .item {\n        flex: 0 1 100%;\n        text-align: center;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n      }\n\n      .item.icon {\n        padding-top: 3px;\n      }\n\n      /* JANNE */\n\n\n\n      .item.empty {\n        flex: 0 1 20px;\n        text-align: center;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n      }\n\n      .item.half {\n        flex: 0 0 50%;\n        text-align: center;\n        font-size: 3vw;\n      }\n\n      .supply-return-lines {\n        flex: 70%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        align-items: center;\n        border: 1px dashed #999999;\n        margin-top: 6px;\n\n      }\n\n\n\n\n\n\n\n      .plain-unit {\n        font-size: 3vw;\n        width: auto;\n      }\n      .sensor-unit {\n          text-align: center;\n          border-radius: 50%;\n          width: auto;\n          height: 20px;\n          color: ${$d038626f16c01c34$var$currentTheme.unitColor};\n      }\n      .sensor-value {\n        text-align: center;\n        font-size: 4vw;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n        padding-left: 2px;\n        padding-right: 2px;\n        border-radius: 3px;\n      }\n\n\n\n\n\n\n\n\n      .boiler-room {\n        flex:  1 0 60%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        padding-left: 3px;\n        padding-top: 6px;\n      }\n      .column {\n        flex: 0 1;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        align-items: flex-start;\n\n      }\n\n      .column.wide {\n        flex: 1 0;\n      }\n      .column.wide.center {\n        justify-content: center;\n\n        flex: 1 0;\n      }\n\n      .type-line {\n          display: flex;\n          flex: 100%;\n          justify-content: space-evenly;\n\n      }\n\n      .supply-line {\n        display: flex;\n        flex: 100%;\n        align-items: center;\n        justify-content: space-evenly;\n        margin-bottom: 3px;\n\n      }\n\n      .return-line {\n        display: flex;\n        flex: 100%;\n        align-items: center;\n        justify-content: space-evenly;\n        margin-bottom: 3px;\n\n\n      }\n\n      .column.narrow {\n        flex: 0 1;\n      }\n\n      .pump-power-target {\n        height: 110px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        flex: 0 1;\n      }\n\n      .buffer-arrow {\n        flex: 0 1;\n        height: 75px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n      .boiler-arrow {\n        height: 50px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-end;\n\n      }\n\n\n      .temp-bar {\n        height: 77px;\n        flex: 0 0 8px;\n        margin-left: 3px;\n        margin-right: 6px;\n        border: 1px solid #999999;\n        border-radius: 2px;\n        border-right: 2px solid #666666;\n        border-bottom: 1px solid #666666;\n      }\n\n      .pumpLines {\n        height: auto;\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: start;\n        align-items: center;\n        background-color: transparent;\n        padding: 0px;\n        margin-top: 3px;\n        margin-bottom: 3px;\n        border-radius: 3px;\n      }\n\n      .alarm-status {\n        position: absolute;\n        width: 150px;\n        top: 16px;\n        left: calc(50% - 75px);\n        display: flex;\n        justify-content: center;\n        flex-wrap: wrap;\n      }\n      .alarm-text{\n        text-align: center;\n        width: 140px;\n\n      }\n     alarm-icon {\n        transform: scale(2);\n      }\n    `
         ];
     }
 }

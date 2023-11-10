@@ -18,6 +18,7 @@
     "@jamescoyle/svg-icon": "^0.1.1",
     "@mdi/js": "^7.3.67",
     "apexcharts": "^3.44.0",
-    "lit": "^3.0.0"
+    "lit": "^3.0.0",
+    "simple-statistics": "^7.8.3"
   }
 }
