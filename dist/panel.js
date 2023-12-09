@@ -26505,17 +26505,9 @@ class $6bfe5a9db287f795$var$SvgIcon extends HTMLElement {
 customElements.define('svg-icon', $6bfe5a9db287f795$var$SvgIcon);
 
 
-const $d038626f16c01c34$var$faultColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#e300ff`;
-const $d038626f16c01c34$var$faultTextColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#eeeeee`;
-const $d038626f16c01c34$var$alarmColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#d0342cdf`; // #ff0033
-const $d038626f16c01c34$var$alarmTextColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#eeeeee`; // #ff0033
-const $d038626f16c01c34$var$warningColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#FFBF00df`;
-const $d038626f16c01c34$var$warningTextColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#666666`;
 const $d038626f16c01c34$var$normalTextColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#bbbbbb`;
-const $d038626f16c01c34$var$houseOutlineColor = "transparent";
 const $d038626f16c01c34$var$activeColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#00BFFF`;
 const $d038626f16c01c34$var$inActiveColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#FFFFFF22`;
-const $d038626f16c01c34$var$offColor = $bf8c91c99931eb07$export$ce8efb75507ffb31`#cccccc`;
 /*const boilerColorLL = "#6892db";
 const boilerColorL = "#c1d3f0";
 const boilerColor = "#ef9490";
@@ -26569,26 +26561,6 @@ const $d038626f16c01c34$var$powerColors = [
     $d038626f16c01c34$var$powerColorHH
 ];
 const $d038626f16c01c34$var$currentThemeName = "dark";
-const $d038626f16c01c34$var$theme = {
-    light: {
-        backgroundColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#fefefe`,
-        houseColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#ffffff22`,
-        unitColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#666666`,
-        valueColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#333333`,
-        titleColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#333333`
-    },
-    dark: {
-        backgroundColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#113366`,
-        houseColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#ffffff22`,
-        unitColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#cccccc`,
-        valueColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#efefef`,
-        valueDarkColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#333333`,
-        titleColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#dddddd`,
-        textColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#efefef`,
-        roomBorderColor: $bf8c91c99931eb07$export$ce8efb75507ffb31`#ffffff44`
-    }
-};
-const $d038626f16c01c34$var$currentTheme = $d038626f16c01c34$var$theme[$d038626f16c01c34$var$currentThemeName];
 const $d038626f16c01c34$var$getLimitedColor = (val, limits, colors)=>{
     let index = 2;
     if (val < limits[0]) index = 0;
@@ -26623,12 +26595,14 @@ const $d038626f16c01c34$var$valueLimits = {
         HH: 2000
     },
     noLimit: {
-        LL: -100000,
-        L: -100000,
-        H: 100000,
-        HH: 100000
+        noLimit: true,
+        LL: 20,
+        HH: 60
     }
 };
+window.autoEntities_cache = window.autoEntities_cache ?? {
+};
+const $d038626f16c01c34$var$cache = window.autoEntities_cache;
 class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export$cf8e90db1f38da15 {
     static test = 8;
     static get properties() {
@@ -26648,6 +26622,18 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             faceplateOpen: {
                 type: Boolean
             },
+            minimizeView: {
+                type: Boolean
+            },
+            minimize2Floor: {
+                type: Boolean
+            },
+            minimize1Floor: {
+                type: Boolean
+            },
+            minimize0Floor: {
+                type: Boolean
+            },
             activeTab: {
                 type: Boolean
             },
@@ -26665,71 +26651,67 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
     constructor(){
         super();
         this.faceplateOpen = false;
+        this.minimizeView = true;
+        this.minimize2Floor = true;
+        this.minimize1Floor = true;
+        this.minimize0Floor = true;
         this.faceplateE = {
         };
         this.chart = {
         };
         this.activeTab = "graphTab";
-        this.statistics = {
-            min: 0,
-            max: 0
-        };
+        this.statistics = [
+            {
+                min: 0,
+                max: 0
+            }
+        ];
     }
     _initialize() {
-        console.log("INITIALIZING");
     }
     firstUpdated(changedProperties) {
         console.log("firstUpdated");
-        console.log(changedProperties);
-        console.log(this.shadowRoot.querySelector(".faceplate"));
-        console.log(this.shadowRoot.querySelector("#graph"));
-        console.log(this.shadowRoot);
         const options = {
-            chart: {
-                type: 'line'
-            },
             series: [
                 {
-                    name: 'sales',
+                    name: 'sales 0',
+                    data: []
+                },
+                {
+                    name: 'sales 1',
                     data: []
                 }
             ],
             chart: {
                 id: 'area-datetime',
-                type: 'area',
+                type: 'line',
+                background: "#666666",
                 height: 200,
                 zoom: {
-                    autoScaleYaxis: true
+                    autoScaleYaxis: false
                 }
             },
-            /*  annotations: {
-        yaxis: [{
-          y: 30,
-          borderColor: '#999',
-          label: {
-            show: true,
-            text: 'Support',
-            style: {
-              color: "#fff",
-              background: '#00E396'
-            }
-          }
-        }],
-        xaxis: [{
-          x: new Date('14 Nov 2012').getTime(),
-          borderColor: '#999',
-          yAxisIndex: 0,
-          label: {
-            show: true,
-            text: 'Rally',
-            style: {
-              color: "#fff",
-              background: '#775DD0'
-            }
-          }
-        }]
-      },
-      */ yaxis: {
+            legend: {
+                show: true,
+                showForSingleSeries: false,
+                showForNullSeries: true,
+                showForZeroSeries: true,
+                position: 'bottom',
+                horizontalAlign: 'center',
+                floating: false,
+                fontSize: '14px',
+                fontFamily: 'Helvetica, Arial',
+                fontWeight: 400,
+                inverseOrder: false,
+                customLegendItems: [],
+                offsetX: 0,
+                offsetY: 0,
+                labels: {
+                    colors: "#ffffff",
+                    useSeriesColors: false
+                }
+            },
+            yaxis: {
                 show: true,
                 tickAmount: 4,
                 labels: {
@@ -26745,6 +26727,13 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
                     }
                 }
             },
+            colors: [
+                '#66DA26',
+                '#2E93fA',
+                '#546E7A',
+                '#E91E63',
+                '#FF9800'
+            ],
             dataLabels: {
                 enabled: false
             },
@@ -26802,11 +26791,6 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
     }
     connectedCallback() {
         super.connectedCallback();
-        console.log("CONNECTED");
-        this.staticNode = this.renderRoot.querySelector('.main');
-        console.log(this);
-        console.log(this.renderRoot);
-        console.log(this.shadowRoot.querySelector("#graph"));
     }
     disconnectedCallback() {
         super.disconnectedCallback();
@@ -26815,26 +26799,22 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
         let newStateHistory = await this.fetchRecent(entity.entityId, initStart, end, false);
         return newStateHistory[0];
     }
-    decimate(newArr, cur) {
-        console.log(newArr);
-        console.log(cur);
-        newArr.push(cur);
-        return newArr;
-    }
     decimateData(data, samplesInHour) {
         const outData = [];
         const msStep = 3600000 / samplesInHour;
         let sum = 0;
         let count = 0;
+        let prevValue = 0;
         let first = Date.parse(data[0].last_changed);
         for(let i = 0; i < data.length; i++){
             const timeStamp = Date.parse(data[i].last_changed);
-            const value = parseFloat(data[i].state);
+            const tempValue = parseFloat(data[i].state);
+            const value = isNaN(tempValue) ? prevValue : tempValue;
+            prevValue = value;
             if (timeStamp < first + msStep) {
                 sum = sum + value;
                 count++;
             } else {
-                console.log("PUSH ", sum / count);
                 outData.push([
                     first,
                     Math.round(sum / count * 10) / 10
@@ -26844,8 +26824,6 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
                 first = first + msStep;
             }
         }
-        console.log(data);
-        console.log("SOURCE ", data.length, outData.length);
         return outData;
     }
     async updateData(entities, dataInHours, samplesInHour) {
@@ -26862,7 +26840,8 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             const promise = entities.map((entity)=>this.updateEntity(entity, 0, start, end)
             );
             const data = await Promise.all(promise);
-            return this.decimateData(data[0], samplesInHour);
+            return data.map((d)=>this.decimateData(d, samplesInHour)
+            );
         } catch (err) {
             console.log(err);
         }
@@ -26878,84 +26857,202 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
         return this.hass.callApi('GET', url);
     }
     calculateStatistics(data) {
-        console.log(data);
-        const stat = {
-            min: $4e2726d586ab239c$exports.min(data),
-            max: $4e2726d586ab239c$exports.max(data),
-            mean: $4e2726d586ab239c$exports.mean(data),
-            mode: $4e2726d586ab239c$exports.mode(data),
-            median: $4e2726d586ab239c$exports.median(data)
-        };
-        console.log(stat);
-        return stat;
+        return data.map((d)=>{
+            return {
+                min: d && d.length ? $4e2726d586ab239c$exports.min(d) : 0,
+                max: d && d.length ? $4e2726d586ab239c$exports.max(d) : 0,
+                mean: d && d.length ? $4e2726d586ab239c$exports.mean(d) : 0,
+                mode: d && d.length ? $4e2726d586ab239c$exports.mode(d) : 0,
+                median: d && d.length ? $4e2726d586ab239c$exports.median(d) : 0
+            };
+        });
     }
-    _handleSensorClick(e, sensor) {
-        console.log(e);
+    _handleToggleClick(e, stateName) {
+        this[stateName] = !this[stateName];
+        console.log(this[stateName]);
+    }
+    _handleSensorClick(e, sensors, deviceName) {
+        //console.log(e);
         let width = screen.width;
         let height = screen.height;
-        console.log(width, height);
+        //console.log(width,height );
         const topOffset = screen.height * 0.2;
         const houseHeight = screen.height * 0.8;
         this.faceplateOpen = true;
         this.faceplateE = {
             clientY: e.clientY > height * 0.5 ? e.clientY - houseHeight * 0.5 - topOffset + 12 : e.clientY - topOffset,
-            title: sensor.name
+            title: deviceName ? deviceName : sensors[0].name
         };
-        const promise = this.updateData([
-            sensor
-        ], 12, 1);
+        const promise = this.updateData(sensors, 24, 4);
         promise.then((data)=>{
-            console.log("PROMISE");
-            if (data && data.length > 0) {
+            console.log("PROMISE THEN");
+            console.log(data);
+            if (data && data.length > 0 && data[0].length) {
                 console.log("UPDATE CHART");
                 console.log(data);
-                this.statistics = this.calculateStatistics(data.map((d)=>parseFloat(d[1])
+                console.log(data.map((d, i)=>{
+                    return {
+                        name: 'sales ' + i,
+                        data: d
+                    };
+                }));
+                this.statistics = this.calculateStatistics(data.map((d)=>d.map((dd)=>parseFloat(dd[1])
+                    )
                 ));
-                this.chart.updateSeries([
-                    {
-                        name: 'sales',
+                this.chart.updateSeries(data.map((d, i)=>{
+                    return {
+                        name: sensors[i].name,
                         //data: data.map(a => [Date.parse(a.last_changed), a.state])
-                        data: data
-                    }
-                ]);
+                        data: d
+                    };
+                }));
+                if (data.length === 1) {
+                    const limits = sensors.map((s)=>this.getLimits(s)
+                    );
+                    const yOpt = {
+                        yaxis: {
+                            show: true,
+                            tickAmount: 7,
+                            min: limits[0].LL * 0.9,
+                            max: limits[0].HH * 1.1,
+                            labels: {
+                                show: true,
+                                style: {
+                                    colors: [
+                                        "#ffffff"
+                                    ],
+                                    fontSize: '12px',
+                                    fontFamily: 'Helvetica, Arial, sans-serif',
+                                    fontWeight: 400,
+                                    cssClass: 'apexcharts-yaxis-label'
+                                }
+                            }
+                        }
+                    };
+                    this.chart.updateOptions(yOpt);
+                    this.chart.addYaxisAnnotation({
+                        y: limits[0].HH,
+                        y2: limits[0].HH * 1.2,
+                        fillColor: "#d0342c",
+                        id: "HH",
+                        label: {
+                            text: '',
+                            style: {
+                                color: "#fff",
+                                background: '#00E396'
+                            }
+                        }
+                    }, true);
+                    this.chart.addYaxisAnnotation({
+                        y: limits[0].HH,
+                        y2: limits[0].H,
+                        fillColor: "#FFBF00",
+                        id: "H",
+                        label: {
+                            text: '',
+                            style: {
+                                color: "#fff",
+                                background: '#00E396'
+                            }
+                        }
+                    }, true);
+                    this.chart.addYaxisAnnotation({
+                        y: limits[0].L,
+                        y2: limits[0].LL,
+                        fillColor: "#FFBF00",
+                        id: "L",
+                        label: {
+                            text: '',
+                            style: {
+                                color: "#fff",
+                                background: '#00E396'
+                            }
+                        }
+                    }, true);
+                    this.chart.addYaxisAnnotation({
+                        y: limits[0].LL,
+                        y2: limits[0].LL * 0.9,
+                        fillColor: "#d0342c",
+                        id: "LL",
+                        label: {
+                            text: '',
+                            style: {
+                                color: "#fff",
+                                background: '#00E396'
+                            }
+                        }
+                    }, true);
+                } else {
+                    this.chart.removeAnnotation("HH");
+                    this.chart.removeAnnotation("H");
+                    this.chart.removeAnnotation("L");
+                    this.chart.removeAnnotation("LL");
+                }
             }
         });
-    }
-    _handlePumpClick(e) {
-        console.log(e);
-        this.faceplateOpen = true;
-        this.faceplateE = {
-            clientY: e.clientY,
-            title: "Pump"
-        };
     }
     _closeFaceplate(e) {
         this.faceplateOpen = false;
     }
     openTab(evt, tabName) {
-        console.log(tabName);
         this.activeTab = tabName;
-        // Declare all variables
-        var i, tabcontent, tablinks;
-    // Get all elements with class="tabcontent" and hide them
-    // tabcontent = document.getElementsByClassName("tabcontent");
-    // for (i = 0; i < tabcontent.length; i++) {
-    //   tabcontent[i].style.display = "none";
-    //}
-    // Get all elements with class="tablinks" and remove the class "active"
-    //  tablinks = document.getElementsByClassName("tablinks");
-    // for (i = 0; i < tablinks.length; i++) {
-    //   tablinks[i].className = tablinks[i].className.replace(" active", "");
-    //}
     }
-    getColor(val, limitTarget) {
+    async getAreas(hass) {
+        $d038626f16c01c34$var$cache.areas = $d038626f16c01c34$var$cache.areas ?? await this.hass.callWS({
+            type: "config/area_registry/list"
+        });
+        return $d038626f16c01c34$var$cache.areas;
     }
-    render() {
-        console.log(this.panel);
+    async getDevices(hass) {
+        return await this.hass.callWS({
+            type: "config/device_registry/list"
+        });
+    }
+    async getEntities(hass) {
+        return await this.hass.callWS({
+            type: "config/entity_registry/list"
+        });
+    }
+    getLimits(sensor) {
+        if (sensor.limits) return sensor.limits;
+        let unit = sensor.unit && sensor.unit.length > 0 ? sensor.unit : "";
+        let limits = $d038626f16c01c34$var$valueLimits["noLimit"];
+        if (unit === "C") {
+            unit = $54ad27cb74fefc69$export$5e469a98da2b19d5;
+            limits = $d038626f16c01c34$var$valueLimits["temperature"];
+        } else if (unit === "%") {
+            unit = $54ad27cb74fefc69$export$389f6a098027e982;
+            limits = $d038626f16c01c34$var$valueLimits["percentage"];
+        } else if (unit === "CO2") {
+            unit = $54ad27cb74fefc69$export$5827eb8b56d1812f;
+            limits = $d038626f16c01c34$var$valueLimits["co2"];
+        }
+        return limits;
+    }
+    getState = (state)=>this.hass.states[state.entityId].state
+    ;
+    toggleButton = (stateName, state0Icon, state1Icon)=>{
+        return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="toggle-button" style="height: 20px;width:20px;" @click="${(e)=>this._handleToggleClick(e, stateName)
+        }">\n        <svg-icon type="mdi" size="16" path=${this[stateName] ? state1Icon : state0Icon} ></svg-icon>\n      </div>\n    `;
+    };
+    getColor = (val, limitTarget)=>{
         const faultColorClass = "fault";
         const alarmColorClass = "alarm";
         const warningColorClass = "warning";
         const normalColorClass = "normal";
+        if (!limitTarget || limitTarget.noLimit) return normalColorClass;
+        if (typeof val !== "number" || isNaN(val)) return faultColorClass;
+        else if (val < limitTarget.LL) return alarmColorClass;
+        else if (val < limitTarget.L) return warningColorClass;
+        else if (val > limitTarget.HH) return alarmColorClass;
+        else if (val > limitTarget.H) return warningColorClass;
+        else return normalColorClass;
+    };
+    render() {
+        // console.log(this.panel);
+        //  console.log(this.getAreas())
+        // console.log(this.getEntities())
+        console.log(this.hass.states['weather.forecast_home'].attributes);
         const doors = [
             {
                 floor: 0,
@@ -26970,61 +27067,60 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
                 side: "right"
             }, 
         ];
-        const getColor = (val, limitTarget)=>{
-            if (!limitTarget) return normalColorClass;
-            const limits = limitTarget;
-            if (typeof val !== "number") return faultColorClass;
-            else if (val < limits.LL) return alarmColorClass;
-            else if (val < limits.L) return warningColorClass;
-            else if (val > limits.HH) return alarmColorClass;
-            else if (val > limits.H) return warningColorClass;
-            else return normalColorClass;
+        const showValueWithUnit = (val, unit, valueStatusColor, horizontal, sensors, eventInParent)=>{
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="sensor ${horizontal}" @click="${(e)=>eventInParent ? null : this._handleSensorClick(e, sensors)
+            }">\n        <div class="sensor-value ${valueStatusColor}" >\n          ${val}\n        </div>\n        <div class="sensor-unit">\n          ${unit.length > 6 ? $1f59074a6657ecd6$export$91100b3ec196ccd`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>` : $1f59074a6657ecd6$export$91100b3ec196ccd`<div class="plain-unit">${unit}</div>`}\n        </div>\n      </div>`;
         };
-        const showValue = (val, step, dec, limitTarget)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="sensor-value ${getColor(Math.round(val / 0.5) * 0.5, limitTarget)}" >\n        ${(Math.round(val / step) * step).toFixed(dec)}\n      </div>\n    `
-        ;
-        const showValueWithUnit = (val, unit, step, dec, limitTarget, horizontal, sensor, eventInParent)=>{
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="sensor ${horizontal}" @click="${(e)=>this._handleSensorClick(e, sensor)
-            }">\n        ${showValue(val, step, dec, limitTarget)}\n        <div class="sensor-unit">\n          ${unit.length > 6 ? $1f59074a6657ecd6$export$91100b3ec196ccd`<svg-icon type="mdi" size="16" path=${unit} ></svg-icon>` : $1f59074a6657ecd6$export$91100b3ec196ccd`<div class="plain-unit">${unit}</div>`}\n        </div>\n      </div>`;
-        };
-        const getState = (state)=>this.hass.states[state.entityId].state
-        ;
-        const getStateFromId = (entityId)=>this.hass.states[entityId].state
-        ;
-        const showSensor = (sensor, horizontal)=>{
-            const value = this.hass.states[sensor.entityId].state;
+        const showSensor = (sensor, horizontal = "", isKilo = false, eventInParent = false)=>{
+            const value = this.hass.states[sensor.entityId].state * (isKilo ? 0.001 : 1);
             const accuracy = sensor.accuracy > 0 ? sensor.accuracy : 0.1;
             const decimals = sensor.decimals >= 0 ? sensor.decimals : 1;
-            let unit = sensor.unit && sensor.unit.length > 0 ? sensor.unit : "";
-            let limits = $d038626f16c01c34$var$valueLimits["noLimit"];
-            if (unit === "C") {
-                unit = $54ad27cb74fefc69$export$5e469a98da2b19d5;
-                limits = $d038626f16c01c34$var$valueLimits["temperature"];
-            } else if (unit === "%") {
-                unit = $54ad27cb74fefc69$export$389f6a098027e982;
-                limits = $d038626f16c01c34$var$valueLimits["percentage"];
-            } else if (unit === "CO2") {
-                unit = $54ad27cb74fefc69$export$5827eb8b56d1812f;
-                limits = $d038626f16c01c34$var$valueLimits["co2"];
-            }
-            return showValueWithUnit(value, unit, accuracy, decimals, sensor.limits ?? limits, horizontal, sensor);
+            const unit = sensor.unit && sensor.unit.length > 0 ? sensor.unit : "";
+            const limits = this.getLimits(sensor);
+            const valueStatusColor = this.getColor(value, limits);
+            const roundedValue = (Math.round(value / accuracy) * accuracy).toFixed(decimals);
+            return showValueWithUnit(roundedValue, unit, valueStatusColor, horizontal, [
+                sensor
+            ], eventInParent);
+        };
+        const showCombinedSensor = (sensors, horizontal = "", isKilo = false, eventInParent = false)=>{
+            /* const value = this.hass.states[sensor.entityId].state * (isKilo ? 0.001 : 1);
+      const accuracy = sensor.accuracy > 0 ? sensor.accuracy : 0.1;
+      const decimals = sensor.decimals >= 0 ? sensor.decimals : 1;
+´      const roundedValue = (Math.round(value / accuracy) * accuracy).toFixed(decimals)*/ const limits = this.getLimits(sensors[0]);
+            const unit = sensors[0].unit && sensors[0].unit.length > 0 ? sensors[0].unit : "";
+            const roomNumber = sensors.length;
+            const averageValue = sensors.reduce((sum, cur)=>{
+                return sum + parseFloat(this.hass.states[cur.entityId].state);
+            }, 0) / roomNumber;
+            const valueStatusColor = this.getColor(averageValue, limits);
+            const roundedValue = (Math.round(averageValue / 0.5) * 0.5).toFixed(1);
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="combined" >\n          ${showValueWithUnit(roundedValue, unit, valueStatusColor, horizontal, sensors, eventInParent)}\n        </div >\n      `;
         };
         const showRoom = (room)=>{
             return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="room">\n          <div class="room-name">${room.name}</div>\n          ${room.entities.map((s)=>showSensor(s)
             )}\n        </div>\n      `;
         };
-        const drawRoofOutline = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      ${showAlarmStatus(1)}\n\n      <div class="roof">\n        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 1000 500" preserveAspectRatio="none">\n          <polyline points="0,500 500,8, 1000,500" style="fill:${$d038626f16c01c34$var$currentTheme.houseColor};stroke:${$d038626f16c01c34$var$houseOutlineColor};stroke-width:14" />\n        </svg>\n      </div>\n    `
+        const drawRoofOutline = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      ${showAlarmStatus(1)}\n      ${drawSky()}\n      <div class="button-row">\n       ${JButton($54ad27cb74fefc69$export$7a714e3cc733cef1, 24)}\n       ${JButton($54ad27cb74fefc69$export$7a714e3cc733cef1, 24)}\n       ${JButton($54ad27cb74fefc69$export$7a714e3cc733cef1, 24)}\n       ${JButton($54ad27cb74fefc69$export$7a714e3cc733cef1, 24)}\n       ${JButton($54ad27cb74fefc69$export$7a714e3cc733cef1, 24)}\n\n      </div>\n\n      <div class="roof">\n        <svg id="svg-roof" width="100%" height="100%" viewBox="0 0 1000 500" preserveAspectRatio="none">\n          <polyline points="0,500 500,8, 1000,500" style="stroke:transparent;stroke-width:14" />\n        </svg>\n      </div>\n\n    `
         ;
+        const JButton = (icon, size)=>{
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <button class="btn">\n          <svg-icon type="mdi" size=${size} path=${icon}} ></svg-icon>\n      </button>\n\n      `;
+        };
         const SupplyReturnLines = ()=>{
-            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
+            const deviceOn = getDeviceStatus(this.getState(this.panel.config.entities.pumpPriority), [
                 10,
                 20
             ]);
             const iconColor = deviceOn === "active" ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="supply-return-lines" style="border-color: ${iconColor}">\n\n          <div class="type-line">\n          <div class="item empty">\n            <font color=${iconColor}>\n              <svg-icon type="mdi" size="20" path=${$54ad27cb74fefc69$export$5e469a98da2b19d5}} ></svg-icon>\n            </font>\n          </div>\n            ${this.panel.config.heatingCircuits.map((c)=>{
-                return $1f59074a6657ecd6$export$91100b3ec196ccd`\n                <font color=${iconColor}>\n                  <svg-icon type="mdi" size="20" path=${c.type === "radiator" ? $54ad27cb74fefc69$export$e6181a0a553014e8 : $54ad27cb74fefc69$export$850067d4c9dddf98} ></svg-icon>\n                </font>\n              `;
-            })}\n\n          </div>\n          <div class="supply-line">\n            <font color=${$d038626f16c01c34$var$supplyColor}>\n              <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${$54ad27cb74fefc69$export$c64f0b0e24bc898e} ></svg-icon>\n            </font>\n            ${this.panel.config.heatingCircuits.map((c)=>showSensor(c.supply)
-            )}\n          </div>\n          <div class="return-line">\n            <font color=${$d038626f16c01c34$var$returnColor}>\n              <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${$54ad27cb74fefc69$export$602472a590ec13c2} ></svg-icon>\n            </font>\n            ${this.panel.config.heatingCircuits.map((c)=>showSensor(c.return)
-            )}\n          </div>\n\n        </div>\n      `;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="supply-return-lines">\n          <div class="column center">\n            <div class="column-item">\n              <font color=${iconColor}>\n                <svg-icon type="mdi" size="14" path=${$54ad27cb74fefc69$export$5e469a98da2b19d5}} ></svg-icon>\n              </font>\n            </div>\n            <div class="column-item">\n              <font color=${$d038626f16c01c34$var$supplyColor}>\n                <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${$54ad27cb74fefc69$export$c64f0b0e24bc898e} ></svg-icon>\n              </font>\n            </div>\n            <div class="column-item">\n              <font color=${$d038626f16c01c34$var$returnColor}>\n                <svg-icon type="mdi" size="20" viewBox="0 0 24 24" path=${$54ad27cb74fefc69$export$602472a590ec13c2} ></svg-icon>\n              </font>\n            </div>\n          </div>\n          ${this.panel.config.heatingCircuits.map((c)=>showCircuitColumn(c, iconColor)
+            )}\n        </div>\n    `;
+        };
+        const showCircuitColumn = (circuit, iconColor)=>{
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="column center" @click="${(e)=>this._handleSensorClick(e, [
+                    circuit.supply,
+                    circuit.return
+                ], "Supply-return")
+            }">\n          <div class="column-item">\n            <font color=${iconColor}>\n              <svg-icon type="mdi" size="20" path=${circuit.type === "radiator" ? $54ad27cb74fefc69$export$e6181a0a553014e8 : $54ad27cb74fefc69$export$850067d4c9dddf98} ></svg-icon>\n            </font>\n          </div>\n          <div class="column-item">\n            ${showSensor(circuit.supply)}\n          </div>\n          <div class="column-item">\n            ${showSensor(circuit.return)}\n          </div>\n        </div>\n      `;
         };
         // NIBE # 10: Off, 20: Hot Water, 30: Heat, 40: Pool, 50: Cooling
         const getDeviceStatus = (currentValue, inActiveValues)=>{
@@ -27032,59 +27128,107 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
             if (!inActiveValues.includes(parseInt(currentValue))) status = "active";
             return status;
         };
-        const pumpLines = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n\n    <div class="pumpLines">\n\n      <div class="item half">${showSensor(this.panel.config.entities.brineInLine)}</div>\n      <div class="item half">${showSensor(this.panel.config.entities.brineOutLine)}</div>\n\n      <div class="item half" >\n        <font color=${$d038626f16c01c34$var$pumpLineInColor}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$f26a5da0d014a809} ></svg-icon>\n        </font>\n      </div>\n      <div class="item half" >\n        <font color=${$d038626f16c01c34$var$pumpLineOutColor}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$590db322906ccae6} ></svg-icon>\n        </font>\n      </div>\n\n\n    </div>\n  `
+        const pumpLines = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n\n    <div class="pumpLines">\n\n      <div class="item half">${showSensor(this.panel.config.entities.brineInLine, "horizontal")}</div>\n      <div class="item half">${showSensor(this.panel.config.entities.brineOutLine, "horizontal")}</div>\n\n      <div class="item" >\n        <font color=${$d038626f16c01c34$var$pumpLineInColor}>\n          <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$f26a5da0d014a809} ></svg-icon>\n        </font>\n\n      <div class="item icon" style="color:normalTextColor">\n        <svg-icon type="mdi" size="14" path=${$54ad27cb74fefc69$export$5e469a98da2b19d5} ></svg-icon>\n      </div>\n\n      <font color=${$d038626f16c01c34$var$pumpLineOutColor}>\n        <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$590db322906ccae6} ></svg-icon>\n      </font>\n      </div>\n    </div>\n  `
         ;
         const boiler = ()=>{
             const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
             const valc = this.hass.states[this.panel.config.entities.waterCharge.entityId].state;
             const topColor = $d038626f16c01c34$var$getLimitedColor(valt, $d038626f16c01c34$var$boilerLimits, $d038626f16c01c34$var$boilerColors);
             const bottomColor = $d038626f16c01c34$var$getLimitedColor(valc, $d038626f16c01c34$var$boilerLimits, $d038626f16c01c34$var$boilerColors);
-            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
+            const deviceOn = getDeviceStatus(this.getState(this.panel.config.entities.pumpPriority), [
                 10,
                 30
             ]);
             const icon = deviceOn === "active" ? $54ad27cb74fefc69$export$8e24d9e2e2f2a445 : $54ad27cb74fefc69$export$cee9805ceed4213f;
             const iconColor = deviceOn === "active" ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="device ${deviceOn} roundish" >\n        <div class="boiler">\n          <div class="column">\n            <div class="temp-bar" style="background-image: linear-gradient(${topColor}, ${bottomColor});"></div>\n          </div>\n          <div class="column wide center">\n            ${showSensor(this.panel.config.entities.waterTop)}\n            <div class="item icon" style="color: ${iconColor}">\n              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n            </div>\n            ${showSensor(this.panel.config.entities.waterCharge)}\n          </div>\n        </div>\n      </div>\n    `;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="device ${deviceOn} roundish" >\n        <div class="boiler" @click="${(e)=>this._handleSensorClick(e, [
+                    this.panel.config.entities.waterTop,
+                    this.panel.config.entities.waterCharge
+                ], "Boiler")
+            }">\n          <div class="column">\n            <div class="temp-bar" style="background-image: linear-gradient(${topColor}, ${bottomColor});"></div>\n          </div>\n          <div class="column wide">\n            ${showSensor(this.panel.config.entities.waterTop, "", false, true)}\n            <div class="item">\n              <div class="item icon" style="color: ${iconColor}">\n                <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n              </div>\n              <div class="item icon" style="color:normalTextColor">\n                <svg-icon type="mdi" size="14" path=${$54ad27cb74fefc69$export$5e469a98da2b19d5} ></svg-icon>\n              </div>\n            </div>\n            ${showSensor(this.panel.config.entities.waterCharge, "", false, true)}\n          </div>\n        </div>\n      </div>\n    `;
         };
-        const pumpPowerTargetIndicator = ()=>{
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="pump-power-target" >\n          <div class="buffer-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 20 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$inActiveColor}">\n            <svg-icon type="mdi" size="28" path=${$54ad27cb74fefc69$export$dfb62c3c71f081d7} ></svg-icon>\n          </div>\n          <div class="boiler-arrow" style="color: ${Math.round(getState(this.panel.config.entities.pumpPriority)) === 30 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$inActiveColor}">\n            <svg-icon type="mdi" size="28" path=${$54ad27cb74fefc69$export$dfb62c3c71f081d7} ></svg-icon>\n          </div>\n        </div>\n      `;
-        };
-        /* READY */ const showFaceplate = ()=>{
+        const showFaceplate = ()=>{
             const y = this.faceplateE.clientY;
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="faceplate" style="display:${this.faceplateOpen ? "block" : "none"};top:${y}px">\n\n\n          <div class="faceplate-title">\n            ${this.faceplateE.title}\n\n            <!-- Tab links -->\n            <div class="tab">\n              <button class="tablinks ${this.activeTab === "graphTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'graphTab')
-            }">Graph</button>\n              <button class="tablinks ${this.activeTab === "statTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'statTab')
-            }">Stat</button>\n              <button class="tablinks ${this.activeTab === "operateTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'operateTab')
-            }">Operate</button>\n            </div>\n            <div class="faceplate-close" @click="${this._closeFaceplate}">\n              X\n            </div>\n          </div>\n\n          <!-- Tab content -->\n          <div id="graphTab" class="tabcontent" style="display: ${this.activeTab === "graphTab" ? "block" : "none"}">\n            <div id="graph"></div>\n          </div>\n\n          <div id="statTab" class="tabcontent" style="display: ${this.activeTab === "statTab" ? "block" : "none"}">\n            <h3>Statistics</h3>\n            <p>min: ${this.statistics.min}</p>\n            <p>max: ${this.statistics.max}</p>\n            <p>mean: ${this.statistics.mean}</p>\n            <p>mode: ${this.statistics.mode}</p>\n            <p>median: ${this.statistics.median}</p>\n\n\n          </div>\n          <div id="graphTab" class="tabcontent" style="display: ${this.activeTab === "operateTab" ? "block" : "none"}">\n            <p>Operations</p>\n          </div>\n        </div>\n      `;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="faceplate" style="display:${this.faceplateOpen ? "block" : "none"};top:${y}px">\n          <div class="faceplate-title">\n            ${this.faceplateE.title}\n            <!-- Tab links -->\n            <div class="tab">\n              <button class="tablinks ${this.activeTab === "graphTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'graphTab')
+            }">\n                <svg-icon type="mdi" size="14" path=${$54ad27cb74fefc69$export$ff0c4ae3898c98e8} ></svg-icon>\n              </button>\n              <button class="tablinks ${this.activeTab === "statTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'statTab')
+            }">\n                <svg-icon type="mdi" size="14" path=${$54ad27cb74fefc69$export$46aa98d43e314c86} ></svg-icon>\n              </button>\n              <button class="tablinks ${this.activeTab === "operateTab" ? "active" : ""}" @click="${(e)=>this.openTab(e, 'operateTab')
+            }">\n                <svg-icon type="mdi" size="14" path=${$54ad27cb74fefc69$export$80eb21e44c02d128} ></svg-icon>\n              </button>\n            </div>\n            <div class="faceplate-close" @click="${this._closeFaceplate}">\n              X\n            </div>\n          </div>\n\n          <!-- Tab content -->\n          <div id="graphTab" class="tabcontent" style="display: ${this.activeTab === "graphTab" ? "block" : "none"}">\n            <div id="graph"></div>\n          </div>\n\n          <div id="statTab" class="tabcontent" style="display: ${this.activeTab === "statTab" ? "block" : "none"}">\n            <h3>Statistics</h3>\n\n            <div class="stat-table">\n\n              <div class="stat-table-cell">Name</div>\n\n              <div class="stat-table-cell">min</div>\n              <div class="stat-table-cell">max</div>\n              <div class="stat-table-cell">mean</div>\n              <div class="stat-table-cell">mode</div>\n              <div class="stat-table-cell">median</div>\n\n              ${this.statistics.map((s)=>{
+                return $1f59074a6657ecd6$export$91100b3ec196ccd`\n                  <div class="stat-table-cell">name</div>\n\n                  <div class="stat-table-cell">${Math.round(s.min * 10) / 10}</div>\n                  <div class="stat-table-cell">${Math.round(s.max * 10) / 10}</div>\n                  <div class="stat-table-cell">${Math.round(s.mean * 10) / 10}</div>\n                  <div class="stat-table-cell">${Math.round(s.mode * 10) / 10}</div>\n                  <div class="stat-table-cell">${Math.round(s.median * 10) / 10}</div>\n                `;
+            })}\n            </div>\n\n\n\n          </div>\n          <div id="graphTab" class="tabcontent" style="display: ${this.activeTab === "operateTab" ? "block" : "none"}">\n            <p>Operations</p>\n          </div>\n        </div>\n      `;
         };
         const pump = ()=>{
-            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
+            const deviceOn = getDeviceStatus(this.getState(this.panel.config.entities.pumpPriority), [
                 10
             ]);
             const icon = deviceOn === "active" ? $54ad27cb74fefc69$export$97383223cdf7c255 : $54ad27cb74fefc69$export$e7119afcd4fe1af9;
             const iconColor = deviceOn === "active" ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
-            const powerValue = deviceOn === "active" ? getState(this.panel.config.entities.pumpPower) * 0.001 : 0;
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="device ${deviceOn}" >\n          <div class="pump" @click="${this._handlePumpClick}">\n            <div class="item" style="color: ${iconColor}"><svg-icon type="mdi" size="28" path=${icon} ></svg-icon></div>\n            ${showValueWithUnit(powerValue, "kW", 0.1, 1, "")}\n          </div>\n        </div>\n      `;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="device ${deviceOn}" >\n          <div class="pump" @click="${(e)=>this._handleSensorClick(e, [
+                    this.panel.config.entities.brineInLine,
+                    this.panel.config.entities.brineOutLine
+                ], "Pump")
+            }">\n            <div class="item" style="color: ${iconColor}">\n              <div class="buffer-arrow" style="color: ${Math.round(this.getState(this.panel.config.entities.pumpPriority)) === 20 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$inActiveColor}">\n                <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$f0a6b02b4b881db1} ></svg-icon>\n              </div>\n              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n              <div class="boiler-arrow" style="color: ${Math.round(this.getState(this.panel.config.entities.pumpPriority)) === 30 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$inActiveColor}">\n                <svg-icon type="mdi" size="24" path=${$54ad27cb74fefc69$export$dfb62c3c71f081d7} ></svg-icon>\n              </div>\n            </div>\n            ${showSensor(this.panel.config.entities.pumpPower, "", true, false)}\n            ${pumpLines()}\n          </div>\n        </div>\n      `;
         };
         const electricity = ()=>{
-            const valt = this.hass.states[this.panel.config.entities.waterTop.entityId].state;
-            const valc = this.hass.states[this.panel.config.entities.waterCharge.entityId].state;
-            const topColor = $d038626f16c01c34$var$getLimitedColor(valt, $d038626f16c01c34$var$boilerLimits, $d038626f16c01c34$var$boilerColors);
-            const bottomColor = $d038626f16c01c34$var$getLimitedColor(valc, $d038626f16c01c34$var$boilerLimits, $d038626f16c01c34$var$boilerColors);
-            const deviceOn = getDeviceStatus(getState(this.panel.config.entities.pumpPriority), [
-                10,
-                30
-            ]);
-            const icon = deviceOn === "active" ? $54ad27cb74fefc69$export$9bf72b4e4112a898 : $54ad27cb74fefc69$export$9bf72b4e4112a898;
-            const iconColor = deviceOn === "active" ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="device ${deviceOn}" >\n        <div class="electricity">\n\n          <div class="columnx">\n            ${showSensor(this.panel.config.entities.waterTop)}\n            <div class="item icon" style="color: ${iconColor}">\n              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n            </div>\n            ${showSensor(this.panel.config.entities.waterCharge)}\n          </div>\n        </div>\n      </div>\n    `;
+            const value = this.hass.states[this.panel.config.entities.totalPower.entityId].state;
+            const icon = value > 0 ? $54ad27cb74fefc69$export$9bf72b4e4112a898 : $54ad27cb74fefc69$export$9bf72b4e4112a898;
+            const iconColor = value > 0 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="electricity">\n          <div class="item icon" style="color: ${iconColor}">\n            <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n          </div>\n          ${showSensor(this.panel.config.entities.totalPower, "", true)}\n        </div>\n    `;
         };
-        const radiatorLine = (floor, line)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      ${this.panel.config.rooms.filter((a)=>a.line === line && a.floor === floor
+        const water = ()=>{
+            const value = this.hass.states[this.panel.config.entities.waterFlow.entityId].state;
+            const icon = value > 0 ? $54ad27cb74fefc69$export$ed50675a1d88ca5f : $54ad27cb74fefc69$export$f92c4de79255bec1;
+            const iconColor = value > 0 ? $d038626f16c01c34$var$activeColor : $d038626f16c01c34$var$normalTextColor;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="water">\n          <div class="item icon" style="color: ${iconColor}">\n            <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>\n          </div>\n          ${showSensor(this.panel.config.entities.waterFlow)}\n        </div>\n    `;
+        };
+        const floor = (floor1)=>{
+            const rooms = this.panel.config.rooms.filter((a)=>a.floor === floor1
+            );
+            const roomTemps = rooms.map((a)=>a.entities[0]
+            );
+            const roomNumber = rooms.length;
+            const averageValue = rooms.reduce((sum, cur)=>{
+                return sum + parseFloat(this.hass.states[cur.entities[0].entityId].state);
+            }, 0) / roomNumber;
+            const minValue = rooms.reduce((min, cur)=>{
+                const val = parseFloat(this.hass.states[cur.entities[0].entityId].state);
+                return min < val ? min : val;
+            }, 100);
+            const maxValue = rooms.reduce((max, cur)=>{
+                const val = parseFloat(this.hass.states[cur.entities[0].entityId].state);
+                return max > val ? max : val;
+            }, -100);
+            const roundedValue = (Math.round(averageValue / 0.5) * 0.5).toFixed(1);
+            const roundedMinValue = (Math.round((averageValue - minValue) / 0.5) * 0.5).toFixed(1);
+            const roundedMaxValue = (Math.round((maxValue - averageValue) / 0.5) * 0.5).toFixed(1);
+            const roundedRange = (Math.round((maxValue - minValue) / 0.5) * 0.5).toFixed(1);
+            const test = (maxValue - minValue) / ((maxValue + minValue) * 0.5);
+            const roundedTest = (Math.round(test / 0.1) * 0.1).toFixed(1);
+            /*const value = this.hass.states[this.panel.config.entities.waterFlow.entityId].state;
+      const icon = value > 0 ? mdiWaterPump : mdiWaterPumpOff;
+      const iconColor = value > 0 ? activeColor : normalTextColor;*/ return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        ${showCombinedSensor(roomTemps)}\n        <div class="floor-value">\n          <svg-icon type="mdi" size="16" path=${$54ad27cb74fefc69$export$ab50a08e06c106b0} ></svg-icon>\n          ${roundedRange}\n        </div>\n    `;
+        };
+        const radiatorLine = (floor1, line)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      ${this.panel.config.rooms.filter((a)=>a.line === line && a.floor === floor1
             ).map((room)=>showRoom(room)
             )}\n    `
         ;
-        const drawHouse = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="house">\n\n\n        <div class="floor second">\n          ${radiatorLine(2, 1)}\n          ${radiatorLine(2, 2)}\n        </div>\n\n        <div class="floor first">\n          ${radiatorLine(1, 1)}\n          ${radiatorLine(1, 2)}\n        </div>\n\n        <div class="floor basement">\n          <div class="boiler-room">\n\n            <div class="column">\n              ${pump()}\n              ${pumpLines()}\n            </div>\n\n            <div class="column">\n              ${pumpPowerTargetIndicator()}\n            </div>\n\n            <div class="column wide">\n              ${boiler()}\n              ${SupplyReturnLines()}\n            </div>\n\n          </div> <!-- BOILER ROOM -->\n\n          <div class="other-basement">\n            <div class="column">\n              ${radiatorLine(0, 2)}\n            </div>\n            ${electricity()}\n          </div>\n        </div> <!-- BASEMENT -->\n\n      ${showFaceplate()}\n      </div> <!-- HOUSE -->\n    `
+        const drawHouse = ()=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="house">\n        <div class="floor second">\n          <div class=floor-button-holder>\n            <div class="floor-sign"><svg-icon type="mdi" size="32" path=${$54ad27cb74fefc69$export$9ef434e7464ed55b} ></svg-icon></div>\n            ${this.toggleButton("minimize2Floor", $54ad27cb74fefc69$export$8fa132679c301dcc, $54ad27cb74fefc69$export$72460688a364865a)}\n          </div>\n          ${this.minimize2Floor ? floor(2) : radiatorLine(2, 1)}\n          ${this.minimize2Floor ? null : radiatorLine(2, 2)}\n        </div>\n        <div class="floor first">\n          <div class=floor-button-holder>\n            <div class="floor-sign"><svg-icon type="mdi" size="32" path=${$54ad27cb74fefc69$export$a7462cf129ac875f} ></svg-icon></div>\n            ${this.toggleButton("minimize1Floor", $54ad27cb74fefc69$export$8fa132679c301dcc, $54ad27cb74fefc69$export$72460688a364865a)}\n          </div>\n\n          ${this.minimize1Floor ? floor(1) : radiatorLine(1, 1)}\n          ${this.minimize1Floor ? null : radiatorLine(1, 2)}\n        </div>\n        <div class="floor basement">\n          <div class=floor-button-holder>\n            <div class="floor-sign"><svg-icon type="mdi" size="32" path=${$54ad27cb74fefc69$export$bf92794bbd848247} ></svg-icon></div>\n            ${this.toggleButton("minimize0Floor", $54ad27cb74fefc69$export$8fa132679c301dcc, $54ad27cb74fefc69$export$72460688a364865a)}\n          </div>\n          <div class="basement-rooms">\n\n\n            ${this.minimize0Floor ? floor(0) : radiatorLine(0, 2)}</div>\n          <div class="boiler-room">\n            <div class="column">\n            <!-- Water -->\n              ${boiler()}\n            </div>\n            <div class="column">\n            <!-- Pump -->\n              ${pump()}\n            </div>\n            <div class="column">\n              <!-- Heating -->\n              ${SupplyReturnLines()}\n            </div>\n            <div class="column">\n            <!-- Utilities -->\n              ${water()}\n              ${electricity()}\n            </div>\n          </div> <!-- BOILER ROOM -->\n        </div> <!-- BASEMENT -->\n      ${showFaceplate()}\n      </div> <!-- HOUSE -->\n    `
         ;
+        const drawSky = (sky)=>{
+            /*mdiWeathersunny,
+      mdiWeatherCloudy,
+      mdiWeatherPartlyCloudy,
+        mdiWeatherSnowy,*/ const icons = {
+                snowy: $54ad27cb74fefc69$export$c41b20f9cb70e6b0,
+                cloudy: $54ad27cb74fefc69$export$badbb140fe6d546e,
+                sunnny: $54ad27cb74fefc69$export$2db615d558fd4a03
+            };
+            const color = "#cccccc";
+            const icon = icons[this.hass.states['weather.forecast_home'].attributes.forecast[0].condition];
+            const icon2 = icons[this.hass.states['weather.forecast_home'].attributes.forecast[1].condition];
+            const temp = this.hass.states['weather.forecast_home'].attributes.temperature;
+            const temp2 = this.hass.states['weather.forecast_home'].attributes.forecast[1].temperature;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n        <div class="sky">\n          <div class="column">\n\n          <div class="item">\n            <font color=${color}>\n              <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>\n            </font>\n            <span> ${temp}</span>\n          </div>\n          <div class="item">\n          <font color=${color}>\n            <svg-icon type="mdi" size="28" path=${icon2} ></svg-icon>\n          </font>\n          <span> ${temp2}</span>\n        </div>\n          </div>\n        </div>\n      `;
+        };
         const drawDoors = (doors1)=>$1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="doors">\n        ${doors1.map((d)=>"Door"
             )}\n      </div>\n    `
         ;
@@ -27111,16 +27255,16 @@ class $d038626f16c01c34$export$32b580a2acebf3c9 extends $b4a62fb26779262a$export
                     aText = "Armed away";
                 default:
             }
-            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="alarm-status" >\n        <font color=${color}>\n          <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>\n        </font>\n        <!-- div class="alarm-text">${aText}</div -->\n\n      </div>\n    `;
+            return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="alarm-status" >\n        <font color=${color}>\n          <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>\n        </font>\n      </div>\n    `;
         };
-        return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="main">\n        ${drawCorner("t")}\n        ${drawCenter("t", drawRoofOutline())}\n        ${drawCorner("t")}\n        ${drawSide("m", doors.filter((d)=>d.side === "left"
+        return $1f59074a6657ecd6$export$91100b3ec196ccd`\n      <div class="main" data-theme=${$d038626f16c01c34$var$currentThemeName} >\n        ${drawCorner("t")}\n        ${drawCenter("t", drawRoofOutline())}\n        ${drawCorner("t")}\n        ${drawSide("m", doors.filter((d)=>d.side === "left"
         ))}\n        ${drawCenter("m", drawHouse())}\n        ${drawSide("m", doors.filter((d)=>d.side === "right"
         ))}\n        ${drawCorner("b")}\n        ${drawCenter("b", "")}\n        ${drawCorner("b")}\n      </div> `;
     }
     static get styles() {
         return [
             $04cda63463cffae4$export$9099ad97b570f7c,
-            $bf8c91c99931eb07$export$ce8efb75507ffb31`\n\n      * {\n       box-sizing: border-box;\n      }\n      :host {\n        background-color: transparent;\n        display: block;\n        color: ${$d038626f16c01c34$var$currentTheme.textColor};\n        font-size: 3vw;\n      }\n\n      .main{\n        width: 100%;\n        height: 100vh;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: ${$d038626f16c01c34$var$currentTheme.backgroundColor};\n        padding-top: 12px;\n      }\n\n      .tcor, .bcor, .msid {\n        flex: 15%;\n      }\n      .tcen, .mcen, .bcen {\n        flex: 70%;\n        position: relative;\n      }\n\n      .tcor, .tcen {\n        height: 20vh;\n      }\n\n      .mcen, .msid {\n        height: 80vh;\n      }\n\n      .bcor, .bcen {\n        height: 15vh;\n        display: none;\n      }\n\n      /* Style the tab */\n      .tab {\n        overflow: hidden;\n        border: 1px solid #ccc;\n        background-color: #f1f1f133;\n      }\n\n      /* Style the buttons that are used to open the tab content */\n      .tab button {\n        background-color: inherit;\n        float: left;\n        border: none;\n        outline: none;\n        cursor: pointer;\n        padding: 2px 6px;\n        transition: 0.3s;\n      }\n\n      /* Change background color of buttons on hover */\n      .tab button:hover {\n        background-color: #ddd;\n      }\n\n      /* Create an active/current tablink class */\n      .tab button.active {\n        background-color: #ccc;\n      }\n\n      /* Style the tab content */\n      .tabcontent {\n        display: block;\n        padding: 3px 6px;\n\n      }\n      .tabcontent.hidden{\n        display: none;\n      }\n\n      .house {\n        position: relative;\n        padding: 0;\n        width: 100%;\n        padding-left: 10px;\n        padding-right: 10px;\n        padding-bottom: 10px;\n      }\n\n      .roof {\n        width: 100%;\n        height: 100%;\n        padding: 0;\n        margin:0;\n        border: 0;\n        background-color: transparent;\n      }\n      #svg-roof {\n        vertical-align:top;\n      }\n\n      .floor {\n        padding: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        background-color: ${$d038626f16c01c34$var$currentTheme.houseColor};\n        align-items: flex-start;\n        margin-top: 6px;\n        padding: 5px;\n        min-height: 20vh;\n\n      }\n      .floor.first {\n        align-items: center;\n      }\n      .floor.second {\n        align-items: center;\n      }\n      .floor.basement {\n        justify-content: space-between;\n        flex-wrap: nowrap;\n        padding-bottom: 6px;\n      }\n\n      .room {\n        min-height: 5vh;\n        padding: 3px;\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        border: 1px solid ${$d038626f16c01c34$var$currentTheme.roomBorderColor};\n        margin: 5px;\n        border-radius: 3px;\n        flex: 0 1;\n      }\n\n      .room-name {\n        font-weight: bold;\n        margin-right: 12px;\n        color: ${$d038626f16c01c34$var$currentTheme.titleColor};\n      }\n\n      .other-basement {\n        flex: 1 0 40%;\n        padding: 0px;\n        margin-left: 6px;\n      }\n\n      .sensor {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        font-weight: bold;\n        border-radius: 6px;\n        padding: 1px;\n        flex: 0 1;\n        border: 1px solid #999999;\n        background-color: #00000033;\n        margin-right: 3px;\n        margin-left: 3px;\n      }\n\n      .sensor.horizontal {\n        flex-wrap: nowrap;\n      }\n\n\n      .device {\n        border: 2px solid #cccccc;\n        border-radius: 3px;\n        padding: 3px;\n\n      }\n\n      .device.roundish {\n        border-radius: 15%;\n        margin-top: 0px;\n        margin-right: 6px;\n      }\n\n      .device.active {\n        border-color: ${$d038626f16c01c34$var$activeColor};\n\n      }\n      .device.off {\n        border-color: ${$d038626f16c01c34$var$offColor};\n\n      }\n      .device.inactive {\n        border-color: ${$d038626f16c01c34$var$normalTextColor};\n      }\n\n      .fault{\n        background-color: ${$d038626f16c01c34$var$faultColor} !important;\n        color: ${$d038626f16c01c34$var$faultTextColor} !important;\n\n      }\n      .alarm {\n        background-color: ${$d038626f16c01c34$var$alarmColor} !important;\n        color: ${$d038626f16c01c34$var$alarmTextColor} !important;\n      }\n\n      .warning {\n        background-color: ${$d038626f16c01c34$var$warningColor} !important;\n        color: ${$d038626f16c01c34$var$warningTextColor} !important;\n\n      }\n\n      .normal {\n        background-color: transparent !important;\n        color: #333333;\n      }\n\n      .pump {\n        cursor: pointer;\n        height: 110px;\n        width: 17vw;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n      .faceplate {\n        position: absolute;\n        background-color: ${$d038626f16c01c34$var$currentTheme.valueDarkColor};\n        width: 96%;\n        height: 50%;\n        left: 2%;\n        top: 50%;\n        border: 2px solid #efefef;\n      }\n\n      .faceplate-title {\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        align-items: center;\n        background-color: transparent;\n        padding-left: 6px;\n        padding-top:6px;\n        color: #ffffff;\n        width: 100%;\n        height: 24px;\n      }\n      .faceplate-close {\n        padding-left: 6px;\n        padding-right: 6px;\n\n        height: 16px;\n        width: 28px;\n        color: #ffffff;\n\n      }\n\n      .boiler {\n        height: 85px;\n        width: 45px;\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: flex-start;\n        align-items: center;\n      }\n\n      .electricity {\n        height: auto;\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        align-items: center;\n        }\n\n      .item {\n        flex: 0 1 100%;\n        text-align: center;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n      }\n\n      .item.icon {\n        padding-top: 3px;\n      }\n\n      /* JANNE */\n\n\n\n      .item.empty {\n        flex: 0 1 20px;\n        text-align: center;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n      }\n\n      .item.half {\n        flex: 0 0 50%;\n        text-align: center;\n        font-size: 3vw;\n      }\n\n      .supply-return-lines {\n        flex: 70%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        align-items: center;\n        border: 1px dashed #999999;\n        margin-top: 6px;\n\n      }\n\n\n\n\n\n\n\n      .plain-unit {\n        font-size: 3vw;\n        width: auto;\n      }\n      .sensor-unit {\n          text-align: center;\n          border-radius: 50%;\n          width: auto;\n          height: 20px;\n          color: ${$d038626f16c01c34$var$currentTheme.unitColor};\n      }\n      .sensor-value {\n        text-align: center;\n        font-size: 4vw;\n        color: ${$d038626f16c01c34$var$currentTheme.valueColor};\n        padding-left: 2px;\n        padding-right: 2px;\n        border-radius: 3px;\n      }\n\n\n\n\n\n\n\n\n      .boiler-room {\n        flex:  1 0 60%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        padding-left: 3px;\n        padding-top: 6px;\n      }\n      .column {\n        flex: 0 1;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: flex-start;\n        align-items: flex-start;\n\n      }\n\n      .column.wide {\n        flex: 1 0;\n      }\n      .column.wide.center {\n        justify-content: center;\n\n        flex: 1 0;\n      }\n\n      .type-line {\n          display: flex;\n          flex: 100%;\n          justify-content: space-evenly;\n\n      }\n\n      .supply-line {\n        display: flex;\n        flex: 100%;\n        align-items: center;\n        justify-content: space-evenly;\n        margin-bottom: 3px;\n\n      }\n\n      .return-line {\n        display: flex;\n        flex: 100%;\n        align-items: center;\n        justify-content: space-evenly;\n        margin-bottom: 3px;\n\n\n      }\n\n      .column.narrow {\n        flex: 0 1;\n      }\n\n      .pump-power-target {\n        height: 110px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        flex: 0 1;\n      }\n\n      .buffer-arrow {\n        flex: 0 1;\n        height: 75px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n      .boiler-arrow {\n        height: 50px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-end;\n\n      }\n\n\n      .temp-bar {\n        height: 77px;\n        flex: 0 0 8px;\n        margin-left: 3px;\n        margin-right: 6px;\n        border: 1px solid #999999;\n        border-radius: 2px;\n        border-right: 2px solid #666666;\n        border-bottom: 1px solid #666666;\n      }\n\n      .pumpLines {\n        height: auto;\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: start;\n        align-items: center;\n        background-color: transparent;\n        padding: 0px;\n        margin-top: 3px;\n        margin-bottom: 3px;\n        border-radius: 3px;\n      }\n\n      .alarm-status {\n        position: absolute;\n        width: 150px;\n        top: 16px;\n        left: calc(50% - 75px);\n        display: flex;\n        justify-content: center;\n        flex-wrap: wrap;\n      }\n      .alarm-text{\n        text-align: center;\n        width: 140px;\n\n      }\n     alarm-icon {\n        transform: scale(2);\n      }\n    `
+            $bf8c91c99931eb07$export$ce8efb75507ffb31`\n\n      * {\n       box-sizing: border-box;\n      }\n      :host {\n        background-color: transparent;\n        display: block;\n        color: var(--text-color, #efefef);\n        font-size: 3vw;\n\n        --warning-background-color: #FFBF00df;\n        --warning-text-color: #666666;\n\n        --alarm-background-color: #d0342cdf;\n        --alarm-text-color: #eeeeee;\n\n        --fault-background-color: #e300ff;\n        --fault-text-color: #eeeeee;\n\n      }\n\n      .main{\n        width: 100%;\n        height: 100vh;\n        display: flex;\n        flex-wrap: wrap;\n        background-color: var(--theme-background-color, #113366);\n        padding-top: 12px;\n      }\n      /*         --theme-background-color: #113366;\n      --house-color: #ffffff22;\n\n*/\n      .main[data-theme='dark']{\n        --house-color: #ffffff22;\n        --theme-background-color: transparent;\n        --unit-color: #cccccc;\n        --value-color: #efefef;\n        --title-color: #dddddd;\n        --value-dark-color: #333333;\n        --text-color: #efefef;\n        --room-border-color: #333333ff;\n        --passive-icon-color: #999999;\n\n      }\n      .main[data-theme='light']{\n        --house-color: #ffffff11;\n        --theme-background-color: transparent;\n        --unit-color: #666666;\n        --value-color: #333333;\n        --title-color: #333333;\n        --value-dark-color: #333333;\n        --text-color: #efefef;\n        --room-border-color: #cccccc;\n        --passive-icon-color: #cccccc;\n\n      }\n\n\n      /* Style buttons */\n\n      .toggle-button{\n        background-color: #ffffff; /* Blue background */\n        color: black; /* White text */\n        padding: 2px 2px; /* Some padding */\n        border: 1px solid #bbbbbb;\n        border-radius: 3px;\n      }\n      .floor-button-holder {\n        display: flex;\n        flex-wrap: wrap;\n        position: absolute;\n        justify-content: center;\n        width: 25px;\n        top: 0;\n        left: 0;\n      }\n      .btn {\n        background-color: #333399; /* Blue background */\n        border: none; /* Remove borders */\n        color: white; /* White text */\n        padding: 2px 2px; /* Some padding */\n        margin: 2px;\n        font-size: 24px; /* Set a font size */\n        width: 28px;\n        height: 28px;\n\n        cursor: pointer; /* Mouse pointer on hover */\n      }\n\n\n\n      /* Darker background on mouse-over */\n      .btn:hover {\n        background-color: RoyalBlue;\n      }\n\n\n      .floor-sign {\n        justify-self: left;\n        color: var(--passive-icon-color);\n      }\n      .tcor, .bcor, .msid {\n        flex: 15%;\n      }\n      .tcen, .mcen, .bcen {\n        flex: 70%;\n        position: relative;\n      }\n\n      .tcor, .tcen {\n        height: 20vh;\n      }\n\n      .mcen, .msid {\n        height: 80vh;\n      }\n\n      .bcor, .bcen {\n        height: 15vh;\n        display: none;\n      }\n\n      /* Style the tab */\n      .tab {\n        overflow: hidden;\n        border: 1px solid #ccc;\n        background-color: #f1f1f133;\n      }\n\n      /* Style the buttons that are used to open the tab content */\n      .tab button {\n        background-color: inherit;\n        float: left;\n        border: none;\n        outline: none;\n        cursor: pointer;\n        padding: 2px 6px;\n        transition: 0.3s;\n      }\n\n      .stat-table {\n        display: flex;\n        flex-direction: row;\n        flex-wrap: wrap;\n      }\n      .stat-table-cell {\n        flex: 1 1 16%;\n      }\n\n      /* Change background color of buttons on hover */\n      .tab button:hover {\n        background-color: #ddd;\n      }\n\n      /* Create an active/current tablink class */\n      .tab button.active {\n        background-color: #ccc;\n      }\n\n      /* Style the tab content */\n      .tabcontent {\n        display: block;\n        padding: 3px 6px;\n\n      }\n      .tabcontent.hidden{\n        display: none;\n      }\n\n      .house {\n        position: relative;\n        padding: 0;\n        width: 100%;\n        padding-left: 10px;\n        padding-right: 10px;\n        padding-bottom: 10px;\n      }\n\n      .roof {\n        width: 100%;\n        height: 100%;\n        padding: 0;\n        margin:0;\n        border: 0;\n        background-color: transparent;\n        fill: var(--house-color);\n      }\n      .button-row {\n        position: absolute;\n        left: 0;\n        width: 100%;\n        bottom: 0;\n        display: flex;\n        justify-content: center;\n      }\n      .sky {\n        position: absolute;\n        right: 0;\n        top: 0;\n        display: flex;\n        justify-content: end;\n        font-size: 24px;\n      }\n      #svg-roof {\n        vertical-align:top;\n      }\n\n      .floor-value {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        align-content: center;\n        font-size: 4.5vw;\n\n      }\n\n      .floor {\n        position: relative;\n\n        padding: 0px;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        background-color:  var(--house-color, #ffffff22);\n        align-items: flex-start;\n        align-content: center;\n        margin-top: 12px;\n        padding-left: 25px;\n        min-height: 10vh;\n\n      }\n      .floor.first {\n        align-items: center;\n      }\n      .floor.second {\n        align-items: center;\n      }\n      .floor.basement {\n        justify-content: center;\n        flex-wrap: wrap;\n        padding-bottom: 6px;\n        padding-left: 0;\n        padding-right: 0;\n      }\n\n      .room {\n        /*min-height: 4vh;*/\n        padding: 8px;\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        border: 1px solid var(--room-border-color);\n        background-color: #ffffff22;\n        /*margin: 3px;\n        border-radius: 3px;*/\n        flex: 0 1;\n        max-width: 40%;\n      }\n\n      .basement-rooms {\n        width: 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n        border-bottom: 1px solid #ffffff44;\n        padding-bottom: 6px;\n        align-content: center;\n        min-height: 10vh;\n\n      }\n      .room-name {\n        font-size: 3vw;\n        font-weight: bold;\n        margin-right: 3px;\n        color: var(--title-color);\n      }\n\n      .sensor {\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        font-weight: bold;\n        border-radius: 6px;\n        padding: 1px;\n        padding-left: 3px;\n        padding-right: 3px;\n        flex: 0 1;\n        border: 1px solid #999999;\n        background-color: #00000033;\n        margin-right: 3px;\n        margin-left: 3px;\n        border-radius: 3px 3px 8px 8px;\n      }\n\n      .combined .sensor {\n        border-top: 1px solid #999999;\n        padding: 0;\n        padding-top: 1px;\n\n      }\n      .sensor.horizontal {\n        flex-wrap: nowrap;\n        margin-right: 0;\n        margin-left: 0;\n        padding-left: 1px;\n        padding-right: 1px;\n      }\n\n      .device {\n        border: 1px solid #cccccc;\n        border-radius: 3px;\n        padding: 3px;\n        margin-left: 5px;\n        margin-right: 5px;\n        background-color: #ffaa3344;\n      }\n\n      .device.roundish {\n        border-radius: 999em 999em 999em 999em;\n        background-color: #00bbff44;\n      }\n\n      .device.active {\n        border-color: #cccccc;\n\n      }\n\n      .device.inactive {\n        border-color: ${$d038626f16c01c34$var$normalTextColor};\n      }\n\n      .fault{\n        background-color: var(--fault-background-color) !important;\n        color: var(--fault-text-color) !important;\n\n      }\n      .alarm {\n        background-color: var(--alarm-background-color) !important;\n        color: var(--alarm-text-color) !important;\n      }\n\n      .warning {\n        background-color: var(--warning-background-color) !important;\n        color: var(--warning-text-color) !important;\n      }\n\n      .normal {\n        background-color: transparent !important;\n        color: #333333;\n      }\n\n      .pump {\n        cursor: pointer;\n        width: 17vw;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: center;\n      }\n\n      .faceplate {\n        position: absolute;\n        background-color: var(--value-dark-color);\n        width: 96%;\n        height: auto;\n        left: 2%;\n        top: 50%;\n        border: 2px solid #efefef;\n      }\n\n      .faceplate-title {\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        align-items: center;\n        background-color: transparent;\n        padding-left: 6px;\n        padding-top:6px;\n        color: #ffffff;\n        width: 100%;\n        height: 24px;\n      }\n      .faceplate-close {\n        padding-left: 6px;\n        padding-right: 6px;\n\n        height: 16px;\n        width: 24px;\n        font-weight: bold;\n        color: #ffffff;\n\n      }\n\n      .boiler {\n        /*width: 45px;*/\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: flex-start;\n        align-items: center;\n        padding-top: 6px;\n        padding-bottom: 6px;\n      }\n\n      .electricity {\n          min-height: 5vh;\n          padding: 3px;\n          display: flex;\n          flex-wrap: nowrap;\n          justify-content: space-between;\n          border: 1px solid ${$d038626f16c01c34$var$normalTextColor};\n          margin-bottom: 5px;\n          margin-left: 5px;\n\n          border-radius: 3px;\n          flex: 0 1;\n          background-color: #aa111133;\n\n        }\n\n        .water {\n          min-height: 5vh;\n          padding: 3px;\n          display: flex;\n          flex-wrap: nowrap;\n          justify-content: space-between;\n          border: 1px solid ${$d038626f16c01c34$var$normalTextColor};\n          margin-bottom: 5px;\n          margin-left: 5px;\n\n          border-radius: 3px;\n          flex: 0 1;\n          background-color: #ffffff33;\n\n        }\n\n      .column-item {\n        margin-top: 3px;\n        margin-bottom: 3px;\n      }\n      .item {\n        display: flex;\n        justify-content: center;\n\n        flex: 0 1 100%;\n        text-align: center;\n        color: var(--value-color);\n      }\n\n      .item.icon {\n        padding-top: 3px;\n      }\n\n      .item.half {\n        flex: 0 1 50%;\n        text-align: center;\n        font-size: 3vw;\n      }\n\n      .supply-return-lines {\n        flex: 1 0;\n        display: flex;\n        flex-wrap: nowrap;\n        justify-content: space-between;\n        align-items: center;\n        border: 1px dashed #999999;\n        margin-left: 5px;\n        margin-right: 5px;\n        background-color: #00aa6633;\n\n      }\n\n      .plain-unit {\n        font-size: 3vw;\n        width: auto;\n      }\n      .sensor-unit {\n          text-align: center;\n          border-radius: 50%;\n          width: auto;\n          font-size: 3vw;\n\n          color: var(--unit-color);\n      }\n      .sensor-value {\n        text-align: center;\n        font-size: 4.5vw;\n        color: var(--value-color);\n        padding-left: 2px;\n        padding-right: 2px;\n        border-radius: 3px;\n      }\n\n      .sensor.horizontal .sensor-value {\n        font-size: 3.8vw;\n      }\n\n      .boiler-room {\n        flex:  1 0;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n        padding-top: 6px;\n\n      }\n      .column {\n        flex: 0 1;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: center;\n        align-items: flex-start;\n\n      }\n\n      .column.wide {\n        flex: 1 0;\n      }\n\n      .column.center {\n        align-items: center;\n        align-content: space-between;\n      }\n\n      .supply-line {\n        display: flex;\n        flex: 100%;\n        align-items: center;\n        justify-content: space-evenly;\n        margin-bottom: 3px;\n\n      }\n\n      .return-line {\n        display: flex;\n        flex: 100%;\n        align-items: center;\n        justify-content: space-evenly;\n        margin-bottom: 3px;\n      }\n\n      .buffer-arrow {\n          flex: 0 1;\n      }\n\n      .boiler-arrow {\n        flex: 0 1;\n      }\n\n\n      .temp-bar {\n        height: 60px;\n        flex: 0 0 8px;\n        margin-left: 3px;\n        margin-right: 6px;\n        border: 1px solid #999999;\n        border-radius: 2px;\n        border-right: 2px solid #666666;\n        border-bottom: 1px solid #666666;\n      }\n\n      .pumpLines {\n        height: auto;\n        flex: 0 0 100%;\n        display: flex;\n        flex-wrap: wrap;\n        justify-content: start;\n        align-items: center;\n        background-color: transparent;\n        padding: 0px;\n        margin-top: 3px;\n        border-radius: 3px;\n      }\n\n      .alarm-status {\n        position: absolute;\n        width: 150px;\n        top: 16px;\n        left: calc(50% - 75px);\n        display: flex;\n        justify-content: center;\n        flex-wrap: wrap;\n      }\n\n    `
         ];
     }
 }
