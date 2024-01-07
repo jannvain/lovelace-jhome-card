@@ -131,6 +131,43 @@ const getLimitedColor = (val, limits, colors) => {
 };
 
 const valueLimits = {
+  roomTemperature: {
+    LL: 19,
+    L: 20,
+    H: 23,
+    HH: 24
+  },
+  lowRoomTemperature: {
+    LL: 5,
+    L: 10,
+    H: 20,
+    HH: 25
+  },
+  supplyReturnTemperature: {
+    LL: 20,
+    L: 40,
+    H: 50,
+    HH: 60
+  },
+  brineTemperature: {
+    LL: -4,
+    L: -2,
+    H: 2,
+    HH: 4
+  },
+  waterTemperature: {
+    LL: 10,
+    L: 30,
+    H: 40,
+    HH: 60
+  },
+  kwPower: {
+    LL: 0,
+    L: 3,
+    H: 6,
+    HH: 12
+  },
+
   temperature: {
     LL: 19,
     L: 20,
@@ -255,6 +292,8 @@ export class JhomePanel extends LitElement {
       },
       yaxis: {
         show: true,
+        forceNiceScale: true,
+
         tickAmount: 4,
         labels: {
           show: true,
@@ -432,7 +471,7 @@ export class JhomePanel extends LitElement {
     this.faceplateOpen = true;
     this.faceplateE = { clientY: e.clientY  > height * 0.5 ? e.clientY - houseHeight * 0.5 - topOffset + 12: e.clientY - topOffset , title: deviceName ? deviceName : sensors[0].name };
 
-    const promise = this.updateData(sensors, 24, 4);
+    const promise = this.updateData(sensors, 24, 60);
 
     promise.then((data) => {
       console.log("PROMISE THEN")
@@ -464,17 +503,21 @@ export class JhomePanel extends LitElement {
 
           })
         )
-        if (data.length === 1) {
+        console.log("PREYOPT");
+
+        if (data.length === 1 || true) {
 
           const limits = sensors.map(s => this.getLimits(s));
+          console.log("YOPT");
 
+          console.log(limits);
           const yOpt = {
             yaxis: {
-
+              forceNiceScale: true,
               show: true,
               tickAmount: 7,
-              min: limits[0].LL * 0.9,
-              max:limits[0].HH*1.1,
+              min: limits[0].LL,
+              max:limits[0].HH,
               labels: {
                 show: true,
                 style: {
@@ -491,7 +534,7 @@ export class JhomePanel extends LitElement {
 
           this.chart.addYaxisAnnotation({
             y: limits[0].HH,
-            y2: limits[0].HH*1.2,
+            y2: null,
             fillColor: "#d0342c",
 
             id: "HH",
@@ -505,8 +548,8 @@ export class JhomePanel extends LitElement {
           }, true);
 
           this.chart.addYaxisAnnotation({
-            y: limits[0].HH,
-            y2: limits[0].H,
+            y: limits[0].H,
+            y2: null,
             fillColor: "#FFBF00",
             id: "H",
 
@@ -520,7 +563,7 @@ export class JhomePanel extends LitElement {
           }, true);
           this.chart.addYaxisAnnotation({
             y: limits[0].L,
-            y2: limits[0].LL,
+            y2: null,
             fillColor: "#FFBF00",
             id: "L",
 
@@ -534,7 +577,7 @@ export class JhomePanel extends LitElement {
           }, true);
           this.chart.addYaxisAnnotation({
             y: limits[0].LL,
-            y2: limits[0].LL*0.9,
+            y2: null,
             fillColor: "#d0342c",
 
             id: "LL",
@@ -595,19 +638,20 @@ export class JhomePanel extends LitElement {
     }
 
     let unit = sensor.unit && sensor.unit.length > 0 ? sensor.unit : "";
-    let limits = valueLimits["noLimit"];
+    let limits = sensor.range ? valueLimits[sensor.range]: valueLimits["noLimit"];
 
     if (unit === "C") {
       unit = mdiTemperatureCelsius;
-      limits = valueLimits["temperature"];
+      limits = sensor.range ? valueLimits[sensor.range]: valueLimits["temperature"];
     }
     else if (unit === "%") {
       unit = mdiWaterPercent;
-      limits = valueLimits["percentage"];
+      limits = sensor.range ? valueLimits[sensor.range]: valueLimits["percentage"];
+
     }
     else if (unit === "CO2") {
       unit = mdiMoleculeCo2;
-      limits = valueLimits["co2"];
+      limits = sensor.range ? valueLimits[sensor.range]: valueLimits["co2"];
     }
     return limits;
 
@@ -713,9 +757,9 @@ export class JhomePanel extends LitElement {
 
       const unit = sensors[0].unit && sensors[0].unit.length > 0 ? sensors[0].unit : "";
 
-      const roomNumber = sensors.length;
+      const roomNumber = sensors.filter(s => !s.excludeFromStatistics).length;
 
-      const averageValue = sensors.reduce((sum, cur) => {
+      const averageValue = sensors.filter(s => !s.excludeFromStatistics).reduce((sum, cur) => {
         return sum + parseFloat(this.hass.states[cur.entityId].state);
       }, 0) / roomNumber;
 
@@ -726,9 +770,10 @@ export class JhomePanel extends LitElement {
 
 
       return html`
-        <div class="combined" >
-          ${ showValueWithUnit(roundedValue, unit, valueStatusColor, horizontal, sensors, eventInParent) }
-        </div >
+      ${ showValueWithUnit(roundedValue, unit, valueStatusColor, horizontal, sensors, eventInParent) }
+
+        <!--div class="combinedx" >
+        </div -->
       `;
     }
 
@@ -834,22 +879,25 @@ export class JhomePanel extends LitElement {
 
     <div class="pumpLines">
 
-      <div class="item half">${showSensor(this.panel.config.entities.brineInLine, "horizontal")}</div>
-      <div class="item half">${showSensor(this.panel.config.entities.brineOutLine, "horizontal")}</div>
 
       <div class="item" >
         <font color=${pumpLineInColor}>
           <svg-icon type="mdi" size="24" path=${mdiArrowUpThin} ></svg-icon>
         </font>
 
-      <div class="item icon" style="color:normalTextColor">
-        <svg-icon type="mdi" size="14" path=${mdiTemperatureCelsius} ></svg-icon>
+        <div class="item icon" style="color:normalTextColor">
+          <svg-icon type="mdi" size="14" path=${mdiTemperatureCelsius} ></svg-icon>
+        </div>
+
+        <font color=${pumpLineOutColor}>
+          <svg-icon type="mdi" size="24" path=${mdiArrowDownThin} ></svg-icon>
+        </font>
       </div>
 
-      <font color=${pumpLineOutColor}>
-        <svg-icon type="mdi" size="24" path=${mdiArrowDownThin} ></svg-icon>
-      </font>
-      </div>
+      <div class="item half">${showSensor(this.panel.config.entities.brineInLine, "horizontal")}</div>
+      <div class="item half">${showSensor(this.panel.config.entities.brineOutLine, "horizontal")}</div>
+
+
     </div>
   `;
 
@@ -965,7 +1013,7 @@ export class JhomePanel extends LitElement {
               <div class="buffer-arrow" style="color: ${Math.round(this.getState(this.panel.config.entities.pumpPriority)) === 20 ? activeColor : inActiveColor}">
                 <svg-icon type="mdi" size="24" path=${mdiArrowLeftBold} ></svg-icon>
               </div>
-              <svg-icon type="mdi" size="24" path=${icon} ></svg-icon>
+              <svg-icon type="mdi" size="32" path=${icon} ></svg-icon>
               <div class="boiler-arrow" style="color: ${Math.round(this.getState(this.panel.config.entities.pumpPriority)) === 30 ? activeColor : inActiveColor}">
                 <svg-icon type="mdi" size="24" path=${mdiArrowRightBold} ></svg-icon>
               </div>
@@ -1059,28 +1107,32 @@ export class JhomePanel extends LitElement {
 
     const drawHouse = () => html`
       <div class="house">
-        <div class="floor second">
-          <div class=floor-button-holder>
+        <div class="floor second" @click="${(e) =>  this._handleToggleClick(e, 'minimize2Floor')}">
+          <!-- div class=floor-button-holder>
+            ${this.toggleButton("minimize2Floor", mdiCollapseAll, mdiExpandAll)}
             <div class="floor-sign"><svg-icon type="mdi" size="32" path=${mdiHomeFloor2} ></svg-icon></div>
-            ${this.toggleButton("minimize2Floor",mdiCollapseAll, mdiExpandAll)}
-          </div>
+
+          </div -->
+
           ${this.minimize2Floor ? floor(2) : radiatorLine(2, 1)}
           ${this.minimize2Floor ? null : radiatorLine(2, 2)}
         </div>
-        <div class="floor first">
-          <div class=floor-button-holder>
+        <div class="floor first" @click="${(e) =>  this._handleToggleClick(e, 'minimize1Floor')}">
+          <!-- div class=floor-button-holder>
+            ${this.toggleButton("minimize1Floor", mdiCollapseAll, mdiExpandAll)}
             <div class="floor-sign"><svg-icon type="mdi" size="32" path=${mdiHomeFloor1} ></svg-icon></div>
-            ${this.toggleButton("minimize1Floor",mdiCollapseAll, mdiExpandAll)}
-          </div>
+
+          </div -->
 
           ${this.minimize1Floor ? floor(1) : radiatorLine(1, 1)}
           ${this.minimize1Floor ? null : radiatorLine(1, 2)}
         </div>
-        <div class="floor basement">
-          <div class=floor-button-holder>
+        <div class="floor basement" @click="${(e) =>  this._handleToggleClick(e, 'minimize0Floor')}">
+          <!--div class=floor-button-holder>
+            ${this.toggleButton("minimize0Floor", mdiCollapseAll, mdiExpandAll)}
             <div class="floor-sign"><svg-icon type="mdi" size="32" path=${mdiHomeFloor0} ></svg-icon></div>
-            ${this.toggleButton("minimize0Floor",mdiCollapseAll, mdiExpandAll )}
-          </div>
+
+          </div -->
           <div class="basement-rooms">
 
 
@@ -1118,7 +1170,7 @@ export class JhomePanel extends LitElement {
       const icons = {
         snowy: mdiWeatherSnowy,
         cloudy: mdiWeatherCloudy,
-        sunnny: mdiWeatherSunny
+        sunny: mdiWeatherSunny
       }
       const color = "#cccccc";
       const icon = icons[this.hass.states['weather.forecast_home'].attributes.forecast[0].condition];
@@ -1128,20 +1180,16 @@ export class JhomePanel extends LitElement {
 
       return html`
         <div class="sky">
-          <div class="column">
-
-          <div class="item">
-            <font color=${color}>
-              <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>
-            </font>
-            <span> ${temp}</span>
+          <div class="temp-bar-horizontal">
+            <div>${temp}</div><div>${temp2}</div>
           </div>
-          <div class="item">
-          <font color=${color}>
-            <svg-icon type="mdi" size="28" path=${icon2} ></svg-icon>
-          </font>
-          <span> ${temp2}</span>
-        </div>
+          <div class="weather-bar-horizontal">
+            <font color=${color}>
+                <svg-icon type="mdi" size="28" path=${icon} ></svg-icon>
+            </font>
+            <font color=${color}>
+              <svg-icon type="mdi" size="28" path=${icon2} ></svg-icon>
+            </font>
           </div>
         </div>
       `;
@@ -1407,9 +1455,27 @@ export class JhomePanel extends LitElement {
         position: absolute;
         right: 0;
         top: 0;
+        width: 25%;
         display: flex;
+        flex-wrap: wrap;
         justify-content: end;
-        font-size: 24px;
+        font-size: 4vw;
+        padding-right: 6px;
+      }
+      .temp-bar-horizontal {
+        display: flex;
+        flex: 0 0 100%;
+        align-content: center;
+        justify-content: space-between;
+        padding: 2px;
+        width: 100%;
+      }
+      .weather-bar-horizontal {
+        display: flex;
+        flex: 0 0 100%;
+        align-content: center;
+        justify-content: space-between;
+        padding: 2px;
       }
       #svg-roof {
         vertical-align:top;
@@ -1563,7 +1629,7 @@ export class JhomePanel extends LitElement {
 
       .pump {
         cursor: pointer;
-        width: 17vw;
+        width: 21vw;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -1609,8 +1675,8 @@ export class JhomePanel extends LitElement {
         flex-wrap: nowrap;
         justify-content: flex-start;
         align-items: center;
-        padding-top: 6px;
-        padding-bottom: 6px;
+        padding-top: 16px;
+        padding-bottom: 16px;
       }
 
       .electricity {
